@@ -17,11 +17,6 @@ app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use(express.json());
 app.use(bodyParser.json());
 
-// 錯誤處理中介軟體：捕捉 JSON 解析錯誤
-app.use(jsonParseErrorHandler);
-// middleware全域錯誤處理
-app.use(globalErrorHandler);
-
 // Root Route
 app.get('/OPTION', (req: Request, res: Response) => {
   res.status(HttpStatus.OK).json();
@@ -33,5 +28,10 @@ app.get('/test', (_req, res) => {
 
 //Route
 setupRoutes(app);
+
+// 錯誤處理中介軟體：捕捉 JSON 解析錯誤
+app.use(jsonParseErrorHandler);
+// middleware全域錯誤處理
+app.use(globalErrorHandler);
 
 export default app;
