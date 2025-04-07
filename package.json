@@ -6,7 +6,7 @@
     "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --exec \"ts-node -r tsconfig-paths/register src/server.ts\"",
     "lint": "eslint src/**/*.ts --fix",
     "lint:fix": "eslint --ext .ts src --fix",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "test": "jest",
     "dbStart": "docker compose --env-file .env up -d --build",
@@ -75,6 +75,7 @@
     "supertest": "^7.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "tsc-alias": "^1.8.13",
     "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0",
     "zod": "^3.24.1"
