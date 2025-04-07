@@ -26,6 +26,10 @@ app.use(globalErrorHandler);
 app.get('/OPTION', (req: Request, res: Response) => {
   res.status(HttpStatus.OK).json();
 });
+app.get('/test', (_req, res) => {
+  console.log('測試路由被呼叫');
+  res.status(200).json({ status: 'ok', message: '伺服器正在運行！' });
+});
 
 //Route
 setupRoutes(app);
