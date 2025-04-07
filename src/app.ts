@@ -21,6 +21,9 @@ app.use(bodyParser.json());
 app.get('/OPTION', (req: Request, res: Response) => {
   res.status(HttpStatus.OK).json();
 });
+app.get('/', (req: Request, res: Response) => {
+  res.status(HttpStatus.OK).json({ message: '歡迎使用 API！' });
+});
 app.get('/test', (_req, res) => {
   console.log('測試路由被呼叫');
   res.status(200).json({ status: 'ok', message: '伺服器正在運行！' });
