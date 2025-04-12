@@ -1,6 +1,10 @@
+import { pgEnum } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 
 import { formatDate } from '@/utils/formatDate';
+
+export const roleEnumList = ['consumer', 'store', 'admin'] as const;
+export const roleEnum = pgEnum('role', roleEnumList);
 
 export const AuthResponseSchema = z.object({
   id: z.string().uuid(),
@@ -15,7 +19,7 @@ export const AuthResponseSchema = z.object({
   avatar: z.string().optional(),
   provider: z.string().optional(),
   provider_id: z.string().optional(),
-  role: z.enum(['consumer', 'store', 'admin']).default('consumer'),
+  role: z.enum(roleEnumList),
   created_at: z.preprocess((val) => formatDate(val), z.string()),
   updated_at: z.preprocess((val) => formatDate(val), z.string()),
 });
@@ -34,7 +38,7 @@ export const AuthLoginSchema = AuthResponseSchema.pick({
 });
 
 export type AuthLoginType = z.infer<typeof AuthLoginSchema>;
-
 export type AuthCreateType = z.infer<typeof AuthCreateSchema>;
-
 export type AuthResponseType = z.infer<typeof AuthResponseSchema>;
+
+export type Role = (typeof roleEnumList)[number];
