@@ -1,4 +1,3 @@
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import type { Application, Request, Response } from 'express';
 import express from 'express';
@@ -15,7 +14,6 @@ app.use(helmet());
 app.use(cors());
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use(express.json());
-app.use(bodyParser.json());
 
 // Root Route
 app.get('/OPTION', (req: Request, res: Response) => {
