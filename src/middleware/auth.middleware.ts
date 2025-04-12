@@ -7,7 +7,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    res.status(HttpStatus.UNAUTHORIZED).json({ status: 'error', message: '未提供授權標頭' });
+    res.status(HttpStatus.UNAUTHORIZED).json({ status: 'error', message: '未授權', success: false });
     return;
   }
 
