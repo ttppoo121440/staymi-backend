@@ -1,3 +1,5 @@
+import type { Server } from 'http';
+
 import dotenv from 'dotenv';
 
 import App from './app';
@@ -5,20 +7,19 @@ import { env } from './config/env';
 
 dotenv.config();
 
-const server = (() => {
+let server: Server | null = null;
+
+export function startServer(): void {
   try {
     console.log('準備啟動伺服器，PORT:', env.PORT);
-    return App.listen(env.PORT, () => {
+    server = App.listen(env.PORT, () => {
       console.log(`🚀 Server is listening on port ${env.PORT}`);
     });
   } catch (error) {
     console.error('伺服器啟動失敗：', error);
-    // 返回一個空的伺服器物件或 null
-    return null;
   }
-})();
+}
 
-// 確保 Jest 測試時可以關閉伺服器
 export function closeServer(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     if (!server) {
@@ -29,6 +30,11 @@ export function closeServer(): Promise<void> {
       resolve();
     });
   });
+}
+
+// 只有直接執行 server.ts 時才會啟動伺服器
+if (require.main === module) {
+  startServer();
 }
 
 process.on('unhandledRejection', (reason, promise) => {
