@@ -1,5 +1,5 @@
-export interface AppError extends Error {
+export type AppErrorType = Error & {
   status?: string;
   statusCode?: number;
   isOperational?: boolean;
-}
+};
