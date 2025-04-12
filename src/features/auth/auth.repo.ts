@@ -53,7 +53,7 @@ export class AuthRepo {
           password: hashedPassword,
           provider: parsedData.provider ?? null,
           provider_id: parsedData.provider_id ?? null,
-          role: parsedData.role as Role,
+          role: 'consumer' as Role,
         })
         .returning({ id: user.id });
 
