@@ -6,7 +6,7 @@ import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
 
-import type { AuthCreateType, AuthLoginType } from './auth.schema';
+import type { AuthCreateType, AuthLoginType, Role } from './auth.schema';
 import { AuthCreateSchema } from './auth.schema';
 
 export class AuthRepo {
@@ -53,7 +53,7 @@ export class AuthRepo {
           password: hashedPassword,
           provider: parsedData.provider ?? null,
           provider_id: parsedData.provider_id ?? null,
-          role: 'consumer' as const,
+          role: parsedData.role as Role,
         })
         .returning({ id: user.id });
 
