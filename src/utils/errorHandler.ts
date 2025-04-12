@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
 
+import type { AppErrorType } from '@/types/AppErrorType';
 import { HttpStatus } from '@/types/http-status.enum';
 
-import type { AppError } from '../types/AppErrorType';
-import logger from '../utils/logger';
+import { AppErrorClass } from './appError';
 
 // 捕捉 JSON 解析錯誤的中介軟體
-export const jsonParseErrorHandler = (err: AppError, req: Request, res: Response, next: NextFunction): void => {
+export const jsonParseErrorHandler = (err: AppErrorType, req: Request, res: Response, next: NextFunction): void => {
   if (err instanceof SyntaxError && err.statusCode === 400 && 'body' in err) {
     console.error('JSON 解析錯誤:', err);
     res.status(HttpStatus.BAD_REQUEST).json({
@@ -15,32 +15,25 @@ export const jsonParseErrorHandler = (err: AppError, req: Request, res: Response
     });
     return;
   }
-  next();
+  next(err);
 };
 
 // 全域錯誤處理中介軟體
-export const globalErrorHandler = (err: AppError, req: Request, res: Response, _: NextFunction): void => {
-  err.statusCode = err.statusCode ?? 500;
 
-  logger.error(`${err.statusCode} :${req.path}-${err.message}`);
-
-  // 確保 res 是有效的 Express Response 物件
-  if (typeof res.status !== 'function' || typeof res.setHeader !== 'function') {
-    console.error('res 物件無效，可能不是 Express 的 Response 物件:', res);
-    return;
-  }
-
-  res.setHeader('Content-Type', 'application/json');
-  if (process.env.NODE_ENV === 'dev') {
+export const globalErrorHandler = (err: Error, req: Request, res: Response, _next: NextFunction): void => {
+  if (err instanceof AppErrorClass) {
     res.status(err.statusCode).json({
+      success: false,
       message: err.message,
-      error: err,
-      stack: err.stack,
+      data: null,
     });
   } else {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
+    console.error('💥 Unexpected Error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: '伺服器發生錯誤，請稍後再試',
+      data: null,
     });
   }
 };
