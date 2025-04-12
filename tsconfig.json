@@ -12,24 +12,12 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
-    ],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "drizzle.config.ts"
-  ],
-  "include": [
-    "src",
-    "drizzle.config.ts"
-  ]
+  "exclude": ["node_modules", "dist", "drizzle.config.ts"],
+  "include": ["src", "drizzle.config.ts"]
 }

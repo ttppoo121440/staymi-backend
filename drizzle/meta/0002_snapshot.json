@@ -86,12 +86,8 @@
           "name": "subscriptions_user_id_user_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -171,12 +167,8 @@
           "name": "user_profile_user_id_user_id_fk",
           "tableFrom": "user_profile",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -251,9 +243,7 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -265,28 +255,17 @@
     "public.plan": {
       "name": "plan",
       "schema": "public",
-      "values": [
-        "free",
-        "plus",
-        "pro"
-      ]
+      "values": ["free", "plus", "pro"]
     },
     "public.gender": {
       "name": "gender",
       "schema": "public",
-      "values": [
-        "f",
-        "m"
-      ]
+      "values": ["f", "m"]
     },
     "public.role": {
       "name": "role",
       "schema": "public",
-      "values": [
-        "consumer",
-        "store",
-        "admin"
-      ]
+      "values": ["consumer", "store", "admin"]
     }
   },
   "schemas": {},

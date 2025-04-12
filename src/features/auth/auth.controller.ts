@@ -81,12 +81,12 @@ export class AuthController {
         return appError('請提供舊密碼和新密碼', next, 400);
       }
 
-      const userId = (req.user as JwtUserPayload).id;
+      const userId: string = (req.user as JwtUserPayload).id;
       if (!userId) {
         return appError('用戶不存在', next, 404);
       }
 
-      await this.authRepo.changePassword(userId.toString(), oldPassword, newPassword);
+      await this.authRepo.changePassword(userId, oldPassword, newPassword);
       res.status(200).json(successResponse(null, '密碼已更新'));
     } catch (error) {
       logger.error('更改密碼失敗:', error);

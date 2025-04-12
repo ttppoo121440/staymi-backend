@@ -45,7 +45,7 @@ export class userRepo {
     return token;
   }
 
-  async getById(userId: number): Promise<ReturnType<typeof UserResponseSchema.parse>> {
+  async getById(userId: string): Promise<ReturnType<typeof UserResponseSchema.parse>> {
     const result = await db.select().from(user).where(eq(user.id, userId));
     if (result.length === 0) {
       throw new Error('使用者不存在');
