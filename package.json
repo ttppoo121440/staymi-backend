@@ -3,16 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --exec \"ts-node -r tsconfig-paths/register src/server.ts\"",
+    "dev": "nodemon",
     "lint": "eslint src/**/*.ts --fix",
     "lint:fix": "eslint --ext .ts src --fix",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "test": "jest",
-    "dbStart": "docker compose --env-file .env up -d --build",
-    "dbRestart": "docker compose --env-file .env up --force-recreate --build -d",
-    "dbStop": "docker compose --env-file .env stop",
-    "dbClean": "docker compose --env-file .env down -v",
     "drizzle:migrate": "drizzle-kit generate && drizzle-kit push"
   },
   "devDependencies": {
