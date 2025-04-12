@@ -1,10 +1,8 @@
-import { pgEnum } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 
 import { formatDate } from '@/utils/formatDate';
 
 export const roleEnumList = ['consumer', 'store', 'admin'] as const;
-export const roleEnum = pgEnum('role', roleEnumList);
 
 export const AuthResponseSchema = z.object({
   id: z.string().uuid(),
