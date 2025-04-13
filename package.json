@@ -9,6 +9,7 @@
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "test": "jest",
+    "prepare": "husky install",
     "drizzle:migrate": "drizzle-kit generate && drizzle-kit push"
   },
   "devDependencies": {
