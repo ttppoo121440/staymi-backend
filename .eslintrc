@@ -12,7 +12,11 @@
     "sourceType": "module",
     "project": "./tsconfig.eslint.json"
   },
-  "plugins": ["@typescript-eslint", "import", "prettier"],
+  "plugins": [
+    "@typescript-eslint",
+    "import",
+    "prettier"
+  ],
   "rules": {
     "import/no-named-as-default-member": "off",
     "@typescript-eslint/explicit-function-return-type": [
@@ -25,6 +29,9 @@
     ],
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/consistent-type-imports": "error",
+    "consistent-type-definitions": [
+      "type"
+    ],
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -35,7 +42,14 @@
     "import/order": [
       "error",
       {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
         "pathGroups": [
           {
             "pattern": "@/**",
@@ -64,7 +78,9 @@
   },
   "overrides": [
     {
-      "files": ["drizzle.config.ts"],
+      "files": [
+        "drizzle.config.ts"
+      ],
       "rules": {
         "@typescript-eslint/no-var-requires": "off"
       }
