@@ -1,10 +1,11 @@
 import bcrypt from 'bcrypt';
 import { eq } from 'drizzle-orm';
-import jwt from 'jsonwebtoken';
+import { ZodError } from 'zod';
 
 import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
+import { generateToken } from '@/utils/jwt';
 
 import type { AuthCreateType, AuthLoginType, Role } from './auth.schema';
 import { AuthCreateSchema } from './auth.schema';
@@ -29,11 +30,12 @@ export class AuthRepo {
       throw new Error('環境變數中未定義 JWT_SECRET');
     }
 
-    const token = jwt.sign({ id: foundUser.id, email: foundUser.email }, process.env.JWT_SECRET, {
-      expiresIn: '12h',
+    const userToken = generateToken({
+      id: foundUser.id,
+      email: foundUser.email,
     });
 
-    return token;
+    return userToken;
   }
   async signup(data: AuthCreateType): Promise<ReturnType<typeof AuthCreateSchema.parse>> {
     const parsedData = AuthCreateSchema.parse(data);
@@ -44,34 +46,42 @@ export class AuthRepo {
     if (existingUser) {
       throw new Error('信箱已被註冊');
     }
+    try {
+      const result = await db.transaction(async (tx) => {
+        const [insertedUser] = await tx
+          .insert(user)
+          .values({
+            email: parsedData.email,
+            password: hashedPassword,
+            provider: parsedData.provider ?? null,
+            provider_id: parsedData.provider_id ?? null,
+            role: 'consumer' as Role,
+          })
+          .returning({ id: user.id });
 
-    const result = await db.transaction(async (tx) => {
-      const [insertedUser] = await tx
-        .insert(user)
-        .values({
-          email: parsedData.email,
-          password: hashedPassword,
-          provider: parsedData.provider ?? null,
-          provider_id: parsedData.provider_id ?? null,
-          role: 'consumer' as Role,
-        })
-        .returning({ id: user.id });
+        await tx.insert(user_profile).values({
+          user_id: insertedUser.id,
+          name: parsedData.name,
+          phone: parsedData.phone,
+          birthday: parsedData.birthday ? new Date(parsedData.birthday) : null,
+          gender: parsedData.gender,
+          avatar: parsedData.avatar ?? null,
+        });
 
-      await tx.insert(user_profile).values({
-        user_id: insertedUser.id,
-        name: parsedData.name,
-        phone: parsedData.phone,
-        birthday: parsedData.birthday ? new Date(parsedData.birthday) : null,
-        gender: parsedData.gender,
-        avatar: parsedData.avatar ?? null,
+        return {
+          id: insertedUser.id,
+          ...parsedData,
+        };
       });
+      return result;
+    } catch (error) {
+      console.error('註冊失敗:', error);
+      if (error instanceof ZodError) {
+        throw new Error('註冊資料格式錯誤');
+      }
 
-      return {
-        id: insertedUser.id,
-        ...parsedData,
-      };
-    });
-    return result;
+      throw new Error('註冊失敗，請稍後再試');
+    }
   }
   async checkEmail(email: string): Promise<boolean> {
     const result = await db.select().from(user).where(eq(user.email, email));
