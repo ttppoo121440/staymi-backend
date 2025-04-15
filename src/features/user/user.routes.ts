@@ -4,11 +4,16 @@ import { authMiddleware } from '@/middleware/auth.middleware';
 
 import { AuthController } from '../auth/auth.controller';
 
-const userRoutes = express.Router();
-const auth = new AuthController();
+import { UserController } from './user.controller';
 
-userRoutes.post('/signup', auth.signup.bind(auth));
-userRoutes.post('/login', auth.login.bind(auth));
-userRoutes.put('/change-password', authMiddleware, auth.changePassword.bind(auth));
+const userRoutes = express.Router();
+const authController = new AuthController();
+const userController = new UserController();
+
+userRoutes.get('/user-profile', authMiddleware, userController.getUserProfile.bind(userController));
+userRoutes.put('/user-profile', authMiddleware, userController.update.bind(userController));
+userRoutes.post('/signup', authController.signup.bind(authController));
+userRoutes.post('/login', authController.login.bind(authController));
+userRoutes.put('/change-password', authMiddleware, authController.changePassword.bind(authController));
 
 export default userRoutes;
