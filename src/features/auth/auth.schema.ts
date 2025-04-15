@@ -24,6 +24,7 @@ export const AuthArrayResponseSchema = z.array(AuthResponseSchema);
 
 export const AuthCreateSchema = AuthResponseSchema.omit({
   id: true,
+  role: true,
   created_at: true,
   updated_at: true,
 });
