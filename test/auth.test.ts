@@ -156,7 +156,7 @@ describe('測試 Auth API', () => {
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('未授權');
+      expect(res.body.message).toBe('請提供有效的 Bearer Token');
     });
   });
 });
