@@ -63,7 +63,7 @@ export class AuthRepo {
           user_id: insertedUser.id,
           name: parsedData.name,
           phone: parsedData.phone,
-          birthday: parsedData.birthday ? new Date(parsedData.birthday) : null,
+          birthday: parsedData.birthday,
           gender: parsedData.gender,
           avatar: parsedData.avatar ?? null,
         });
