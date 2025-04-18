@@ -70,6 +70,31 @@ describe('測試 Auth API', () => {
       expect(res.statusCode).toBe(409);
       expect(res.body.success).toBe(false);
     });
+
+    it('信箱格式錯誤應回傳 400', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/signup')
+        .send({
+          ...testUser,
+          email: 'invalid-email',
+        });
+      console.log('信箱格式錯誤的回傳:', res.body);
+      expect(res.statusCode).toBe(400);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('信箱格式錯誤');
+    });
+
+    it('缺少必填欄位應回傳 400', async () => {
+      const res = await request(app).post('/api/v1/users/signup').send({
+        email: 'example@gmail.com',
+        password: '12345678',
+        // 少了 name、birthday、phone...等
+      });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('請輸入名字');
+    });
   });
 
   describe('POST /api/v1/users/login', () => {
