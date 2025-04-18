@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 
 import type { AppErrorType } from '@/types/AppErrorType';
 import { HttpStatus } from '@/types/http-status.enum';
@@ -19,7 +20,6 @@ export const jsonParseErrorHandler = (err: AppErrorType, req: Request, res: Resp
 };
 
 // 全域錯誤處理中介軟體
-
 export const globalErrorHandler = (err: Error, req: Request, res: Response, _next: NextFunction): void => {
   if (err instanceof AppErrorClass) {
     res.status(err.statusCode).json({
@@ -27,13 +27,22 @@ export const globalErrorHandler = (err: Error, req: Request, res: Response, _nex
       message: err.message,
       data: null,
     });
-  } else {
-    console.error('💥 Unexpected Error:', err);
-
-    res.status(500).json({
+    return;
+  } else if (err instanceof ZodError) {
+    const firstErrorMessage = err.errors[0]?.message || '輸入資料格式錯誤';
+    res.status(400).json({
       success: false,
-      message: '伺服器發生錯誤，請稍後再試',
+      message: firstErrorMessage,
       data: null,
     });
+    return;
   }
+
+  console.error('💥 意外錯誤:', err);
+
+  res.status(500).json({
+    success: false,
+    message: '伺服器發生錯誤，請稍後再試',
+    data: null,
+  });
 };
