@@ -5,6 +5,8 @@ import { ZodError } from 'zod';
 import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
+import { HttpStatus } from '@/types/http-status.enum';
+import { AppErrorClass } from '@/utils/appError';
 import { generateToken } from '@/utils/jwt';
 
 import type { AuthCreateType, AuthLoginType, Role } from './auth.schema';
@@ -15,7 +17,7 @@ export class AuthRepo {
     const result = await db.select().from(user).where(eq(user.email, data.email));
 
     if (result.length === 0) {
-      throw new Error('用戶不存在');
+      throw new AppErrorClass('用戶不存在', HttpStatus.NOT_FOUND);
     }
 
     const foundUser = result[0];
@@ -23,28 +25,29 @@ export class AuthRepo {
     const isPasswordValid = await bcrypt.compare(data.password, foundUser.password);
 
     if (!isPasswordValid) {
-      throw new Error('密碼錯誤');
+      throw new AppErrorClass('密碼錯誤', HttpStatus.UNAUTHORIZED);
     }
 
     if (!process.env.JWT_SECRET) {
-      throw new Error('環境變數中未定義 JWT_SECRET');
+      throw new AppErrorClass('JWT_SECRET 環境變數未設置', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const userToken = generateToken({
       id: foundUser.id,
       email: foundUser.email,
+      role: foundUser.role,
     });
 
     return userToken;
   }
-  async signup(data: AuthCreateType): Promise<ReturnType<typeof AuthCreateSchema.parse>> {
+  async signup(data: AuthCreateType): Promise<AuthCreateType> {
     const parsedData = AuthCreateSchema.parse(data);
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const existingUser = await this.checkEmail(parsedData.email);
 
     if (existingUser) {
-      throw new Error('信箱已被註冊');
+      throw new AppErrorClass('信箱已被註冊', HttpStatus.CONFLICT);
     }
     try {
       const result = await db.transaction(async (tx) => {
@@ -77,10 +80,10 @@ export class AuthRepo {
     } catch (error) {
       console.error('註冊失敗:', error);
       if (error instanceof ZodError) {
-        throw new Error('註冊資料格式錯誤');
+        throw error;
       }
 
-      throw new Error('註冊失敗，請稍後再試');
+      throw new AppErrorClass('註冊失敗，請稍後再試', HttpStatus.SERVICE_UNAVAILABLE);
     }
   }
   async checkEmail(email: string): Promise<boolean> {
@@ -109,19 +112,19 @@ export class AuthRepo {
   async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
     const result = await db.select().from(user).where(eq(user.id, userId));
     if (result.length === 0) {
-      throw new Error('用戶不存在');
+      throw new AppErrorClass('用戶不存在', HttpStatus.NOT_FOUND);
     }
     const foundUser = result[0];
     if (!foundUser.password) {
-      throw new Error('用戶密碼不存在，無法更改密碼');
+      throw new AppErrorClass('用戶密碼不存在，無法更改密碼', HttpStatus.NOT_FOUND);
     }
     const isPasswordValid = await bcrypt.compare(oldPassword, foundUser.password);
     if (!isPasswordValid) {
-      throw new Error('舊密碼錯誤');
+      throw new AppErrorClass('舊密碼錯誤', HttpStatus.UNAUTHORIZED);
     }
     const isSamePassword = await bcrypt.compare(newPassword, foundUser.password);
     if (isSamePassword) {
-      throw new Error('新密碼不能與舊密碼相同');
+      throw new AppErrorClass('新密碼不能與舊密碼相同', HttpStatus.BAD_REQUEST);
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await db
