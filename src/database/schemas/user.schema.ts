@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, pgEnum, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, pgEnum, uuid, boolean } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['consumer', 'store', 'admin']);
 
@@ -9,6 +9,7 @@ export const user = pgTable('user', {
   provider: varchar('provider', { length: 20 }),
   provider_id: varchar('provider_id', { length: 50 }),
   role: roleEnum('role').notNull().default('consumer'),
+  is_blacklisted: boolean('is_blacklisted').notNull().default(false),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
 });
