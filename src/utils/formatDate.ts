@@ -23,3 +23,9 @@ export const formatDisplayDate = (
   const parsed = dayjs(value);
   return parsed.isValid() ? parsed.format(format) : undefined;
 };
+
+// ✅ 提供給 Zod schema 使用（驗證 Date 並格式化成字串）
+export const formatDateStringZod = (format = 'YYYY-MM-DD'): z.ZodEffects<z.ZodTypeAny, string, unknown> =>
+  z
+    .preprocess((val) => parseDate(val), z.date({ message: '日期格式錯誤' }))
+    .transform((date) => formatDisplayDate(date, format) ?? '');
