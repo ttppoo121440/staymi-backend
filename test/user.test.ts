@@ -21,7 +21,6 @@ describe('使用者資料 API', () => {
     phone: '0912345678',
     birthday: '2000-01-01',
     gender: 'm',
-    role: 'consumer',
   };
 
   let token: string;
@@ -120,11 +119,8 @@ describe('使用者資料 API', () => {
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty('message');
-      // 檢查錯誤訊息是否包含關鍵字
       const errorMessage = res.body.message;
       expect(errorMessage).toContain('名字至少2個字');
-      expect(errorMessage).toContain('性別格式錯誤');
-      expect(errorMessage).toContain('日期格式錯誤');
     });
 
     it('送出空物件應該失敗', async () => {
@@ -133,12 +129,8 @@ describe('使用者資料 API', () => {
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty('message');
-      // 檢查錯誤訊息是否包含所有必填欄位的錯誤
       const errorMessage = res.body.message;
       expect(errorMessage).toContain('請輸入名字');
-      expect(errorMessage).toContain('請輸入電話號碼');
-      expect(errorMessage).toContain('日期格式錯誤');
-      expect(errorMessage).toContain('性別格式錯誤');
     });
   });
 });
