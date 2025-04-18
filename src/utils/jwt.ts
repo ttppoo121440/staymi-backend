@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 
+import { Role } from '@/features/auth/auth.schema';
+
 type Payload = {
   id: string;
   email: string;
   brand_id?: string;
-  role?: 'admin' | 'store' | 'user';
+  role: Role;
 };
 
 export const generateToken = (payload: Payload): string => {
