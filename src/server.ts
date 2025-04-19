@@ -14,6 +14,7 @@ export function startServer(): void {
     console.log('準備啟動伺服器，PORT:', env.PORT);
     server = App.listen(env.PORT, () => {
       console.log(`🚀 Server is listening on port ${env.PORT}`);
+      console.log(`Swagger Docs at https://staymi.onrender.com/api-docs`);
     });
   } catch (error) {
     console.error('伺服器啟動失敗：', error);
