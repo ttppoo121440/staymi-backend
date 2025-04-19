@@ -2,7 +2,9 @@ import cors from 'cors';
 import type { Application, Request, Response } from 'express';
 import express from 'express';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
 
+import { openApiDocument } from './docs/swagger';
 import { setupRoutes } from './routes';
 import { HttpStatus } from './types/http-status.enum';
 import { globalErrorHandler, jsonParseErrorHandler } from './utils/errorHandler';
@@ -14,6 +16,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 // Root Route
 app.get('/OPTION', (req: Request, res: Response) => {
