@@ -1,8 +1,11 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { serverUrl } from '@/config/env';
+
 import { registerAdminUserRoutes } from './registry/adminUser.registry';
 import { registerAuthRoutes } from './registry/auth.registry';
+import { registerAuthStoreRoutes } from './registry/authStore.registry';
 import { registerUserRoutes } from './registry/user.registry';
 
 // 定義一個共用的 Bearer Token 安全設定常數
@@ -21,6 +24,7 @@ registerSecuritySchemes(registry);
 registerAuthRoutes(registry);
 registerUserRoutes(registry);
 registerAdminUserRoutes(registry);
+registerAuthStoreRoutes(registry);
 
 // 註冊安全方案
 export function registerSecuritySchemes(registry: OpenAPIRegistry): void {
@@ -46,5 +50,5 @@ export const openApiDocument = generator.generateDocument({
       bearerAuth: [],
     },
   ],
-  servers: [{ url: 'https://staymi.onrender.com/' }],
+  servers: [{ url: serverUrl as string }],
 });
