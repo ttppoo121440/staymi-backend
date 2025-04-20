@@ -8,7 +8,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    res.status(HttpStatus.UNAUTHORIZED).json(errorResponse('請提供有效的 Bearer Token'));
+    res.status(HttpStatus.UNAUTHORIZED).json(errorResponse('未登入或 token 失效'));
     return;
   }
 
