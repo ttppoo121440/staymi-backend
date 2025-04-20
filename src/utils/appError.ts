@@ -1,6 +1,6 @@
 import type { NextFunction } from 'express';
 
-export class AppErrorClass extends Error {
+export class RepoError extends Error {
   statusCode: number;
   status: 'fail' | 'error';
   isOperational: boolean;
@@ -16,6 +16,6 @@ export class AppErrorClass extends Error {
 }
 
 export const appError = (message: string, next: NextFunction, statusCode = 400): void => {
-  const error = new AppErrorClass(message, statusCode);
+  const error = new RepoError(message, statusCode);
   next(error);
 };

@@ -4,7 +4,7 @@ import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
 import { HttpStatus } from '@/types/http-status.enum';
-import { AppErrorClass } from '@/utils/appError';
+import { RepoError } from '@/utils/appError';
 
 import { user_profileSchema, user_profileType, user_profileUpdateSchema, user_profileUpdateType } from './user.schema';
 
@@ -26,7 +26,7 @@ export class UserRepo {
       .where(eq(user.id, id));
 
     if (result.length === 0) {
-      throw new AppErrorClass('用戶不存在', HttpStatus.NOT_FOUND);
+      throw new RepoError('用戶不存在', HttpStatus.NOT_FOUND);
     }
 
     return user_profileSchema.parse(result[0]);
@@ -52,7 +52,7 @@ export class UserRepo {
       .returning();
 
     if (result.length === 0) {
-      throw new AppErrorClass('使用者個人資料不存在，無法更新', HttpStatus.NOT_FOUND);
+      throw new RepoError('使用者個人資料不存在，無法更新', HttpStatus.NOT_FOUND);
     }
 
     return user_profileUpdateSchema.parse(result[0]);
@@ -61,7 +61,7 @@ export class UserRepo {
     const result = await db.select({ userId: user.id }).from(user).where(eq(user.id, id));
 
     if (result.length === 0) {
-      throw new AppErrorClass('用戶不存在', HttpStatus.NOT_FOUND);
+      throw new RepoError('用戶不存在', HttpStatus.NOT_FOUND);
     }
   }
 }
