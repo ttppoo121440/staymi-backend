@@ -3,7 +3,7 @@ import type { Server } from 'http';
 import dotenv from 'dotenv';
 
 import App from './app';
-import { env } from './config/env';
+import { env, serverUrl } from './config/env';
 
 dotenv.config();
 
@@ -14,7 +14,7 @@ export function startServer(): void {
     console.log('準備啟動伺服器，PORT:', env.PORT);
     server = App.listen(env.PORT, () => {
       console.log(`🚀 Server is listening on port ${env.PORT}`);
-      console.log(`Swagger Docs at https://staymi.onrender.com/api-docs`);
+      console.log(`Swagger Docs at ${serverUrl}/api-docs`);
     });
   } catch (error) {
     console.error('伺服器啟動失敗：', error);
