@@ -4,12 +4,18 @@ import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
 import { HttpStatus } from '@/types/http-status.enum';
-import { AppErrorClass } from '@/utils/appError';
+import { RepoError } from '@/utils/appError';
 import { PaginatedQuery, paginateQuery } from '@/utils/pagination';
 
 import { Role } from '../auth/auth.schema';
 
-import { adminUserArraySchema, adminUserArrayType, adminUserSchema, adminUserType } from './adminUser.schema';
+import {
+  adminUserArraySchema,
+  adminUserArrayType,
+  adminUserSchema,
+  adminUserType,
+  adminUserUpdateRoleSchema,
+} from './adminUser.schema';
 
 export class AdminUserRepo {
   async getAll(
@@ -87,20 +93,24 @@ export class AdminUserRepo {
       .execute();
 
     if (userData.length === 0) {
-      throw new AppErrorClass('查無此使用者', HttpStatus.NOT_FOUND);
+      throw new RepoError('查無此使用者', HttpStatus.NOT_FOUND);
     }
     return { users: adminUserSchema.parse(userData[0]) };
   }
   async updateRole(id: string, role: Role): Promise<{ user: { id: string; role: Role } }> {
+    const validatedData = adminUserUpdateRoleSchema.parse({
+      id,
+      role,
+    });
     const userData = await db
       .update(user)
-      .set({ role: role as Role })
-      .where(eq(user.id, id))
+      .set({ role: validatedData.role as Role })
+      .where(eq(user.id, validatedData.id))
       .returning()
       .execute();
 
     if (userData.length === 0) {
-      throw new AppErrorClass('查無此使用者', HttpStatus.NOT_FOUND);
+      throw new RepoError('查無此使用者', HttpStatus.NOT_FOUND);
     }
     return { user: { id, role: userData[0].role as Role } };
   }
