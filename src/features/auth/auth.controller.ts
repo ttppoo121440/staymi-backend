@@ -22,10 +22,6 @@ export class AuthController {
       const token = await this.authRepo.login({ email, password });
       const userInfo = await this.authRepo.getUserByEmail(email);
 
-      if (!userInfo) {
-        return appError('無法獲取用戶資訊', next, HttpStatus.NOT_FOUND);
-      }
-
       const responseData = {
         token,
         user: {
@@ -36,7 +32,6 @@ export class AuthController {
       res.status(HttpStatus.OK).json(successResponse(responseData, '登入成功'));
     } catch (error) {
       logger.error('登入失敗:', error);
-
       next(error);
     }
   }
@@ -45,7 +40,16 @@ export class AuthController {
     try {
       const userData = req.body;
       const newUser = await this.authRepo.signup(userData);
-      res.status(HttpStatus.CREATED).json(successResponse(newUser, '註冊成功'));
+      const token = await this.authRepo.login({ email: newUser.email, password: userData.password });
+      const userInfo = await this.authRepo.getUserByEmail(newUser.email);
+      const responseData = {
+        token,
+        user: {
+          name: userInfo.name,
+          avatar: userInfo.avatar,
+        },
+      };
+      res.status(HttpStatus.CREATED).json(successResponse(responseData, '註冊成功'));
     } catch (error) {
       logger.error('註冊失敗:', error);
       next(error);
