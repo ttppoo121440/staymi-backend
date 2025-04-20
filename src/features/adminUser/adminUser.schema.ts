@@ -19,6 +19,11 @@ export const adminUserSchema = z.object({
 });
 export const adminUserArraySchema = z.array(adminUserSchema);
 
+export const adminUserUpdateRoleSchema = adminUserSchema.pick({
+  id: true,
+  role: true,
+});
+
 export const adminUserResponseSchema = z.object({
   success: z.boolean(),
   message: z.string(),
