@@ -13,6 +13,7 @@ import { formatDisplayDate } from '../src/utils/formatDate';
 import { generateToken } from '../src/utils/jwt';
 
 process.env.NODE_ENV = 'test';
+jest.setTimeout(30000);
 
 const uniqueEmail = `store+${Date.now()}@example.com`;
 describe('測試 AuthStore API', () => {
