@@ -76,7 +76,7 @@ describe('測試 AuthStore API', () => {
 
   // 測試註冊功能
   describe('POST /api/v1/store/signup', () => {
-    it('應該成功註冊商家', async () => {
+    it('應該成功註冊商家 201', async () => {
       const res = await request(app).post('/api/v1/store/signup').send(signupData);
       console.log('應該成功註冊商家', res.body);
 
@@ -114,7 +114,7 @@ describe('測試 AuthStore API', () => {
       expect(loginRes.body.data.user.name).toBe(signupData.name); // 檢查登入回傳的使用者資料
     });
 
-    it('應該回傳信箱重複錯誤', async () => {
+    it('應該回傳信箱重複錯誤 409', async () => {
       // 先註冊一次
       await request(app).post('/api/v1/store/signup').send(signupData);
 
@@ -170,7 +170,7 @@ describe('測試 AuthStore API', () => {
       token = loginRes.body.data.token;
     });
 
-    it('應該成功更新商店資訊', async () => {
+    it('應該成功更新商店資訊 200', async () => {
       const updatedData = {
         title: 'Updated Store Title',
         description: 'Updated description',
@@ -191,7 +191,45 @@ describe('測試 AuthStore API', () => {
       expect(res.body.data.logo_url).toBe(updatedData.logo_url);
     });
 
-    it('應該回傳找不到資料錯誤', async () => {
+    it('應該回傳未授權錯誤 401', async () => {
+      const updatedData = {
+        title: 'Unauthorized Update',
+        description: 'Should fail',
+        logo_url: 'https://example.com/logo.png',
+        name: '測試使用者',
+        phone: '0912345678',
+        birthday: '2000-01-01',
+        gender: 'm',
+      };
+
+      const res = await request(app).put(`/api/v1/store`).send(updatedData);
+      console.log('未授權錯誤回傳:', res.body);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('未登入或 token 失效');
+    });
+
+    it('應該回傳權限不足錯誤 403', async () => {
+      const updatedData = {
+        title: 'Forbidden Update',
+        description: 'Should fail',
+        logo_url: 'https://example.com/logo.png',
+        name: '測試使用者',
+        phone: '0912345678',
+        birthday: '2000-01-01',
+        gender: 'm',
+      };
+
+      // 使用非 store 角色的 token
+      const fakeToken = generateToken({ id: randomUUID(), email: signupData.email, role: 'consumer' });
+      const res = await request(app).put(`/api/v1/store`).set('Authorization', `Bearer ${fakeToken}`).send(updatedData);
+      console.log('權限不足錯誤回傳:', res.body);
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toBe('無權限訪問此資源');
+    });
+
+    it('應該回傳找不到對應的商店資訊 404', async () => {
       const fakeStoreId = randomUUID();
       const token = generateToken({ id: fakeStoreId, email: signupData.email, role: 'store' });
       const res = await request(app)

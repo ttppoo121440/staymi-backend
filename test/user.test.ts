@@ -58,7 +58,7 @@ describe('使用者資料 API', () => {
   });
 
   describe('GET /api/v1/users/user-profile', () => {
-    it('成功取得使用者個人資料', async () => {
+    it('成功取得使用者個人資料 200', async () => {
       const res = await request(app).get('/api/v1/users/user-profile').set('Authorization', `Bearer ${token}`);
 
       expect(res.statusCode).toBe(200);
@@ -75,7 +75,7 @@ describe('使用者資料 API', () => {
   });
 
   describe('PUT /api/v1/users/user-profile', () => {
-    it('成功更新使用者個人資料', async () => {
+    it('成功更新使用者個人資料 200', async () => {
       const updateData = {
         name: '新的名字',
         phone: '0987654321',
@@ -95,7 +95,7 @@ describe('使用者資料 API', () => {
       expect(res.body.data.user.phone).toBe(updateData.phone);
     });
 
-    it('未提供 token 更新應該失敗', async () => {
+    it('未提供 token 更新應該失敗 401', async () => {
       const res = await request(app).put('/api/v1/users/user-profile').send({
         name: '誰都不是',
         phone: '0000000000',
@@ -108,7 +108,7 @@ describe('使用者資料 API', () => {
       expect(res.body.success).toBe(false);
     });
 
-    it('送出不合法的資料應該失敗 (Zod 驗證)', async () => {
+    it('送出不合法的資料應該失敗 (Zod 驗證) 400', async () => {
       const res = await request(app).put('/api/v1/users/user-profile').set('Authorization', `Bearer ${token}`).send({
         name: '', // 不可為空
         phone: 'abc', // 不合法電話
@@ -123,7 +123,7 @@ describe('使用者資料 API', () => {
       expect(errorMessage).toContain('名字至少2個字');
     });
 
-    it('送出空物件應該失敗', async () => {
+    it('送出空物件應該失敗 400', async () => {
       const res = await request(app).put('/api/v1/users/user-profile').set('Authorization', `Bearer ${token}`).send({});
       console.log('送出空物件應該失敗 res.body.message:', res.body.message);
       expect(res.statusCode).toBe(400);

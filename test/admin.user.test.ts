@@ -81,7 +81,7 @@ describe('後台 - 使用者查詢 API', () => {
   });
 
   describe('GET /api/v1/admin/users', () => {
-    it('成功取得所有使用者列表', async () => {
+    it('成功取得所有使用者列表 200', async () => {
       const res = await request(app).get('/api/v1/admin/users').set('Authorization', `Bearer ${token}`);
 
       expect(res.statusCode).toBe(200);
@@ -90,7 +90,7 @@ describe('後台 - 使用者查詢 API', () => {
       expect(res.body.data).toHaveProperty('pagination');
     });
 
-    it('使用 email 篩選查詢', async () => {
+    it('使用 email 篩選查詢 200', async () => {
       const res = await request(app)
         .get('/api/v1/admin/users')
         .query({ email: adminUser.email })
@@ -106,7 +106,7 @@ describe('後台 - 使用者查詢 API', () => {
       expect(users[0].email).toBe(adminUser.email);
     });
 
-    it('查詢黑名單用戶（應該為空）', async () => {
+    it('查詢黑名單用戶（應該為空）200', async () => {
       const res = await request(app)
         .get('/api/v1/admin/users?is_blacklisted=true')
         .set('Authorization', `Bearer ${token}`);
@@ -123,7 +123,7 @@ describe('後台 - 使用者查詢 API', () => {
       expect(res.body.success).toBe(false);
     });
 
-    it('非 admin 權限應被拒絕（模擬 consumer 登入）', async () => {
+    it('非 admin 權限應被拒絕（模擬 consumer 登入）403', async () => {
       const consumerEmail = `consumer+${Date.now()}@example.com`;
       const consumerUser = {
         email: consumerEmail,
@@ -146,7 +146,7 @@ describe('後台 - 使用者查詢 API', () => {
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('無權限');
+      expect(res.body.message).toBe('無權限訪問此資源');
 
       // 清除用戶資料
       const existing = await db.select().from(user).where(eq(user.email, consumerUser.email));
@@ -159,7 +159,7 @@ describe('後台 - 使用者查詢 API', () => {
   });
 
   describe('GET /api/v1/admin/users/:id', () => {
-    it('成功取得單一使用者資料', async () => {
+    it('成功取得單一使用者資料 200', async () => {
       // 先從資料庫取得該使用者 id
       const existingUser = await db.select().from(user).where(eq(user.email, adminUser.email));
       const userId = existingUser[0].id;
@@ -218,7 +218,7 @@ describe('後台 - 使用者查詢 API', () => {
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('無權限');
+      expect(res.body.message).toBe('無權限訪問此資源');
 
       // 清除
       const existing = await db.select().from(user).where(eq(user.email, consumerUser.email));
@@ -231,7 +231,7 @@ describe('後台 - 使用者查詢 API', () => {
   });
 
   describe('PUT /api/v1/admin/users/:id/role', () => {
-    it('成功修改使用者腳色為 consumer', async () => {
+    it('成功修改使用者腳色為 consumer 200', async () => {
       const existingUser = await db.select().from(user).where(eq(user.email, adminUser.email));
       const userId = existingUser[0].id;
 
@@ -322,7 +322,7 @@ describe('後台 - 使用者查詢 API', () => {
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('無權限');
+      expect(res.body.message).toBe('無權限訪問此資源');
 
       // 清除
       const existing = await db.select().from(user).where(eq(user.email, consumerUser.email));

@@ -56,7 +56,7 @@ describe('測試 Auth API', () => {
   });
 
   describe('POST /api/v1/users/signup', () => {
-    it('測試註冊使用者', async () => {
+    it('測試註冊使用者 201', async () => {
       const res = await request(app).post('/api/v1/users/signup').send(testUser);
       console.log('註冊 API 回傳:', res.body);
 
@@ -76,7 +76,7 @@ describe('測試 Auth API', () => {
       expect(loginRes.body.data.user.name).toBe(testUser.name); // 檢查登入回傳的使用者資料
     });
 
-    it('重複註冊應該回傳錯誤', async () => {
+    it('重複註冊應該回傳錯誤 409', async () => {
       const res = await request(app).post('/api/v1/users/signup').send(testUser);
 
       expect(res.statusCode).toBe(409);
@@ -111,7 +111,7 @@ describe('測試 Auth API', () => {
   });
 
   describe('POST /api/v1/users/login', () => {
-    it('成功登入', async () => {
+    it('成功登入 200', async () => {
       const res = await request(app)
         .post('/api/v1/users/login')
         .send({ email: testUser.email, password: testUser.password });
@@ -123,7 +123,7 @@ describe('測試 Auth API', () => {
       expect(res.body.data.user.name).toBe(testUser.name);
     });
 
-    it('密碼錯誤應該登入失敗', async () => {
+    it('密碼錯誤應該登入失敗 401', async () => {
       const res = await request(app)
         .post('/api/v1/users/login')
         .send({ email: testUser.email, password: 'WrongPassword' });
@@ -133,7 +133,7 @@ describe('測試 Auth API', () => {
       expect(res.body.message).toBe('密碼錯誤');
     });
 
-    it('帳號不存在應該登入失敗', async () => {
+    it('帳號不存在應該登入失敗 404', async () => {
       const res = await request(app)
         .post('/api/v1/users/login')
         .send({ email: 'nonexistent@example.com', password: 'any11111' });
@@ -156,7 +156,7 @@ describe('測試 Auth API', () => {
       console.log('登入後獲取的 token:', token);
     });
 
-    it('成功更改密碼', async () => {
+    it('成功更改密碼 200', async () => {
       const res = await request(app).put('/api/v1/users/change-password').set('Authorization', `Bearer ${token}`).send({
         oldPassword: testUser.password,
         newPassword: 'NewPassword123!',
@@ -177,7 +177,7 @@ describe('測試 Auth API', () => {
       testUser.password = 'NewPassword123!';
     });
 
-    it('新密碼和舊密碼相同應該回傳錯誤', async () => {
+    it('新密碼和舊密碼相同應該回傳錯誤 400', async () => {
       const res = await request(app).put('/api/v1/users/change-password').set('Authorization', `Bearer ${token}`).send({
         oldPassword: testUser.password,
         newPassword: testUser.password,
@@ -188,7 +188,7 @@ describe('測試 Auth API', () => {
       expect(res.body.message).toBe('新密碼不能與舊密碼相同');
     });
 
-    it('未提供 token 應該回傳錯誤', async () => {
+    it('未提供 token 應該回傳錯誤 401', async () => {
       const res = await request(app).put('/api/v1/users/change-password').send({
         oldPassword: testUser.password,
         newPassword: 'AnotherNewPassword123!',
@@ -197,7 +197,7 @@ describe('測試 Auth API', () => {
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('請提供有效的 Bearer Token');
+      expect(res.body.message).toBe('未登入或 token 失效');
     });
   });
 });
