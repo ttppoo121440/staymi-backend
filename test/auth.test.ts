@@ -58,10 +58,22 @@ describe('測試 Auth API', () => {
   describe('POST /api/v1/users/signup', () => {
     it('測試註冊使用者', async () => {
       const res = await request(app).post('/api/v1/users/signup').send(testUser);
+      console.log('註冊 API 回傳:', res.body);
+
       expect(res.statusCode).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toHaveProperty('id');
-      expect(res.body.data.email).toBe(testUser.email);
+      expect(res.body.data).toHaveProperty('token');
+      expect(res.body.data.user.name).toBe(testUser.name);
+
+      // 註冊成功後使用註冊的資訊自動登入
+      const loginRes = await request(app)
+        .post('/api/v1/users/login')
+        .send({ email: testUser.email, password: testUser.password });
+
+      expect(loginRes.statusCode).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.token).toBeDefined(); // 應該返回 token
+      expect(loginRes.body.data.user.name).toBe(testUser.name); // 檢查登入回傳的使用者資料
     });
 
     it('重複註冊應該回傳錯誤', async () => {
@@ -91,6 +103,7 @@ describe('測試 Auth API', () => {
         password: '12345678',
         // 少了 name、birthday、phone...等
       });
+
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('請輸入名字');
@@ -117,15 +130,18 @@ describe('測試 Auth API', () => {
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('密碼錯誤');
     });
 
     it('帳號不存在應該登入失敗', async () => {
       const res = await request(app)
         .post('/api/v1/users/login')
-        .send({ email: 'nonexistent@example.com', password: 'any' });
+        .send({ email: 'nonexistent@example.com', password: 'any11111' });
+      console.log('帳號不存在的回傳:', res.body);
 
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('用戶不存在');
     });
   });
 
