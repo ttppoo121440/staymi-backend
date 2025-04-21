@@ -27,7 +27,14 @@ describe('📤 Upload API 測試', () => {
       }); // 模擬上傳圖片
 
     expect(res.status).toBe(200);
-    expect(res.body.data).toBe('https://fake.cloudinary.com/fake-image.jpg');
+    expect(res.body.data.image.url).toBe('https://fake.cloudinary.com/fake-image.jpg');
+  });
+
+  it('沒有權限 401', async () => {
+    const res = await request(app).post('/api/v1/upload');
+    console.log('沒有權限 401 res.body:', res.body);
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('未登入或 token 失效');
   });
 
   it('沒有帶檔案 400', async () => {
