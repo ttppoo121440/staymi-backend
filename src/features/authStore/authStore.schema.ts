@@ -26,5 +26,9 @@ export const authStoreUpdateSchema = authStoreSignupSchema
     logo_url: z.string().optional(),
   });
 
+export const authStoreUploadLogoSchema = z.object({
+  logo_url: z.string({ message: '請上傳圖片' }),
+});
+
 export type AuthStoreSignupType = z.infer<typeof authStoreSignupSchema>;
 export type AuthStoreUpdateType = z.infer<typeof authStoreUpdateSchema>;
