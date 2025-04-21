@@ -21,6 +21,7 @@ export const jsonParseErrorHandler = (err: AppErrorType, req: Request, res: Resp
 
 // 全域錯誤處理中介軟體
 export const globalErrorHandler = (err: Error, req: Request, res: Response, _next: NextFunction): void => {
+  if (res.headersSent) return;
   if (err instanceof RepoError) {
     res.status(err.statusCode).json({
       success: false,
