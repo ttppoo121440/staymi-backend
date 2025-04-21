@@ -6,6 +6,7 @@ import { serverUrl } from '@/config/env';
 import { registerAdminUserRoutes } from './registry/adminUser.registry';
 import { registerAuthRoutes } from './registry/auth.registry';
 import { registerAuthStoreRoutes } from './registry/authStore.registry';
+import { registerImageUploadRoutes } from './registry/imageUpload.registry';
 import { registerUserRoutes } from './registry/user.registry';
 
 // 定義一個共用的 Bearer Token 安全設定常數
@@ -25,6 +26,7 @@ registerAuthRoutes(registry);
 registerUserRoutes(registry);
 registerAdminUserRoutes(registry);
 registerAuthStoreRoutes(registry);
+registerImageUploadRoutes(registry);
 
 // 註冊安全方案
 export function registerSecuritySchemes(registry: OpenAPIRegistry): void {
