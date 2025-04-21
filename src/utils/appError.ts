@@ -1,5 +1,3 @@
-import type { NextFunction } from 'express';
-
 export class RepoError extends Error {
   statusCode: number;
   status: 'fail' | 'error';
@@ -15,7 +13,6 @@ export class RepoError extends Error {
   }
 }
 
-export const appError = (message: string, next: NextFunction, statusCode = 400): void => {
-  const error = new RepoError(message, statusCode);
-  next(error);
+export const appError = (message: string, statusCode = 400): RepoError => {
+  return new RepoError(message, statusCode);
 };
