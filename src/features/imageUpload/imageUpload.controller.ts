@@ -20,7 +20,7 @@ export class ImageUploadController {
 
       console.log('🔥 req.file:', req.file);
       console.log('🔥 cloudinaryUrl:', cloudinaryUrl);
-      res.status(HttpStatus.OK).json(successResponse(cloudinaryUrl, '上傳成功'));
+      res.status(HttpStatus.OK).json(successResponse({ image: { url: cloudinaryUrl } }, '上傳成功'));
     } catch (err) {
       console.error('上傳錯誤:', err);
       if (err instanceof Error) {
