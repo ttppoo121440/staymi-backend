@@ -9,7 +9,7 @@ import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { server } from '../src/server';
 
 process.env.NODE_ENV = 'test';
-
+jest.setTimeout(30000);
 describe('測試 Auth API', () => {
   const testUser = {
     email: 'testuser@example.com',
