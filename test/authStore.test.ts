@@ -15,10 +15,9 @@ import { generateToken } from '../src/utils/jwt';
 process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
 
-const uniqueEmail = `store+${Date.now()}@example.com`;
 describe('測試 AuthStore API', () => {
   const signupData = {
-    email: uniqueEmail,
+    email: `store+${Date.now()}@example.com`,
     password: 'password123',
     title: 'My Store',
     description: 'A test store',
@@ -44,9 +43,7 @@ describe('測試 AuthStore API', () => {
       console.log(`beforeAll 清理測試用戶 ${existingUser.id}`);
     }
   });
-  beforeEach(() => {
-    signupData.email = `admin+${Date.now()}@example.com`;
-  });
+
   afterAll(async () => {
     const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
     if (existingUsers.length > 0) {
