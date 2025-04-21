@@ -42,5 +42,6 @@ export const AuthUpdatePasswordSchema = z.object({
 export type AuthLoginType = z.infer<typeof AuthLoginSchema>;
 export type AuthCreateType = z.infer<typeof AuthCreateSchema>;
 export type AuthResponseType = z.infer<typeof AuthResponseSchema>;
+export type AuthUpdatePasswordType = z.infer<typeof AuthUpdatePasswordSchema>;
 
 export type Role = (typeof roleEnumList)[number];
