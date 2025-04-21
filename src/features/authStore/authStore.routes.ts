@@ -13,13 +13,13 @@ authStoreRoutes.post('/login', authStoreController.storeLogin.bind(authStoreCont
 authStoreRoutes.put(
   '/uploadLogo',
   authMiddleware,
-  checkRolesMiddleware(['store']),
+  checkRolesMiddleware(['store', 'admin']),
   authStoreController.uploadLogo.bind(authStoreController),
 );
 authStoreRoutes.put(
   '/',
   authMiddleware,
-  checkRolesMiddleware(['store']),
+  checkRolesMiddleware(['store', 'admin']),
   authStoreController.updateStoreInfo.bind(authStoreController),
 );
 

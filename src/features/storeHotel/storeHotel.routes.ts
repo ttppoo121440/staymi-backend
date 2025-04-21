@@ -11,7 +11,7 @@ const storeHotelController = new StoreHotelController();
 storeHotelRoutes.post(
   '/',
   authMiddleware,
-  checkRolesMiddleware(['store']),
+  checkRolesMiddleware(['store', 'admin']),
   storeHotelController.createHotel.bind(storeHotelController),
 );
 
