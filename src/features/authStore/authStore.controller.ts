@@ -10,8 +10,7 @@ import { AuthRepo } from '../auth/auth.repo';
 import { AuthStoreRepo } from './authStore.repo';
 
 export class AuthStoreController {
-  private authStoreRepo = new AuthStoreRepo();
-  private authRepo = new AuthRepo();
+  constructor(private authStoreRepo = new AuthStoreRepo(), private authRepo = new AuthRepo()) {}
   public async signup(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userData = req.body;

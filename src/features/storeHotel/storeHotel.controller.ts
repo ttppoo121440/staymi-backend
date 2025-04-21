@@ -8,7 +8,7 @@ import { StoreHotelRepo } from './storeHotel.repo';
 import { hotelCreateSchema } from './storeHotel.schema';
 
 export class StoreHotelController {
-  private storeHotelRepo = new StoreHotelRepo();
+  constructor(private storeHotelRepo: StoreHotelRepo = new StoreHotelRepo()) {}
 
   async createHotel(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

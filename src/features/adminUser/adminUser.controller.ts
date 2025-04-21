@@ -10,7 +10,7 @@ import { AdminUserRepo } from './adminUser.repo';
 import { adminUserQuerySchema } from './adminUser.schema';
 
 export class AdminUserController {
-  private adminUserRepo = new AdminUserRepo();
+  constructor(private adminUserRepo = new AdminUserRepo()) {}
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsedQuery = adminUserQuerySchema.parse(req.query);
@@ -40,12 +40,12 @@ export class AdminUserController {
       const { role } = req.body;
 
       if (!role) {
-        return appError('請提供角色', next, HttpStatus.BAD_REQUEST);
+        next(appError('請提供角色', HttpStatus.BAD_REQUEST));
       }
 
       // 驗證角色是否有效
       if (!roleEnumList.includes(role)) {
-        return appError('無效的角色值', next, HttpStatus.BAD_REQUEST);
+        next(appError('無效的角色值', HttpStatus.BAD_REQUEST));
       }
 
       const updatedUser = await this.adminUserRepo.updateRole(id, role);

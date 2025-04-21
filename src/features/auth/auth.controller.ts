@@ -9,14 +9,14 @@ import logger from '@/utils/logger';
 import { AuthRepo } from './auth.repo';
 
 export class AuthController {
-  private authRepo = new AuthRepo();
+  constructor(private authRepo = new AuthRepo()) {}
 
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        return appError('請輸入信箱與密碼', next, HttpStatus.BAD_REQUEST);
+        next(appError('請輸入信箱與密碼', HttpStatus.BAD_REQUEST));
       }
 
       const token = await this.authRepo.login({ email, password });
@@ -60,12 +60,12 @@ export class AuthController {
       const { oldPassword, newPassword } = req.body;
 
       if (!oldPassword || !newPassword) {
-        return appError('請提供舊密碼和新密碼', next, HttpStatus.BAD_REQUEST);
+        next(appError('請提供舊密碼和新密碼', HttpStatus.BAD_REQUEST));
       }
 
       const userId: string = (req.user as JwtUserPayload).id;
       if (!userId) {
-        return appError('用戶不存在', next, HttpStatus.NOT_FOUND);
+        next(appError('用戶不存在', HttpStatus.NOT_FOUND));
       }
 
       await this.authRepo.changePassword(userId, oldPassword, newPassword);

@@ -7,7 +7,7 @@ import { successResponse } from '@/utils/appResponse';
 import { UserRepo } from './user.repo';
 
 export class UserController {
-  private userRepo = new UserRepo();
+  constructor(private userRepo: UserRepo = new UserRepo()) {}
   async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId: string = (req.user as JwtUserPayload).id;
