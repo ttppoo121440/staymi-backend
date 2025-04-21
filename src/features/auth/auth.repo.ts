@@ -9,13 +9,11 @@ import { RepoError } from '@/utils/appError';
 import { generateToken } from '@/utils/jwt';
 import { comparePassword, hashPassword } from '@/utils/passwordUtils';
 
-import type { AuthCreateType, AuthLoginType, Role } from './auth.schema';
-import { AuthCreateSchema, AuthLoginSchema, AuthUpdatePasswordSchema } from './auth.schema';
+import type { AuthCreateType, AuthLoginType, AuthUpdatePasswordType, Role } from './auth.schema';
 
 export class AuthRepo {
   async login(data: AuthLoginType): Promise<string> {
-    const validatedData = AuthLoginSchema.parse(data);
-    const result = await db.select().from(user).where(eq(user.email, validatedData.email));
+    const result = await db.select().from(user).where(eq(user.email, data.email));
 
     if (result.length === 0) {
       throw new RepoError('用戶不存在', HttpStatus.NOT_FOUND);
@@ -23,7 +21,7 @@ export class AuthRepo {
 
     const foundUser = result[0];
 
-    const isPasswordValid = await comparePassword(validatedData.password, foundUser.password);
+    const isPasswordValid = await comparePassword(data.password, foundUser.password);
 
     if (!isPasswordValid) {
       throw new RepoError('密碼錯誤', HttpStatus.UNAUTHORIZED);
@@ -42,10 +40,9 @@ export class AuthRepo {
     return userToken;
   }
   async signup(data: AuthCreateType): Promise<AuthCreateType> {
-    const validatedData = AuthCreateSchema.parse(data);
     const hashedPassword = await hashPassword(data.password);
 
-    const existingUser = await this.checkEmail(validatedData.email);
+    const existingUser = await this.checkEmail(data.email);
 
     if (existingUser) {
       throw new RepoError('信箱已被註冊', HttpStatus.CONFLICT);
@@ -55,26 +52,26 @@ export class AuthRepo {
         const [insertedUser] = await tx
           .insert(user)
           .values({
-            email: validatedData.email,
+            email: data.email,
             password: hashedPassword,
-            provider: validatedData.provider ?? null,
-            provider_id: validatedData.provider_id ?? null,
+            provider: data.provider ?? null,
+            provider_id: data.provider_id ?? null,
             role: 'consumer' as Role,
           })
           .returning({ id: user.id });
 
         await tx.insert(user_profile).values({
           user_id: insertedUser.id,
-          name: validatedData.name,
-          phone: validatedData.phone,
-          birthday: validatedData.birthday,
-          gender: validatedData.gender,
-          avatar: validatedData.avatar ?? null,
+          name: data.name,
+          phone: data.phone,
+          birthday: data.birthday,
+          gender: data.gender,
+          avatar: data.avatar ?? null,
         });
 
         return {
           id: insertedUser.id,
-          ...validatedData,
+          ...data,
         };
       });
       return result;
@@ -110,11 +107,7 @@ export class AuthRepo {
       avatar: result[0].avatar ?? '',
     };
   }
-  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
-    const validatedData = AuthUpdatePasswordSchema.parse({
-      oldPassword,
-      newPassword,
-    });
+  async changePassword(userId: string, data: AuthUpdatePasswordType): Promise<void> {
     const result = await db.select().from(user).where(eq(user.id, userId));
     if (result.length === 0) {
       throw new RepoError('用戶不存在', HttpStatus.NOT_FOUND);
@@ -123,15 +116,15 @@ export class AuthRepo {
     if (!foundUser.password) {
       throw new RepoError('用戶密碼不存在，無法更改密碼', HttpStatus.NOT_FOUND);
     }
-    const isPasswordValid = await comparePassword(validatedData.oldPassword, foundUser.password);
+    const isPasswordValid = await comparePassword(data.oldPassword, foundUser.password);
     if (!isPasswordValid) {
       throw new RepoError('舊密碼錯誤', HttpStatus.UNAUTHORIZED);
     }
-    const isSamePassword = await comparePassword(validatedData.newPassword, foundUser.password);
+    const isSamePassword = await comparePassword(data.newPassword, foundUser.password);
     if (isSamePassword) {
       throw new RepoError('新密碼不能與舊密碼相同', HttpStatus.BAD_REQUEST);
     }
-    const hashedPassword = await hashPassword(validatedData.newPassword);
+    const hashedPassword = await hashPassword(data.newPassword);
     await db
       .update(user)
       .set({
