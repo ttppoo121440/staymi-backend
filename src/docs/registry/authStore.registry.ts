@@ -259,4 +259,141 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
       },
     },
   });
+
+  registry.registerPath({
+    tags: ['AuthStore'],
+    method: 'put',
+    path: '/api/v1/store/uploadLogo',
+    summary: '上傳商家 LOGO',
+    ...bearerSecurity,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                logo_url: {
+                  type: 'string',
+                  format: 'url',
+                  description: '商家 LOGO 的 URL',
+                },
+              },
+              required: ['logo_url'],
+            },
+            examples: {
+              'application/json': {
+                summary: '上傳 LOGO 範例',
+                value: {
+                  logo_url: 'https://example.com/logo.png',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '上傳成功',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                message: { type: 'string', example: '上傳成功' },
+                data: {
+                  type: 'object',
+                  properties: {
+                    logo_url: { type: 'string', format: 'url', example: 'https://example.com/logo.png' },
+                  },
+                },
+              },
+            },
+            examples: {
+              'application/json': {
+                summary: '上傳成功範例',
+                value: {
+                  success: true,
+                  message: '上傳成功',
+                  data: {
+                    logo_url: 'https://example.com/logo.png',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: '格式錯誤或缺少 LOGO URL',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '格式錯誤或缺少 LOGO URL 範例',
+                value: {
+                  message: '請上傳圖片',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      401: {
+        description: '未登入或 token 失效',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '未登入或 token 失效範例',
+                value: {
+                  message: '未登入或 token 失效',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      404: {
+        description: '找不到對應的商店資訊',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '找不到商店資訊範例',
+                value: {
+                  message: '找不到對應的商店資訊',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      500: {
+        description: '伺服器錯誤',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '伺服器錯誤範例',
+                value: {
+                  message: '伺服器發生錯誤，請稍後再試',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
 };
