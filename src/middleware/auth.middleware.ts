@@ -21,7 +21,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded as { id: string; email: string; role: string };
+    req.user = decoded as { id: string; email: string; role: string; brand_id?: string };
+
     next();
   } catch (error) {
     console.error('Token 解析錯誤:', error);
