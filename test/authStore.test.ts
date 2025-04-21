@@ -7,6 +7,7 @@ import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 import { brand } from '../src/database/schemas/brand.schema';
 import { user } from '../src/database/schemas/user.schema';
+import { user_brand } from '../src/database/schemas/user_brand.schema';
 import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { server } from '../src/server';
 import { formatDisplayDate } from '../src/utils/formatDate';
@@ -36,6 +37,7 @@ describe('測試 AuthStore API', () => {
     const existingUser = existingUsers[0];
 
     if (existingUsers.length > 0) {
+      await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
       await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
       await db.delete(user).where(eq(user.id, existingUser.id)).execute();
@@ -48,6 +50,7 @@ describe('測試 AuthStore API', () => {
     const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
     if (existingUsers.length > 0) {
       const existingUser = existingUsers[0];
+      await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
       await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
       await db.delete(user).where(eq(user.id, existingUser.id)).execute();
@@ -64,6 +67,7 @@ describe('測試 AuthStore API', () => {
     const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
     if (existingUsers.length > 0) {
       const existingUser = existingUsers[0];
+      await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
       await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
       await db.delete(user).where(eq(user.id, existingUser.id)).execute();
@@ -75,12 +79,11 @@ describe('測試 AuthStore API', () => {
   describe('POST /api/v1/store/signup', () => {
     it('應該成功註冊商家 201', async () => {
       const res = await request(app).post('/api/v1/store/signup').send(signupData);
-      console.log('應該成功註冊商家', res.body);
-
       expect(res.status).toBe(201);
       expect(res.body.message).toBe('註冊成功');
       expect(res.body.data).toHaveProperty('token');
       expect(res.body.data.user.name).toBe(signupData.name);
+      console.log('註冊成功的回傳:', res.body);
 
       // 驗證 user 是否存在
       const users = await db.select().from(user).where(eq(user.email, signupData.email));
@@ -91,18 +94,25 @@ describe('測試 AuthStore API', () => {
       expect(brands.length).toBe(1);
       expect(brands[0].title).toBe(signupData.title);
 
-      // ✅ 驗證 user_profile 是否存在
+      // 驗證 user_profile 是否存在
       const profiles = await db.select().from(user_profile).where(eq(user_profile.user_id, users[0].id));
       expect(profiles.length).toBe(1);
       expect(profiles[0].name).toBe(signupData.name);
       expect(profiles[0].phone).toBe(signupData.phone);
       expect(formatDisplayDate(profiles[0]?.birthday)).toBe(formatDisplayDate(signupData.birthday));
-
       expect(profiles[0].gender).toBe(signupData.gender);
+
+      // 驗證 user_brand 是否存在
+      const userBrands = await db.select().from(user_brand).where(eq(user_brand.user_id, users[0].id));
+      expect(userBrands.length).toBe(1);
+      expect(userBrands[0].brand_id).toBe(brands[0].id);
+      expect(userBrands[0].user_id).toBe(users[0].id);
+      expect(userBrands[0].role).toBe('owner'); // 預設角色應為 'owner'
+      expect(userBrands[0].is_active).toBe(true); // 預設為啟用狀態
 
       // 註冊成功後使用註冊的資訊自動登入
       const loginRes = await request(app)
-        .post('/api/v1/users/login')
+        .post('/api/v1/store/login')
         .send({ email: signupData.email, password: signupData.password });
 
       expect(loginRes.statusCode).toBe(200);
@@ -158,7 +168,7 @@ describe('測試 AuthStore API', () => {
       // 註冊帳號
       await request(app).post('/api/v1/store/signup').send(signupData);
       // 登入帳號
-      const loginRes = await request(app).post('/api/v1/users/login').send({
+      const loginRes = await request(app).post('/api/v1/store/login').send({
         email: signupData.email,
         password: signupData.password,
       });
@@ -244,6 +254,70 @@ describe('測試 AuthStore API', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.message).toBe('找不到對應的商店資訊');
+    });
+  });
+
+  // 測試上傳 LOGO 功能
+  describe('PUT /api/v1/store/uploadLogo', () => {
+    let token: string;
+
+    beforeAll(async () => {
+      // 註冊帳號
+      await request(app).post('/api/v1/store/signup').send(signupData);
+      // 登入帳號
+      const loginRes = await request(app).post('/api/v1/store/login').send({
+        email: signupData.email,
+        password: signupData.password,
+      });
+
+      expect(loginRes.status).toBe(200);
+      token = loginRes.body.data.token;
+    });
+
+    it('應該成功上傳 LOGO 200', async () => {
+      const logoUrl =
+        'https://res.cloudinary.com/dwq2ehew4/image/upload/v1745209931/stay-mi/image/b38ba5df-3cc5-43d9-bcad-87a57954d7fc/pexels-photo-13180141.jpg';
+      const res = await request(app)
+        .put('/api/v1/store/uploadLogo')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ logo_url: logoUrl });
+
+      console.log('應該成功上傳 LOGO:', res.body);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('上傳成功');
+      expect(res.body.data.logo_url).toBe(logoUrl);
+    });
+
+    it('缺少 LOGO URL 應回傳 400', async () => {
+      const res = await request(app).put('/api/v1/store/uploadLogo').set('Authorization', `Bearer ${token}`).send({});
+
+      console.log('缺少 LOGO URL 的回傳:', res.body);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('請上傳圖片');
+    });
+
+    it('找不到對應的商店資訊應回傳 404', async () => {
+      const fakeToken = generateToken({ id: randomUUID(), email: signupData.email, role: 'store' });
+      const res = await request(app)
+        .put('/api/v1/store/uploadLogo')
+        .set('Authorization', `Bearer ${fakeToken}`)
+        .send({ logo_url: 'https://example.com/logo.png' });
+
+      console.log('找不到商店資訊的回傳:', res.body);
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('找不到對應的商店資訊');
+    });
+
+    it('未登入應回傳 401', async () => {
+      const res = await request(app).put('/api/v1/store/uploadLogo').send({ logo_url: 'https://example.com/logo.png' });
+
+      console.log('未登入的回傳:', res.body);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('未登入或 token 失效');
     });
   });
 });
