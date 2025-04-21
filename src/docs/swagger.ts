@@ -36,6 +36,10 @@ export function registerSecuritySchemes(registry: OpenAPIRegistry): void {
   });
 }
 
+if (!serverUrl) {
+  throw new Error('❌ Missing serverUrl in environment variables');
+}
+
 // 生成 OpenAPI 文檔
 const generator = new OpenApiGeneratorV3(registry.definitions);
 export const openApiDocument = generator.generateDocument({
@@ -50,5 +54,5 @@ export const openApiDocument = generator.generateDocument({
       bearerAuth: [],
     },
   ],
-  servers: [{ url: serverUrl as string }],
+  servers: [{ url: serverUrl }],
 });
