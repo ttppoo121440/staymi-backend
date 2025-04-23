@@ -193,9 +193,9 @@ describe('測試 AuthStore API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('更新成功');
-      expect(res.body.data.title).toBe(updatedData.title);
-      expect(res.body.data.description).toBe(updatedData.description);
-      expect(res.body.data.logo_url).toBe(updatedData.logo_url);
+      expect(res.body.data.store.title).toBe(updatedData.title);
+      expect(res.body.data.store.description).toBe(updatedData.description);
+      expect(res.body.data.store.logo_url).toBe(updatedData.logo_url);
     });
 
     it('應該回傳未授權錯誤 401', async () => {
@@ -286,7 +286,7 @@ describe('測試 AuthStore API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('上傳成功');
-      expect(res.body.data.logo_url).toBe(logoUrl);
+      expect(res.body.data.store.logo_url).toBe(logoUrl);
     });
 
     it('缺少 LOGO URL 應回傳 400', async () => {
