@@ -168,8 +168,8 @@ describe('後台 - 使用者查詢 API', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.users).toHaveProperty('id', userId);
-      expect(res.body.data.users.email).toBe(adminUser.email);
+      expect(res.body.data.user).toHaveProperty('id', userId);
+      expect(res.body.data.user.email).toBe(adminUser.email);
     });
 
     it('查無此使用者時應回傳 404', async () => {
