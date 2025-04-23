@@ -1,13 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { HttpStatus } from '@/types/http-status.enum';
-import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
-import { roleEnumList } from '../auth/auth.schema';
-
 import { AdminUserRepo } from './adminUser.repo';
-import { adminUserQuerySchema } from './adminUser.schema';
+import {
+  adminUserToDTO,
+  adminUserQuerySchema,
+  adminUserArrayToDTO,
+  adminUserUpdateRoleSchema,
+} from './adminUser.schema';
 
 export class AdminUserController {
   constructor(private adminUserRepo = new AdminUserRepo()) {}
@@ -17,8 +19,8 @@ export class AdminUserController {
       const { email = '', is_blacklisted, currentPage, perPage } = parsedQuery;
 
       const users = await this.adminUserRepo.getAll(email, is_blacklisted, currentPage, perPage);
-      console.log(users);
-      res.status(HttpStatus.OK).json(successResponse(users, '獲取所有會員資料成功'));
+      const usersToDTO = adminUserArrayToDTO.parse(users);
+      res.status(HttpStatus.OK).json(successResponse(usersToDTO, '獲取所有會員資料成功'));
     } catch (error) {
       console.error('獲取用戶資料失敗:', error);
       next(error);
@@ -28,7 +30,9 @@ export class AdminUserController {
     try {
       const { id } = req.params;
       const user = await this.adminUserRepo.getById(id);
-      res.status(HttpStatus.OK).json(successResponse(user, '獲取用戶資料成功'));
+      const dtoData = adminUserToDTO.parse(user);
+
+      res.status(HttpStatus.OK).json(successResponse(dtoData, '獲取用戶資料成功'));
     } catch (error) {
       console.error('獲取用戶資料失敗:', error);
       next(error);
@@ -37,18 +41,9 @@ export class AdminUserController {
   async updateRole(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const { role } = req.body;
+      const validatedData = adminUserUpdateRoleSchema.parse(req.body);
 
-      if (!role) {
-        next(appError('請提供角色', HttpStatus.BAD_REQUEST));
-      }
-
-      // 驗證角色是否有效
-      if (!roleEnumList.includes(role)) {
-        next(appError('無效的角色值', HttpStatus.BAD_REQUEST));
-      }
-
-      const updatedUser = await this.adminUserRepo.updateRole(id, role);
+      const updatedUser = await this.adminUserRepo.updateRole(id, validatedData);
       res.status(HttpStatus.OK).json(successResponse(updatedUser, '更新用戶角色成功'));
     } catch (error) {
       console.error('更新用戶角色失敗:', error);

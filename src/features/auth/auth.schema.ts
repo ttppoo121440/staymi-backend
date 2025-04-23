@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { parseZodDate } from '@/utils/formatDate';
+import { zDateOrDefault } from '@/utils/formatDate';
 
 export const roleEnumList = ['consumer', 'store', 'admin'] as const;
 
@@ -10,14 +10,14 @@ export const AuthResponseSchema = z.object({
   email: z.string({ message: '請輸入信箱' }).email({ message: '信箱格式錯誤' }),
   password: z.string({ message: '請輸入密碼' }).min(8, { message: '密碼至少8個字' }),
   phone: z.string({ message: '請輸入電話號碼' }),
-  birthday: parseZodDate(),
+  birthday: zDateOrDefault(),
   gender: z.enum(['f', 'm'], { message: '請選擇性別' }),
   avatar: z.string().optional(),
   provider: z.string().optional(),
   provider_id: z.string().optional(),
   role: z.enum(roleEnumList),
-  created_at: parseZodDate(),
-  updated_at: parseZodDate(),
+  created_at: zDateOrDefault(),
+  updated_at: zDateOrDefault(),
 });
 
 export const AuthArrayResponseSchema = z.array(AuthResponseSchema);
@@ -28,6 +28,10 @@ export const AuthCreateSchema = AuthResponseSchema.omit({
   created_at: true,
   updated_at: true,
 });
+
+export const authCreateToDTO = AuthCreateSchema.transform((data) => ({
+  ...data,
+}));
 
 export const AuthLoginSchema = AuthResponseSchema.pick({
   email: true,

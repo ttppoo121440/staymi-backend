@@ -7,7 +7,7 @@ import { successResponse } from '@/utils/appResponse';
 import logger from '@/utils/logger';
 
 import { AuthRepo } from './auth.repo';
-import { AuthCreateSchema, AuthLoginSchema, AuthUpdatePasswordSchema } from './auth.schema';
+import { authCreateToDTO, AuthLoginSchema, AuthUpdatePasswordSchema } from './auth.schema';
 
 export class AuthController {
   constructor(private authRepo = new AuthRepo()) {}
@@ -39,7 +39,7 @@ export class AuthController {
 
   async signup(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validatedData = AuthCreateSchema.parse(req.body);
+      const validatedData = authCreateToDTO.parse(req.body);
       const newUser = await this.authRepo.signup(validatedData);
       const token = await this.authRepo.login({ email: newUser.email, password: validatedData.password });
       const userInfo = await this.authRepo.getUserByEmail(newUser.email);

@@ -13,19 +13,13 @@ import { comparePassword, hashPassword } from '@/utils/passwordUtils';
 
 import { AuthLoginType, Role } from '../auth/auth.schema';
 
-import {
-  authStoreSignupSchema,
-  AuthStoreSignupType,
-  authStoreUpdateSchema,
-  AuthStoreUpdateType,
-} from './authStore.schema';
+import { AuthStoreSignupType, AuthStoreUpdateType } from './authStore.schema';
 
 export class AuthStoreRepo {
   async signup(data: AuthStoreSignupType): Promise<AuthStoreSignupType> {
-    const validatedData = authStoreSignupSchema.parse(data);
     const hashedPassword = await hashPassword(data.password);
 
-    const existingUser = await this.checkEmail(validatedData.email);
+    const existingUser = await this.checkEmail(data.email);
 
     if (existingUser) {
       throw new RepoError('信箱已被註冊', HttpStatus.CONFLICT);
@@ -35,7 +29,7 @@ export class AuthStoreRepo {
         const [insertedStore] = await tx
           .insert(user)
           .values({
-            email: validatedData.email,
+            email: data.email,
             password: hashedPassword,
             role: 'store' as Role,
           })
@@ -45,17 +39,17 @@ export class AuthStoreRepo {
           .insert(brand)
           .values({
             user_id: insertedStore.id,
-            title: validatedData.title,
-            description: validatedData.description,
+            title: data.title,
+            description: data.description,
           })
           .returning({ id: brand.id });
 
         await tx.insert(user_profile).values({
           user_id: insertedStore.id,
-          name: validatedData.name,
-          phone: validatedData.phone,
-          birthday: validatedData.birthday,
-          gender: validatedData.gender,
+          name: data.name,
+          phone: data.phone,
+          birthday: data.birthday,
+          gender: data.gender,
         });
 
         await tx.insert(user_brand).values({
@@ -66,7 +60,7 @@ export class AuthStoreRepo {
         return {
           id: insertedStore.id,
           brand_id: insertedBrand.id,
-          ...validatedData,
+          ...data,
         };
       });
       return result;
@@ -112,7 +106,7 @@ export class AuthStoreRepo {
     return result.length > 0;
   }
 
-  async updateStoreInfo(user_id: string, data: AuthStoreUpdateType): Promise<AuthStoreUpdateType> {
+  async updateStoreInfo(user_id: string, data: AuthStoreUpdateType): Promise<{ store: AuthStoreUpdateType }> {
     const { ...updateFields } = data;
     try {
       const result = await db.transaction(async (tx) => {
@@ -148,12 +142,12 @@ export class AuthStoreRepo {
         const [updatedBrand] = updatedBrandResult;
         const [updatedProfile] = updatedProfileResult;
 
-        const parsed = authStoreUpdateSchema.parse({
-          ...updatedBrand,
-          ...updatedProfile,
-        });
-
-        return parsed;
+        return {
+          store: {
+            ...updatedBrand,
+            ...updatedProfile,
+          } as AuthStoreUpdateType,
+        };
       });
 
       return result;
@@ -165,7 +159,7 @@ export class AuthStoreRepo {
       throw new RepoError('更新商店資訊失敗，請稍後再試', HttpStatus.SERVICE_UNAVAILABLE);
     }
   }
-  async uploadLogo(user_id: string, logo_url: string): Promise<{ id: string; logo_url: string }> {
+  async uploadLogo(user_id: string, logo_url: string): Promise<{ store: { id: string; logo_url: string } }> {
     try {
       const result = await db
         .update(brand)
@@ -182,7 +176,9 @@ export class AuthStoreRepo {
       if (!updatedBrand.logo_url) {
         throw new RepoError('Logo URL 不可為空', HttpStatus.BAD_REQUEST);
       }
-      return { id: updatedBrand.id, logo_url: updatedBrand.logo_url };
+      return {
+        store: { id: updatedBrand.id, logo_url: updatedBrand.logo_url },
+      };
     } catch (error) {
       console.error('上傳商店 Logo 失敗:', error);
       if (error instanceof RepoError) {

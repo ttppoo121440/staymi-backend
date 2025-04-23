@@ -1,26 +1,58 @@
 import { z } from 'zod';
 
-import { formatDateStringZod } from '@/utils/formatDate';
+import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
 export const adminUserSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(50),
   email: z.string().email(),
   phone: z.string(),
-  birthday: formatDateStringZod(),
+  birthday: zDateOrDefault(),
   gender: z.enum(['f', 'm'], { message: '請選擇性別' }),
   avatar: z.string().nullable().optional(),
   provider: z.string().optional(),
   provider_id: z.string().optional(),
-  role: z.enum(['consumer', 'store', 'admin']),
+  role: z.enum(['consumer', 'store', 'admin'], { message: '無效的角色值' }),
   is_blacklisted: z.boolean(),
-  createdAt: formatDateStringZod(),
-  updatedAt: formatDateStringZod(),
+  createdAt: zDateOrDefault(),
+  updatedAt: zDateOrDefault(),
 });
 export const adminUserArraySchema = z.array(adminUserSchema);
 
+export const adminUserToDTO = z
+  .object({
+    user: adminUserSchema,
+  })
+  .transform((data) => ({
+    user: {
+      ...data.user,
+      birthday: formatDisplayDate(data.user.birthday),
+      createdAt: formatDisplayDate(data.user.createdAt),
+      updatedAt: formatDisplayDate(data.user.updatedAt),
+    },
+  }));
+
+export const adminUserArrayToDTO = z
+  .object({
+    users: adminUserArraySchema,
+    pagination: z.object({
+      currentPage: z.number(),
+      perPage: z.number(),
+      totalPages: z.number(),
+      totalItems: z.number(),
+    }),
+  })
+  .transform((data) => ({
+    users: data.users.map((user) => ({
+      ...user,
+      birthday: formatDisplayDate(user.birthday),
+      createdAt: formatDisplayDate(user.createdAt),
+      updatedAt: formatDisplayDate(user.updatedAt),
+    })),
+    pagination: data.pagination,
+  }));
+
 export const adminUserUpdateRoleSchema = adminUserSchema.pick({
-  id: true,
   role: true,
 });
 
@@ -50,3 +82,4 @@ export type adminUserType = z.infer<typeof adminUserSchema>;
 export type adminUserArrayType = z.infer<typeof adminUserArraySchema>;
 export type adminUserResponseType = z.infer<typeof adminUserResponseSchema>;
 export type adminUserQueryType = z.infer<typeof adminUserQuerySchema>;
+export type adminUserUpdateRoleType = z.infer<typeof adminUserUpdateRoleSchema>;

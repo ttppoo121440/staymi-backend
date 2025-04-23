@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { parseZodDate } from '@/utils/formatDate';
+import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
 export const authStoreSignupSchema = z.object({
   email: z.string({ message: '請輸入信箱' }).email({ message: '信箱格式錯誤' }),
@@ -9,7 +9,7 @@ export const authStoreSignupSchema = z.object({
   description: z.string({ message: '請輸入商店描述' }),
   name: z.string({ message: '請輸入名字' }).min(2, { message: '名字至少2個字' }).max(50, { message: '名字最多50個字' }),
   phone: z.string({ message: '請輸入電話號碼' }),
-  birthday: parseZodDate(),
+  birthday: zDateOrDefault(),
   gender: z.enum(['f', 'm'], { message: '請選擇性別' }),
 });
 
@@ -25,6 +25,17 @@ export const authStoreUpdateSchema = authStoreSignupSchema
   .extend({
     logo_url: z.string().optional(),
   });
+
+export const authStoreUpdateToDTO = z
+  .object({
+    store: authStoreUpdateSchema,
+  })
+  .transform((data) => ({
+    store: {
+      ...data.store,
+      birthday: formatDisplayDate(data.store.birthday),
+    },
+  }));
 
 export const authStoreUploadLogoSchema = z.object({
   logo_url: z.string({ message: '請上傳圖片' }),

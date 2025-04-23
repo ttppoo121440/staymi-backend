@@ -9,7 +9,12 @@ import { AuthRepo } from '../auth/auth.repo';
 import { AuthLoginSchema } from '../auth/auth.schema';
 
 import { AuthStoreRepo } from './authStore.repo';
-import { authStoreSignupSchema, authStoreUpdateSchema, authStoreUploadLogoSchema } from './authStore.schema';
+import {
+  authStoreSignupSchema,
+  authStoreUpdateSchema,
+  authStoreUpdateToDTO,
+  authStoreUploadLogoSchema,
+} from './authStore.schema';
 
 export class AuthStoreController {
   constructor(private authStoreRepo = new AuthStoreRepo(), private authRepo = new AuthRepo()) {}
@@ -54,12 +59,10 @@ export class AuthStoreController {
     try {
       const validatedData = authStoreUpdateSchema.parse(req.body);
       const userId: string = (req.user as JwtUserPayload).id;
-      const brandId: string = (req.user as JwtUserPayload).brand_id ?? '';
-
-      console.log('brandId---------------------------:', brandId);
-
       const updatedUser = await this.authStoreRepo.updateStoreInfo(userId, validatedData);
-      res.status(HttpStatus.OK).json(successResponse(updatedUser, '更新成功'));
+      const dtoData = authStoreUpdateToDTO.parse(updatedUser);
+
+      res.status(HttpStatus.OK).json(successResponse(dtoData, '更新成功'));
     } catch (error) {
       logger.error('更新失敗:', error);
       next(error);

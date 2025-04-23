@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { parseZodDate } from '@/utils/formatDate';
+import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
 const user_profileBaseSchema = z.object({
   id: z.string().uuid(),
@@ -13,11 +13,31 @@ export const user_profileSchema = user_profileBaseSchema.extend({
   email: z.string({ message: '請輸入信箱' }).email({ message: '信箱格式錯誤' }),
 });
 
+export const user_profileToDTO = z
+  .object({
+    user: user_profileSchema,
+  })
+  .transform((data) => ({
+    user: {
+      ...data.user,
+    },
+  }));
+
 export const user_profileUpdateSchema = user_profileBaseSchema.omit({ id: true, user_id: true }).extend({
-  birthday: parseZodDate(),
+  birthday: zDateOrDefault(),
   gender: z.enum(['f', 'm'], { errorMap: () => ({ message: '性別格式錯誤' }) }),
-  avatar: z.string().optional(),
 });
+
+export const user_profileUpdateToDTO = z
+  .object({
+    user: user_profileUpdateSchema,
+  })
+  .transform((data) => ({
+    user: {
+      ...data.user,
+      birthday: formatDisplayDate(data.user.birthday),
+    },
+  }));
 
 export type user_profileType = z.infer<typeof user_profileSchema>;
 export type user_profileUpdateType = z.infer<typeof user_profileUpdateSchema>;

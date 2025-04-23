@@ -9,13 +9,7 @@ import { PaginatedQuery, paginateQuery } from '@/utils/pagination';
 
 import { Role } from '../auth/auth.schema';
 
-import {
-  adminUserArraySchema,
-  adminUserArrayType,
-  adminUserSchema,
-  adminUserType,
-  adminUserUpdateRoleSchema,
-} from './adminUser.schema';
+import { adminUserArrayType, adminUserType, adminUserUpdateRoleType } from './adminUser.schema';
 
 export class AdminUserRepo {
   async getAll(
@@ -67,11 +61,11 @@ export class AdminUserRepo {
     );
 
     return {
-      users: adminUserArraySchema.parse(data),
+      users: data as unknown as adminUserArrayType,
       pagination,
     };
   }
-  async getById(id: string): Promise<{ users: adminUserType }> {
+  async getById(id: string): Promise<{ user: adminUserType }> {
     const userData = await db
       .select({
         id: user.id,
@@ -95,17 +89,17 @@ export class AdminUserRepo {
     if (userData.length === 0) {
       throw new RepoError('查無此使用者', HttpStatus.NOT_FOUND);
     }
-    return { users: adminUserSchema.parse(userData[0]) };
+    return {
+      user: {
+        ...userData[0],
+      },
+    };
   }
-  async updateRole(id: string, role: Role): Promise<{ user: { id: string; role: Role } }> {
-    const validatedData = adminUserUpdateRoleSchema.parse({
-      id,
-      role,
-    });
+  async updateRole(id: string, data: adminUserUpdateRoleType): Promise<{ user: { id: string; role: Role } }> {
     const userData = await db
       .update(user)
-      .set({ role: validatedData.role as Role })
-      .where(eq(user.id, validatedData.id))
+      .set({ role: data.role as Role })
+      .where(eq(user.id, id))
       .returning()
       .execute();
 
