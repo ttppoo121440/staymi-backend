@@ -50,8 +50,16 @@ export const registerAuthRoutes = (registry: OpenAPIRegistry): void => {
               'application/json': {
                 summary: '註冊成功範例',
                 value: {
-                  message: '註冊成功',
-                  status: true,
+                  success: true,
+                  message: '登入成功',
+                  data: {
+                    token:
+                      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk4ZWMyODFlLTA5YzEtNGNhYS1iNmUwLTM5Y2UxNWQwOThiNCIsImVtYWlsIjoiZXhhbXBsZUBnbWFpbC5jb20iLCJpYXQiOjE3NDQ0MzQzMjcsImV4cCI6MTc0NDQ3NzUyN30.Q2NXxBXhGjAAC0RRqJGOeuYkRbWoQ3VOI6ENZzFgCgI',
+                    user: {
+                      name: '路邊攤',
+                      avatar: '',
+                    },
+                  },
                 },
               },
             },
@@ -195,6 +203,23 @@ export const registerAuthRoutes = (registry: OpenAPIRegistry): void => {
           },
         },
       },
+      404: {
+        description: '用戶不存在',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '用戶不存在範例',
+                value: {
+                  message: '用戶不存在',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
       500: {
         description: '伺服器錯誤',
         content: {
@@ -266,6 +291,13 @@ export const registerAuthRoutes = (registry: OpenAPIRegistry): void => {
                 summary: '格式錯誤或驗證錯誤範例',
                 value: {
                   message: '新密碼長度至少 8 碼',
+                  status: false,
+                },
+              },
+              'application/json (新密碼不能與舊密碼相同)': {
+                summary: '新密碼不能與舊密碼相同範例',
+                value: {
+                  message: '新密碼不能與舊密碼相同',
                   status: false,
                 },
               },
