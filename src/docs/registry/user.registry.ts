@@ -132,8 +132,16 @@ export const registerUserRoutes = (registry: OpenAPIRegistry): void => {
               'application/json': {
                 summary: '更新個人資料範例',
                 value: {
+                  success: true,
                   message: '更新個人資料成功',
-                  status: true,
+                  data: {
+                    user: {
+                      name: '新的名字',
+                      phone: '0987654321',
+                      birthday: '1995-05-05',
+                      gender: 'f',
+                    },
+                  },
                 },
               },
             },
