@@ -202,7 +202,7 @@ export const registerAdminUserRoutes = (registry: OpenAPIRegistry): void => {
                   message: '取得使用者資料成功',
                   status: true,
                   data: {
-                    users: {
+                    user: {
                       name: '路邊攤',
                       phone: '0422282252',
                       email: 'example@gmail.com',
