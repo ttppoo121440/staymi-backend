@@ -1,5 +1,6 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
+import { AuthLoginSchema, AuthResponseSchema } from '@/features/auth/auth.schema';
 import { authStoreSignupSchema, authStoreUpdateSchema } from '@/features/authStore/authStore.schema';
 import { swaggerResponseSchema } from '@/types/swaggerSchema';
 
@@ -37,7 +38,7 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
     },
     responses: {
       201: {
-        description: '註冊成功',
+        description: '商家註冊成功',
         content: {
           'application/json': {
             schema: authStoreSignupSchema,
@@ -46,17 +47,14 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
                 summary: '註冊成功範例',
                 value: {
                   success: true,
-                  message: '註冊成功',
+                  message: '商家註冊成功',
                   data: {
-                    id: '4e61d2c7-1cdf-4301-bbc8-0201a5c383a1',
-                    email: 'admin+1745117256037@example.com',
-                    password: 'password123',
-                    title: 'My Store',
-                    description: 'A test store',
-                    name: '測試使用者',
-                    phone: '0912345678',
-                    birthday: '1999-12-31T13:00:00.000Z',
-                    gender: 'm',
+                    token:
+                      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk4ZWMyODFlLTA5YzEtNGNhYS1iNmUwLTM5Y2UxNWQwOThiNCIsImVtYWlsIjoiZXhhbXBsZUBnbWFpbC5jb20iLCJpYXQiOjE3NDQ0MzQzMjcsImV4cCI6MTc0NDQ3NzUyN30.Q2NXxBXhGjAAC0RRqJGOeuYkRbWoQ3VOI6ENZzFgCgI',
+                    user: {
+                      name: '路邊攤',
+                      avatar: '',
+                    },
                   },
                 },
               },
@@ -117,7 +115,125 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
       },
     },
   });
-
+  registry.registerPath({
+    tags: ['AuthStore'],
+    method: 'post',
+    path: '/api/v1/store/login',
+    summary: '商家登入',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: AuthLoginSchema,
+            examples: {
+              'application/json': {
+                summary: '用戶登入範例',
+                value: {
+                  email: 'store@example.com',
+                  password: '11111111',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '商家登入成功',
+        content: {
+          'application/json': {
+            schema: AuthResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '商家登入範例',
+                value: {
+                  success: true,
+                  message: '商家登入成功',
+                  data: {
+                    token:
+                      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk4ZWMyODFlLTA5YzEtNGNhYS1iNmUwLTM5Y2UxNWQwOThiNCIsImVtYWlsIjoiZXhhbXBsZUBnbWFpbC5jb20iLCJpYXQiOjE3NDQ0MzQzMjcsImV4cCI6MTc0NDQ3NzUyN30.Q2NXxBXhGjAAC0RRqJGOeuYkRbWoQ3VOI6ENZzFgCgI',
+                    user: {
+                      name: '路邊攤',
+                      avatar: '',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: '格式錯誤或驗證錯誤',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '格式錯誤或驗證錯誤範例',
+                value: {
+                  message: '格式錯誤或驗證錯誤',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      401: {
+        description: '信箱或密碼錯誤',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '信箱或密碼錯誤範例',
+                value: {
+                  message: '信箱或密碼錯誤',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      404: {
+        description: '用戶不存在',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '用戶不存在範例',
+                value: {
+                  message: '用戶不存在',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      500: {
+        description: '伺服器錯誤',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '伺服器錯誤範例',
+                value: {
+                  message: '伺服器發生錯誤，請稍後再試',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
   registry.registerPath({
     tags: ['AuthStore'],
     method: 'put',
@@ -159,12 +275,14 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
                   success: true,
                   message: '更新成功',
                   data: {
-                    title: 'update雅TWO大飯店',
-                    description: 'update雅TWO大飯店 提供高品質的住宿服務，讓每位旅客享受舒適與便利。',
-                    name: 'update雅TWO大飯店大老闆',
-                    phone: '0422525759',
-                    birthday: '2015-04-12',
-                    gender: 'f',
+                    store: {
+                      title: 'update雅TWO大飯店',
+                      description: 'update雅TWO大飯店 提供高品質的住宿服務，讓每位旅客享受舒適與便利。',
+                      name: 'update雅TWO大飯店大老闆',
+                      phone: '0422525759',
+                      birthday: '2015-04-12',
+                      gender: 'f',
+                    },
                   },
                 },
               },
@@ -318,7 +436,9 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
                   success: true,
                   message: '上傳成功',
                   data: {
-                    logo_url: 'https://example.com/logo.png',
+                    store: {
+                      logo_url: 'https://example.com/logo.png',
+                    },
                   },
                 },
               },
