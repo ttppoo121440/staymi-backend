@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 
+import '../src/libs/day';
 import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 import { brand } from '../src/database/schemas/brand.schema';

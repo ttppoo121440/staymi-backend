@@ -2,6 +2,7 @@ import { describe, it, beforeAll, afterAll, expect } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 
+import '../src/libs/day';
 import app from '../src/app';
 import { db, closeDatabase } from '../src/config/database';
 import { user } from '../src/database/schemas/user.schema';
@@ -88,6 +89,7 @@ describe('使用者資料 API', () => {
         .put('/api/v1/users/user-profile')
         .set('Authorization', `Bearer ${token}`)
         .send(updateData);
+      console.log('成功更新使用者個人資料 res.body:', res.body);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
