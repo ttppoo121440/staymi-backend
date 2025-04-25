@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm';
-import { ZodError } from 'zod';
 
 import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
@@ -47,42 +46,42 @@ export class AuthRepo {
     if (existingUser) {
       throw new RepoError('信箱已被註冊', HttpStatus.CONFLICT);
     }
-    try {
-      const result = await db.transaction(async (tx) => {
-        const [insertedUser] = await tx
-          .insert(user)
-          .values({
-            email: data.email,
-            password: hashedPassword,
-            provider: data.provider ?? null,
-            provider_id: data.provider_id ?? null,
-            role: 'consumer' as Role,
-          })
-          .returning({ id: user.id });
+    const result = await db.transaction(async (tx) => {
+      const [insertedUser] = await tx
+        .insert(user)
+        .values({
+          email: data.email,
+          password: hashedPassword,
+          provider: data.provider ?? null,
+          provider_id: data.provider_id ?? null,
+          role: 'consumer' as Role,
+        })
+        .returning({ id: user.id });
 
-        await tx.insert(user_profile).values({
-          user_id: insertedUser.id,
-          name: data.name,
-          phone: data.phone,
-          birthday: data.birthday,
-          gender: data.gender,
-          avatar: data.avatar ?? null,
-        });
-
-        return {
-          id: insertedUser.id,
-          ...data,
-        };
-      });
-      return result;
-    } catch (error) {
-      console.error('註冊失敗:', error);
-      if (error instanceof ZodError) {
-        throw error;
+      if (!insertedUser.id) {
+        throw new RepoError('建立用戶失敗', HttpStatus.SERVICE_UNAVAILABLE);
       }
 
+      await tx.insert(user_profile).values({
+        user_id: insertedUser.id,
+        name: data.name,
+        phone: data.phone,
+        birthday: data.birthday,
+        gender: data.gender,
+        avatar: data.avatar ?? null,
+      });
+
+      return {
+        id: insertedUser.id,
+        ...data,
+      };
+    });
+
+    if (!result.id) {
       throw new RepoError('註冊失敗，請稍後再試', HttpStatus.SERVICE_UNAVAILABLE);
     }
+
+    return result;
   }
   async checkEmail(email: string): Promise<boolean> {
     const result = await db.select().from(user).where(eq(user.email, email));
@@ -107,8 +106,8 @@ export class AuthRepo {
       avatar: result[0].avatar ?? '',
     };
   }
-  async changePassword(userId: string, data: AuthUpdatePasswordType): Promise<void> {
-    const result = await db.select().from(user).where(eq(user.id, userId));
+  async changePassword(data: AuthUpdatePasswordType): Promise<void> {
+    const result = await db.select().from(user).where(eq(user.id, data.id));
     if (result.length === 0) {
       throw new RepoError('用戶不存在', HttpStatus.NOT_FOUND);
     }
@@ -129,8 +128,9 @@ export class AuthRepo {
       .update(user)
       .set({
         password: hashedPassword,
+        updated_at: new Date(),
       })
-      .where(eq(user.id, userId))
+      .where(eq(user.id, data.id))
       .execute();
     return;
   }

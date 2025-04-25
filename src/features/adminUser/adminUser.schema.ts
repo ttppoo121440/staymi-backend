@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { paginationSchema } from '@/types/pagination';
 import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
 export const adminUserSchema = z.object({
@@ -14,8 +15,8 @@ export const adminUserSchema = z.object({
   provider_id: z.string().optional(),
   role: z.enum(['consumer', 'store', 'admin'], { message: '無效的角色值' }),
   is_blacklisted: z.boolean(),
-  createdAt: zDateOrDefault(),
-  updatedAt: zDateOrDefault(),
+  created_at: zDateOrDefault(),
+  updated_at: zDateOrDefault(),
 });
 export const adminUserArraySchema = z.array(adminUserSchema);
 
@@ -27,34 +28,42 @@ export const adminUserToDTO = z
     user: {
       ...data.user,
       birthday: formatDisplayDate(data.user.birthday),
-      createdAt: formatDisplayDate(data.user.createdAt),
-      updatedAt: formatDisplayDate(data.user.updatedAt),
+      created_at: formatDisplayDate(data.user.created_at),
+      updated_at: formatDisplayDate(data.user.updated_at),
     },
   }));
 
 export const adminUserArrayToDTO = z
   .object({
     users: adminUserArraySchema,
-    pagination: z.object({
-      currentPage: z.number(),
-      perPage: z.number(),
-      totalPages: z.number(),
-      totalItems: z.number(),
-    }),
+    pagination: paginationSchema,
   })
   .transform((data) => ({
     users: data.users.map((user) => ({
       ...user,
       birthday: formatDisplayDate(user.birthday),
-      createdAt: formatDisplayDate(user.createdAt),
-      updatedAt: formatDisplayDate(user.updatedAt),
+      created_at: formatDisplayDate(user.created_at),
+      updated_at: formatDisplayDate(user.updated_at),
     })),
     pagination: data.pagination,
   }));
 
 export const adminUserUpdateRoleSchema = adminUserSchema.pick({
+  id: true,
   role: true,
+  updated_at: true,
 });
+
+export const adminUserUpdateRoleToDTO = z
+  .object({
+    user: adminUserUpdateRoleSchema,
+  })
+  .transform((data) => ({
+    user: {
+      ...data.user,
+      updated_at: formatDisplayDate(data.user.updated_at, 'YYYY-MM-DD HH:mm:ss'),
+    },
+  }));
 
 export const adminUserResponseSchema = z.object({
   success: z.boolean(),

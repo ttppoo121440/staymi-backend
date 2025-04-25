@@ -1,31 +1,25 @@
-import type { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 
 import { HttpStatus } from '@/types/http-status.enum';
-import { errorResponse } from '@/utils/appResponse';
+import { appError } from '@/utils/appError';
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+export const authMiddleware = asyncHandler((req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    res.status(HttpStatus.UNAUTHORIZED).json(errorResponse('未登入或 token 失效'));
-    return;
+    throw appError('未登入或 token 失效', HttpStatus.UNAUTHORIZED);
   }
 
   const token = authHeader.split(' ')[1];
 
-  try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('環境變數中未定義 JWT_SECRET');
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = decoded as { id: string; email: string; role: string; brand_id?: string };
-
-    next();
-  } catch (error) {
-    console.error('Token 解析錯誤:', error);
-    res.status(HttpStatus.UNAUTHORIZED).json(errorResponse('無效的 Token'));
+  if (!process.env.JWT_SECRET) {
+    throw new Error('環境變數中未定義 JWT_SECRET');
   }
-};
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  req.user = decoded as { id: string; email: string; role: string; brand_id?: string };
+
+  next();
+});

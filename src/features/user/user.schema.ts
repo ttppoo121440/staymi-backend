@@ -23,19 +23,22 @@ export const user_profileToDTO = z
     },
   }));
 
-export const user_profileUpdateSchema = user_profileBaseSchema.omit({ id: true, user_id: true }).extend({
+export const user_profileUpdateSchema = user_profileBaseSchema.omit({ user_id: true }).extend({
   birthday: zDateOrDefault(),
   gender: z.enum(['f', 'm'], { errorMap: () => ({ message: '性別格式錯誤' }) }),
 });
 
 export const user_profileUpdateToDTO = z
   .object({
-    user: user_profileUpdateSchema,
+    user: user_profileUpdateSchema.extend({
+      updated_at: zDateOrDefault(),
+    }),
   })
   .transform((data) => ({
     user: {
       ...data.user,
       birthday: formatDisplayDate(data.user.birthday),
+      updated_at: formatDisplayDate(data.user.updated_at, 'YYYY-MM-DD HH:mm:ss'),
     },
   }));
 

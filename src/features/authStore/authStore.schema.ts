@@ -34,12 +34,15 @@ export const authStoreUpdateToDTO = z
     store: {
       ...data.store,
       birthday: formatDisplayDate(data.store.birthday),
+      updated_at: formatDisplayDate(new Date(), 'YYYY-MM-DD HH:mm:ss'),
     },
   }));
 
 export const authStoreUploadLogoSchema = z.object({
+  id: z.string().uuid(),
   logo_url: z.string({ message: '請上傳圖片' }),
 });
 
 export type AuthStoreSignupType = z.infer<typeof authStoreSignupSchema>;
 export type AuthStoreUpdateType = z.infer<typeof authStoreUpdateSchema>;
+export type authStoreUploadLogoType = z.infer<typeof authStoreUploadLogoSchema>;

@@ -8,19 +8,14 @@ import { AuthStoreController } from './authStore.controller';
 const authStoreRoutes = express.Router();
 const authStoreController = new AuthStoreController();
 
-authStoreRoutes.post('/signup', authStoreController.signup.bind(authStoreController));
-authStoreRoutes.post('/login', authStoreController.storeLogin.bind(authStoreController));
+authStoreRoutes.post('/signup', authStoreController.signup);
+authStoreRoutes.post('/login', authStoreController.storeLogin);
 authStoreRoutes.put(
   '/uploadLogo',
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
-  authStoreController.uploadLogo.bind(authStoreController),
+  authStoreController.uploadLogo,
 );
-authStoreRoutes.put(
-  '/',
-  authMiddleware,
-  checkRolesMiddleware(['store', 'admin']),
-  authStoreController.updateStoreInfo.bind(authStoreController),
-);
+authStoreRoutes.put('/', authMiddleware, checkRolesMiddleware(['store', 'admin']), authStoreController.updateStoreInfo);
 
 export default authStoreRoutes;

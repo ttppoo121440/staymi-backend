@@ -33,8 +33,8 @@ export class UserRepo {
       user: result[0],
     };
   }
-  async update(id: string, data: user_profileUpdateType): Promise<{ user: user_profileUpdateType }> {
-    await this.ensureUserExists(id); // 確保用戶存在
+  async update(data: user_profileUpdateType): Promise<{ user: user_profileUpdateType }> {
+    await this.ensureUserExists(data.id); // 確保用戶存在
 
     if (Object.keys(data).length === 0) {
       throw new Error('更新資料不得為空');
@@ -46,8 +46,9 @@ export class UserRepo {
         phone: data.phone,
         birthday: data.birthday,
         gender: data.gender,
+        updated_at: new Date(),
       })
-      .where(eq(user_profile.user_id, id))
+      .where(eq(user_profile.user_id, data.id))
       .returning();
 
     if (result.length === 0) {

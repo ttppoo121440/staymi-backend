@@ -8,11 +8,6 @@ import { ImageUploadController } from './imageUpload.controller';
 const imageUploadRoutes = express.Router();
 const imageUploadController = new ImageUploadController();
 
-imageUploadRoutes.post(
-  '/',
-  authMiddleware,
-  handleFileUpload('file'),
-  imageUploadController.upload.bind(imageUploadController),
-);
+imageUploadRoutes.post('/', authMiddleware, handleFileUpload('file'), imageUploadController.upload);
 
 export default imageUploadRoutes;

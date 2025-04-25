@@ -4,6 +4,7 @@ import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
 import { HttpStatus } from '@/types/http-status.enum';
+import { PaginationType } from '@/types/pagination';
 import { RepoError } from '@/utils/appError';
 import { PaginatedQuery, paginateQuery } from '@/utils/pagination';
 
@@ -19,12 +20,7 @@ export class AdminUserRepo {
     perPage = 10,
   ): Promise<{
     users: adminUserArrayType;
-    pagination: {
-      currentPage: number;
-      perPage: number;
-      totalPages: number;
-      totalItems: number;
-    };
+    pagination: PaginationType;
   }> {
     const conditions = [];
 
@@ -46,8 +42,8 @@ export class AdminUserRepo {
         avatar: user_profile.avatar,
         role: user.role,
         is_blacklisted: user.is_blacklisted,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
       })
       .from(user)
       .innerJoin(user_profile, eq(user.id, user_profile.user_id))
@@ -77,8 +73,8 @@ export class AdminUserRepo {
         avatar: user_profile.avatar,
         role: user.role,
         is_blacklisted: user.is_blacklisted,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
       })
       .from(user)
       .innerJoin(user_profile, eq(user.id, user_profile.user_id))
@@ -95,17 +91,17 @@ export class AdminUserRepo {
       },
     };
   }
-  async updateRole(id: string, data: adminUserUpdateRoleType): Promise<{ user: { id: string; role: Role } }> {
+  async updateRole(data: adminUserUpdateRoleType): Promise<{ user: adminUserUpdateRoleType }> {
     const userData = await db
       .update(user)
-      .set({ role: data.role as Role })
-      .where(eq(user.id, id))
-      .returning()
+      .set({ role: data.role as Role, updated_at: new Date() })
+      .where(eq(user.id, data.id))
+      .returning({ id: user.id, role: user.role, updated_at: user.updated_at })
       .execute();
 
     if (userData.length === 0) {
       throw new RepoError('查無此使用者', HttpStatus.NOT_FOUND);
     }
-    return { user: { id, role: userData[0].role as Role } };
+    return { user: userData[0] };
   }
 }
