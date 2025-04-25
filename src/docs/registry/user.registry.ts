@@ -113,7 +113,6 @@ export const registerUserRoutes = (registry: OpenAPIRegistry): void => {
                   phone: '0422282252',
                   birthday: '2025-04-10',
                   gender: 'M',
-                  avatar: '',
                   role: 'consumer',
                 },
               },
