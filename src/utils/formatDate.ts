@@ -7,7 +7,7 @@ export const formatDisplayDate = (
   format = 'YYYY-MM-DD',
 ): string | undefined => {
   if (!value) return undefined;
-  const parsed = dayjs(value);
+  const parsed = dayjs(value).tz();
   return parsed.isValid() ? parsed.format(format) : undefined;
 };
 // 包裝成函式，提供預設值的日期 Schema
