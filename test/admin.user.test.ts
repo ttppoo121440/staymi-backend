@@ -2,6 +2,7 @@ import { describe, it, beforeAll, afterAll, expect } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 
+import '../src/libs/day';
 import app from '../src/app';
 import { db, closeDatabase } from '../src/config/database';
 import { user } from '../src/database/schemas/user.schema';
@@ -233,7 +234,14 @@ describe('後台 - 使用者查詢 API', () => {
   describe('PUT /api/v1/admin/users/:id/role', () => {
     it('成功修改使用者腳色為 consumer 200', async () => {
       const existingUser = await db.select().from(user).where(eq(user.email, adminUser.email));
+
       const userId = existingUser[0].id;
+
+      // 取得修改前的 updatedAt
+      const beforeUpdate = existingUser[0].updated_at;
+
+      // 等待 1 秒以確保 updatedAt 有變化
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const res = await request(app)
         .put(`/api/v1/admin/users/${userId}/role`)
@@ -241,10 +249,19 @@ describe('後台 - 使用者查詢 API', () => {
         .send({
           role: 'consumer' as Role,
         });
+      console.log('PUT /api/v1/admin/users/:id/role', res.body);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.user.role).toBe('consumer');
+
+      // 驗證 updatedAt 是否已更新
+      const updatedUser = await db.select().from(user).where(eq(user.id, userId));
+      const afterUpdate = updatedUser[0].updated_at;
+
+      expect(afterUpdate && beforeUpdate && new Date(afterUpdate).getTime()).toBeGreaterThan(
+        new Date(beforeUpdate ?? 0).getTime(),
+      );
 
       await db
         .update(user)
