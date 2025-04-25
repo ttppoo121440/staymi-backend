@@ -72,7 +72,7 @@ export const registerAdminUserRoutes = (registry: OpenAPIRegistry): void => {
                         phone: '00000000',
                         birthday: '2025-04-18',
                         gender: 'm',
-                        avatar: '""',
+                        avatar: '',
                         role: 'admin',
                         is_blacklisted: false,
                         createdAt: '2025-04-18',
