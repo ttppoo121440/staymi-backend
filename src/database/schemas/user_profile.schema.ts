@@ -10,9 +10,9 @@ export const user_profile = pgTable('user_profile', {
     .notNull()
     .references(() => user.id),
   name: varchar('name', { length: 50 }).notNull(),
-  phone: varchar('phone', { length: 20 }).notNull(),
+  phone: varchar('phone', { length: 20 }),
   birthday: timestamp('birthday'),
-  gender: genderEnum('gender').notNull().default('m'),
+  gender: genderEnum('gender').default('m'),
   avatar: varchar('avatar', { length: 255 }),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
