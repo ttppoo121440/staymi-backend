@@ -15,5 +15,7 @@ userRoutes.put('/user-profile', authMiddleware, userController.update.bind(userC
 userRoutes.post('/signup', authController.signup.bind(authController));
 userRoutes.post('/login', authController.login.bind(authController));
 userRoutes.put('/change-password', authMiddleware, authController.changePassword.bind(authController));
+userRoutes.get('/line', authController.redirectToLine.bind(authController));
+userRoutes.get('/line/callback', authController.handleLineCallback.bind(authController));
 
 export default userRoutes;
