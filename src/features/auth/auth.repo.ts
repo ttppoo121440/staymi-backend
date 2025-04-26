@@ -9,6 +9,7 @@ import { generateToken } from '@/utils/jwt';
 import { comparePassword, hashPassword } from '@/utils/passwordUtils';
 
 import type { AuthCreateType, AuthLoginType, AuthUpdatePasswordType, Role } from './auth.schema';
+import { CreateUserByProviderInput, UserInfoType } from './auth.types';
 
 export class AuthRepo {
   async login(data: AuthLoginType): Promise<string> {
@@ -19,6 +20,10 @@ export class AuthRepo {
     }
 
     const foundUser = result[0];
+
+    if (foundUser.password === null) {
+      throw new RepoError('密碼不存在', HttpStatus.UNAUTHORIZED);
+    }
 
     const isPasswordValid = await comparePassword(data.password, foundUser.password);
 
@@ -32,7 +37,6 @@ export class AuthRepo {
 
     const userToken = generateToken({
       id: foundUser.id,
-      email: foundUser.email,
       role: foundUser.role,
     });
 
@@ -133,5 +137,56 @@ export class AuthRepo {
       .where(eq(user.id, data.id))
       .execute();
     return;
+  }
+  async findUserByProviderId(provider_id: string): Promise<UserInfoType | undefined> {
+    const result = await db
+      .select({ id: user.id, role: user.role, name: user_profile.name, avatar: user_profile.avatar })
+      .from(user)
+      .innerJoin(user_profile, eq(user.id, user_profile.user_id))
+      .where(eq(user.provider_id, provider_id));
+
+    if (!result[0]) return result[0]; //如果沒有資料，回傳 undefined
+    return {
+      ...result[0],
+      avatar: result[0].avatar ?? '', // 沒有 avatar 時，回傳空字串
+    };
+  }
+  async createByProvider(data: CreateUserByProviderInput): Promise<UserInfoType> {
+    const result = await db.transaction(async (tx) => {
+      const [insertedUser] = await tx
+        .insert(user)
+        .values({
+          email: data.email ?? null,
+          provider: data.provider,
+          provider_id: data.providerId,
+          role: 'consumer' as Role,
+        })
+        .returning({ id: user.id });
+
+      if (!insertedUser.id) {
+        throw new RepoError('建立用戶失敗', HttpStatus.SERVICE_UNAVAILABLE);
+      }
+
+      await tx.insert(user_profile).values({
+        user_id: insertedUser.id,
+        name: data.name,
+        avatar: data.avatar ?? null,
+      });
+
+      return {
+        id: insertedUser.id,
+        ...data,
+      };
+    });
+    if (!result.id) {
+      throw new RepoError('註冊失敗，請稍後再試', HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    return {
+      id: result.id,
+      role: 'consumer',
+      name: data.name,
+      avatar: data.avatar ?? '',
+    };
   }
 }
