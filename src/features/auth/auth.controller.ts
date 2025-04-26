@@ -69,7 +69,7 @@ export class AuthController {
   });
   redirectToLine = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const clientId = env.LINE_CHANNEL_ID;
-    const redirectUri = encodeURIComponent(serverUrl + 'api/v1/users/line/callback'); //透過 encodeURIComponent 確保 URL 可以正確解析
+    const redirectUri = encodeURIComponent(`${serverUrl}/api/v1/users/line/callback`); //透過 encodeURIComponent 確保 URL 可以正確解析
 
     const redirectTo = req.query.redirectTo as string;
 
