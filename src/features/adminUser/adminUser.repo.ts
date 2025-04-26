@@ -88,7 +88,7 @@ export class AdminUserRepo {
     return {
       user: {
         ...userData[0],
-      },
+      } as adminUserType,
     };
   }
   async updateRole(data: adminUserUpdateRoleType): Promise<{ user: adminUserUpdateRoleType }> {

@@ -73,6 +73,10 @@ export class AuthStoreRepo {
 
     const foundUser = result[0];
 
+    if (foundUser.password === null) {
+      throw new RepoError('密碼不存在', HttpStatus.UNAUTHORIZED);
+    }
+
     const isPasswordValid = await comparePassword(data.password, foundUser.password);
 
     if (!isPasswordValid) {
@@ -84,7 +88,6 @@ export class AuthStoreRepo {
     }
     const userToken = generateToken({
       id: foundUser.id,
-      email: foundUser.email,
       role: foundUser.role,
       brand_id: brand_idResult[0].brand_id,
     });

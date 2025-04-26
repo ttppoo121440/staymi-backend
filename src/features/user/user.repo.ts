@@ -30,7 +30,7 @@ export class UserRepo {
     }
 
     return {
-      user: result[0],
+      user: result[0] as user_profileType,
     };
   }
   async update(data: user_profileUpdateType): Promise<{ user: user_profileUpdateType }> {
@@ -58,7 +58,7 @@ export class UserRepo {
     return {
       user: {
         ...result[0],
-      },
+      } as user_profileUpdateType,
     };
   }
   private async ensureUserExists(id: string): Promise<void> {
