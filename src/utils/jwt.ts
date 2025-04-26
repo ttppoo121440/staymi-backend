@@ -4,7 +4,6 @@ import { Role } from '@/features/auth/auth.schema';
 
 type Payload = {
   id: string;
-  email: string;
   brand_id?: string;
   role: Role;
 };
