@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { z, ZodType } from 'zod';
+import '../libs/day';
 
 // 提供格式化後的顯示（前端用）
 export const formatDisplayDate = (
