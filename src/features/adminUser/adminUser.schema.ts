@@ -6,10 +6,10 @@ import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 export const adminUserSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(50),
-  email: z.string().email(),
+  email: z.string().email().nullable().optional(),
   phone: z.string().nullable().optional(),
   birthday: zDateOrDefault().nullable().optional(),
-  gender: z.enum(['f', 'm'], { message: '請選擇性別' }),
+  gender: z.enum(['f', 'm'], { message: '請選擇性別' }).nullable().optional(),
   avatar: z.string().nullable().optional(),
   provider: z.string().optional(),
   provider_id: z.string().optional(),
