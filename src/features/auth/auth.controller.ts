@@ -1,7 +1,8 @@
+import { randomUUID } from 'crypto';
+
 import type { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
-import { v4 as uuid } from 'uuid';
 
 import { env, frontendUrl, serverUrl } from '@/config/env';
 import getRedisClient from '@/config/redisClient';
@@ -77,7 +78,7 @@ export class AuthController {
       return next(appError('導向路徑不正確', HttpStatus.BAD_REQUEST));
     }
 
-    const state = uuid();
+    const state = randomUUID();
 
     const client = await getRedisClient();
     await client.set(`line:state:${state}`, redirectTo, { EX: 300 });
