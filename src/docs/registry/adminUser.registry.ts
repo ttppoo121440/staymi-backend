@@ -23,6 +23,14 @@ export const registerAdminUserRoutes = (registry: OpenAPIRegistry): void => {
           description: '是否為黑名單（true/false）',
           example: 'false',
         }),
+        currentPage: z.number().optional().openapi({
+          description: '目前頁數',
+          example: 1,
+        }),
+        perPage: z.number().optional().openapi({
+          description: '每頁顯示的資料數量',
+          example: 10,
+        }),
       }),
     },
     responses: {
