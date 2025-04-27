@@ -20,7 +20,7 @@ export class StoreHotelController {
   constructor(private storeHotelRepo: StoreHotelRepo = new StoreHotelRepo()) {}
 
   getAll = asyncHandler(async (req: Request, res: Response) => {
-    const brand_id = req.brand_id;
+    const brand_id = res.locals.brand_id;
     const parsedQuery = hotelQuerySchema.parse(req.query);
     const { currentPage, perPage } = parsedQuery;
     const hotels = await this.storeHotelRepo.getAll(brand_id, currentPage, perPage);
@@ -28,7 +28,7 @@ export class StoreHotelController {
     res.status(HttpStatus.OK).json(successResponse(dtoDate, '取得飯店列表成功'));
   });
   getById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const brand_id = req.brand_id;
+    const brand_id = res.locals.brand_id;
     const hotelId = req.params.id;
 
     const hotelResult = await this.storeHotelRepo.getById({ hotelId, brandId: brand_id });
@@ -39,7 +39,7 @@ export class StoreHotelController {
     res.status(HttpStatus.OK).json(successResponse(dtoDate, '取得飯店資料成功'));
   });
   create = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const brand_id = req.brand_id;
+    const brand_id = res.locals.brand_id;
     const validatedData = hotelCreateSchema.parse({ ...req.body, brand_id });
 
     const isNameDuplicateHotel = await this.storeHotelRepo.isNameDuplicate(validatedData.name);
@@ -51,7 +51,7 @@ export class StoreHotelController {
     res.status(HttpStatus.CREATED).json(successResponse(dtoDate, '建立飯店成功'));
   });
   update = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const brand_id = req.brand_id;
+    const brand_id = res.locals.brand_id;
     const hotelId = req.params.id;
 
     const hotel = await this.storeHotelRepo.getById({ hotelId });

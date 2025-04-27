@@ -7,12 +7,12 @@ import { JwtUserPayload } from '@/types/JwtUserPayload';
 import { appError } from '@/utils/appError';
 export const authBrandId = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   const user = req.user as JwtUserPayload;
-  // 類型守衛：檢查是不是 store user
+
   if (user.role !== 'store' || !('brand_id' in user)) {
     throw appError('需要商家身分', HttpStatus.UNAUTHORIZED);
   }
-  // 現在 TypeScript 確定 user 是 JwtStorePayload
-  req.brand_id = user.brand_id;
+
+  res.locals.brand_id = user.brand_id;
 
   const isOwner = await verifyBrandOwner(user.brand_id, user.id);
   if (!isOwner) {
