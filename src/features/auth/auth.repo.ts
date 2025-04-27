@@ -21,7 +21,7 @@ export class AuthRepo {
 
     const foundUser = result[0];
 
-    if (foundUser.password === null) {
+    if (!foundUser.password) {
       throw new RepoError('密碼不存在', HttpStatus.UNAUTHORIZED);
     }
 
