@@ -1,18 +1,18 @@
-import { and, eq, ilike } from 'drizzle-orm';
+import { and, eq, ilike, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
+import { BaseRepository } from '@/repositories/base-repository';
 import { HttpStatus } from '@/types/http-status.enum';
 import { PaginationType } from '@/types/pagination';
 import { RepoError } from '@/utils/appError';
-import { PaginatedQuery, paginateQuery } from '@/utils/pagination';
 
 import { Role } from '../auth/auth.schema';
 
 import { adminUserArrayType, adminUserType, adminUserUpdateRoleType } from './adminUser.schema';
 
-export class AdminUserRepo {
+export class AdminUserRepo extends BaseRepository {
   async getAll(
     email = '',
     is_blacklisted?: boolean,
@@ -22,7 +22,7 @@ export class AdminUserRepo {
     users: adminUserArrayType;
     pagination: PaginationType;
   }> {
-    const conditions = [];
+    const conditions: ReturnType<typeof ilike | typeof eq>[] = [];
 
     if (email) {
       conditions.push(ilike(user.email, `%${email}%`));
@@ -30,37 +30,52 @@ export class AdminUserRepo {
     if (typeof is_blacklisted === 'boolean') {
       conditions.push(eq(user.is_blacklisted, is_blacklisted));
     }
-
-    const query = db
-      .select({
-        id: user.id,
-        name: user_profile.name,
-        email: user.email,
-        phone: user_profile.phone,
-        birthday: user_profile.birthday,
-        gender: user_profile.gender,
-        avatar: user_profile.avatar,
-        role: user.role,
-        is_blacklisted: user.is_blacklisted,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-      })
-      .from(user)
-      .innerJoin(user_profile, eq(user.id, user_profile.user_id))
-      .where(and(...conditions));
-
+    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
     // 使用 paginateQuery 處理分頁
-    const { data, pagination } = await paginateQuery<adminUserArrayType>(
-      query as unknown as PaginatedQuery<adminUserArrayType>,
+    const { data, pagination } = await this.paginateQuery(
+      // getDataQuery
+      (limit, offset) =>
+        db
+          .select({
+            id: user.id,
+            name: user_profile.name,
+            email: user.email,
+            phone: user_profile.phone,
+            birthday: user_profile.birthday,
+            gender: user_profile.gender,
+            avatar: user_profile.avatar,
+            role: user.role,
+            is_blacklisted: user.is_blacklisted,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+          })
+          .from(user)
+          .innerJoin(user_profile, eq(user.id, user_profile.user_id))
+          .where(and(whereCondition))
+          .limit(limit)
+          .offset(offset),
+
+      // getCountQuery
+      async () => {
+        const totalItemsResult = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(user)
+          .innerJoin(user_profile, eq(user.id, user_profile.user_id))
+          .where(and(...conditions));
+
+        return Number(totalItemsResult[0]?.count ?? 0);
+      },
+
       currentPage,
       perPage,
     );
 
     return {
-      users: data as unknown as adminUserArrayType,
+      users: data,
       pagination,
     };
   }
+
   async getById(id: string): Promise<{ user: adminUserType }> {
     const userData = await db
       .select({

@@ -135,4 +135,55 @@ describe('使用者資料 API', () => {
       expect(errorMessage).toContain('請輸入名字');
     });
   });
+
+  describe('PUT /api/v1/users/uploadAvatar', () => {
+    let token: string;
+
+    beforeAll(async () => {
+      // 註冊帳號
+      await request(app).post('/api/v1/users/signup').send(testUser);
+
+      // 登入取得 token
+      const loginRes = await request(app).post('/api/v1/users/login').send({
+        email: testUser.email,
+        password: testUser.password,
+      });
+      token = loginRes.body.data.token;
+    });
+
+    it('應該成功上傳 LOGO 200', async () => {
+      const avatar_url =
+        'https://res.cloudinary.com/dwq2ehew4/image/upload/v1745209931/stay-mi/image/b38ba5df-3cc5-43d9-bcad-87a57954d7fc/pexels-photo-13180141.jpg';
+      const res = await request(app)
+        .put('/api/v1/users/uploadAvatar')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ avatar: avatar_url });
+
+      console.log('應該成功上傳 avatar:', res.body);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('更新成功');
+      expect(res.body.data.user.avatar).toBe(avatar_url);
+    });
+
+    it('缺少 avatar URL 應回傳 400', async () => {
+      const res = await request(app).put('/api/v1/users/uploadAvatar').set('Authorization', `Bearer ${token}`).send({});
+
+      console.log('缺少 avatar URL 的回傳:', res.body);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('請上傳圖片');
+    });
+
+    it('未登入應回傳 401', async () => {
+      const res = await request(app)
+        .put('/api/v1/users/uploadAvatar')
+        .send({ logo_url: 'https://example.com/logo.png' });
+
+      console.log('未登入的回傳:', res.body);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('未登入或 token 失效');
+    });
+  });
 });

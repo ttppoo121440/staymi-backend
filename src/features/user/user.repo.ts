@@ -6,7 +6,7 @@ import { user_profile } from '@/database/schemas/user_profile.schema';
 import { HttpStatus } from '@/types/http-status.enum';
 import { RepoError } from '@/utils/appError';
 
-import { user_profileType, user_profileUpdateType } from './user.schema';
+import { user_profileType, user_profileUpdateAvatarType, user_profileUpdateType } from './user.schema';
 
 export class UserRepo {
   async getById(id: string): Promise<{ user: user_profileType }> {
@@ -59,6 +59,32 @@ export class UserRepo {
       user: {
         ...result[0],
       } as user_profileUpdateType,
+    };
+  }
+  async uploadAvatar(data: user_profileUpdateAvatarType): Promise<{ user: user_profileUpdateAvatarType }> {
+    if (!data.avatar) {
+      throw new RepoError('請上傳圖片', HttpStatus.BAD_REQUEST);
+    }
+    const result = await db
+      .update(user_profile)
+      .set({
+        avatar: data.avatar,
+        updated_at: new Date(),
+      })
+      .where(eq(user_profile.user_id, data.id))
+      .returning({
+        id: user_profile.user_id,
+        avatar: user_profile.avatar,
+        updated_at: user_profile.updated_at,
+      });
+    if (result.length === 0) {
+      throw new RepoError('使用者個人資料不存在，無法更新', HttpStatus.NOT_FOUND);
+    }
+    return {
+      user: {
+        ...result[0],
+        avatar: data.avatar,
+      },
     };
   }
   private async ensureUserExists(id: string): Promise<void> {

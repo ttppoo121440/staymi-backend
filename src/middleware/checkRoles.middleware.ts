@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 import { Role } from '@/features/auth/auth.schema';
 import { HttpStatus } from '@/types/http-status.enum';
-import { errorResponse } from '@/utils/appResponse';
+import { appError } from '@/utils/appError';
 
 export const checkRolesMiddleware = (
   allowedRoles: Role[],
@@ -11,8 +11,7 @@ export const checkRolesMiddleware = (
     const user = req.user as { role: Role };
 
     if (!allowedRoles.includes(user.role)) {
-      res.status(HttpStatus.FORBIDDEN).json(errorResponse('無權限訪問此資源'));
-      return;
+      throw appError('無權限訪問此資源', HttpStatus.FORBIDDEN);
     }
 
     next();

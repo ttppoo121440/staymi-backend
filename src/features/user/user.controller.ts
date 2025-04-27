@@ -6,7 +6,13 @@ import type { JwtUserPayload } from '@/types/JwtUserPayload';
 import { successResponse } from '@/utils/appResponse';
 
 import { UserRepo } from './user.repo';
-import { user_profileToDTO, user_profileUpdateSchema, user_profileUpdateToDTO } from './user.schema';
+import {
+  user_profileToDTO,
+  user_profileUpdateAvatarSchema,
+  user_profileUpdateAvatarToDTO,
+  user_profileUpdateSchema,
+  user_profileUpdateToDTO,
+} from './user.schema';
 
 export class UserController {
   constructor(private userRepo: UserRepo = new UserRepo()) {}
@@ -23,5 +29,13 @@ export class UserController {
     const dtoData = user_profileUpdateToDTO.parse(updatedUserProfile);
 
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新個人資料成功'));
+  });
+  uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
+    const id: string = (req.user as JwtUserPayload).id;
+    const validatedData = user_profileUpdateAvatarSchema.parse({ id: id, ...req.body });
+    const updatedUserProfile = await this.userRepo.uploadAvatar(validatedData);
+    const dtoData = user_profileUpdateAvatarToDTO.parse(updatedUserProfile);
+
+    res.status(HttpStatus.OK).json(successResponse(dtoData, '更新成功'));
   });
 }

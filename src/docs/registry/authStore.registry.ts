@@ -237,7 +237,7 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['AuthStore'],
     method: 'put',
-    path: '/api/v1/store',
+    path: '/api/v1/store/brand',
     summary: '商家更新',
     ...bearerSecurity,
     request: {
@@ -282,6 +282,7 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
                       phone: '0422525759',
                       birthday: '2015-04-12',
                       gender: 'f',
+                      updated_at: '2023-10-01 12:00:00',
                     },
                   },
                 },
@@ -437,7 +438,9 @@ export const registerAuthStoreRoutes = (registry: OpenAPIRegistry): void => {
                   message: '上傳成功',
                   data: {
                     store: {
-                      logo_url: 'https://example.com/logo.png',
+                      id: 'c59d92fb-9d5f-46d3-b551-8192be6d0748',
+                      avatar: 'https://example.com/logo.png',
+                      updated_at: '2023-10-01 12:00:00',
                     },
                   },
                 },

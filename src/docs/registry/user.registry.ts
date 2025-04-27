@@ -139,6 +139,7 @@ export const registerUserRoutes = (registry: OpenAPIRegistry): void => {
                       phone: '0987654321',
                       birthday: '1995-05-05',
                       gender: 'f',
+                      updated_at: '2023-10-01 12:00:00',
                     },
                   },
                 },
@@ -191,6 +192,134 @@ export const registerUserRoutes = (registry: OpenAPIRegistry): void => {
                 summary: '用戶不存在範例',
                 value: {
                   message: '用戶不存在',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      500: {
+        description: '伺服器錯誤',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '伺服器錯誤範例',
+                value: {
+                  message: '伺服器發生錯誤，請稍後再試',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    tags: ['User'],
+    method: 'put',
+    path: '/api/v1/users/uploadAvatar',
+    summary: '上傳大頭貼',
+    ...bearerSecurity,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                avatar: {
+                  type: 'string',
+                  format: 'url',
+                  description: '大頭貼 的 URL',
+                },
+              },
+              required: ['avatar'],
+            },
+            examples: {
+              'application/json': {
+                summary: '上傳大頭貼範例',
+                value: {
+                  avatar: 'https://avatars.githubusercontent.com/u/12345678?v=4',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '更新成功',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: true },
+                message: { type: 'string', example: '更新成功' },
+                data: {
+                  type: 'object',
+                  properties: {
+                    avatar: {
+                      type: 'string',
+                      format: 'url',
+                      example: 'https://avatars.githubusercontent.com/u/12345678?v=4',
+                    },
+                  },
+                },
+              },
+            },
+            examples: {
+              'application/json': {
+                summary: '更新成功範例',
+                value: {
+                  success: true,
+                  message: '更新成功',
+                  data: {
+                    user: {
+                      id: 'c59d92fb-9d5f-46d3-b551-8192be6d0748',
+                      avatar: 'https://avatars.githubusercontent.com/u/12345678?v=4',
+                      updated_at: '2023-10-01 12:00:00',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      400: {
+        description: '格式錯誤或缺少 avatar URL',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '格式錯誤或缺少 avatar URL 範例',
+                value: {
+                  message: '請上傳圖片',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      401: {
+        description: '未登入或 token 失效',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '未登入或 token 失效範例',
+                value: {
+                  message: '未登入或 token 失效',
                   status: false,
                 },
               },

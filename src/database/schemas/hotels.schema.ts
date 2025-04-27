@@ -8,7 +8,7 @@ export const hotels = pgTable('hotels', {
     .notNull()
     .references(() => brand.id),
   region: varchar('region', { length: 50 }).notNull(),
-  name: varchar('name', { length: 50 }).notNull(),
+  name: varchar('name', { length: 50 }).notNull().unique(),
   address: varchar('address', { length: 100 }).notNull(),
   phone: varchar('phone', { length: 20 }).notNull(),
   transportation: varchar('transportation', { length: 255 }).notNull(),
