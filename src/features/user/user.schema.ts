@@ -13,6 +13,12 @@ export const user_profileSchema = user_profileBaseSchema.extend({
   email: z.string({ message: '請輸入信箱' }).email({ message: '信箱格式錯誤' }),
 });
 
+export const user_profileUpdateAvatarSchema = z.object({
+  id: z.string().uuid(),
+  avatar: z.string({ message: '請上傳圖片' }),
+  updated_at: zDateOrDefault(),
+});
+
 export const user_profileToDTO = z
   .object({
     user: user_profileSchema,
@@ -42,5 +48,19 @@ export const user_profileUpdateToDTO = z
     },
   }));
 
+export const user_profileUpdateAvatarToDTO = z
+  .object({
+    user: user_profileUpdateAvatarSchema.extend({
+      updated_at: zDateOrDefault(),
+    }),
+  })
+  .transform((data) => ({
+    user: {
+      ...data.user,
+      updated_at: formatDisplayDate(data.user.updated_at, 'YYYY-MM-DD HH:mm:ss'),
+    },
+  }));
+
 export type user_profileType = z.infer<typeof user_profileSchema>;
 export type user_profileUpdateType = z.infer<typeof user_profileUpdateSchema>;
+export type user_profileUpdateAvatarType = z.infer<typeof user_profileUpdateAvatarSchema>;
