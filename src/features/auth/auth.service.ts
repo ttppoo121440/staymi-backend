@@ -12,7 +12,7 @@ export class AuthService {
       qs.stringify({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: `${serverUrl}api/v1/users/line/callback`,
+        redirect_uri: `${serverUrl}/api/v1/users/line/callback`,
         client_id: env.LINE_CHANNEL_ID,
         client_secret: env.LINE_CHANNEL_SECRET,
       }),

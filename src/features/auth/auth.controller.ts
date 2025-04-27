@@ -126,7 +126,7 @@ export class AuthController {
     });
 
     return res.redirect(
-      `${frontendUrl}callback?pathname=${encodeURIComponent(redirectTo)}&token=${userToken}&name=${
+      `${frontendUrl}/callback?pathname=${encodeURIComponent(redirectTo)}&token=${userToken}&name=${
         userInfo.name
       }&avatar=${encodeURIComponent(userInfo.avatar)}`,
     );
