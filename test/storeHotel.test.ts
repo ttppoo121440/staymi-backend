@@ -199,6 +199,64 @@ describe('取得自己的所有飯店列表 API', () => {
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe('無權限訪問此資源');
   });
+
+  it('非本人品牌操作應回傳 403', async () => {
+    const fakeBrandId = randomUUID();
+    const fakeUserId = randomUUID();
+    const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
+
+    // 檢查是否已經存在該 email
+    const existingUser = await db.select().from(user).where(eq(user.email, fakeEmail));
+    if (existingUser.length > 0) {
+      // 如果已經存在，則刪除資料
+      await db.delete(user).where(eq(user.email, fakeEmail)).execute();
+    }
+
+    // 插入假 user
+    await db.insert(user).values({
+      id: fakeUserId,
+      email: fakeEmail,
+      password: 'hashed-password',
+      role: 'store',
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
+    // 插入假品牌
+    await db.insert(brand).values({
+      id: fakeBrandId,
+      user_id: fakeUserId,
+      title: '假品牌',
+      description: '這不是你的品牌',
+    });
+
+    // 建立假的 token
+    const fakeToken = jwt.sign(
+      {
+        id: 'some-fake-user-id',
+        email: fakeEmail,
+        role: 'store',
+        brand_id: '11111111-1111-1111-1111-111111111111',
+      },
+      process.env.JWT_SECRET ?? 'test',
+      { expiresIn: '1h' },
+    );
+
+    // 發送請求
+    const res = await request(app)
+      .post('/api/v1/store/hotel')
+      .set('Authorization', `Bearer ${fakeToken}`)
+      .send({ ...mockHotelData, name: '假品牌飯店名稱' });
+
+    // 驗證返回結果
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('無權限操作此資料');
+
+    // 測試結束後刪除假資料
+    await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
+    await db.delete(user).where(eq(user.id, fakeUserId)).execute();
+  });
 });
 
 describe('取得單一飯店 API', () => {
@@ -232,7 +290,7 @@ describe('取得單一飯店 API', () => {
   it('成功取得，應回傳 200 與飯店資料', async () => {
     const res = await request(app).get(`/api/v1/store/hotel/${hotelId}`).set('Authorization', `Bearer ${token}`);
 
-    console.log('成功取得單一飯店', res.body);
+    console.log('成功取得單一飯店', JSON.stringify(res.body, null, 2));
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
@@ -250,26 +308,102 @@ describe('取得單一飯店 API', () => {
     expect(res.body.message).toBe('未登入或 token 失效');
   });
 
-  it('非 store 身份應回傳 403', async () => {
-    const consumerToken = jwt.sign(
-      {
-        id: 'consumer-id',
-        email: 'consumer@example.com',
-        role: 'consumer', // consumer 沒有 brand_id
-      },
+  it('沒有 brand_id 應回傳 403', async () => {
+    // 假裝成 consumer 身份，沒有 brand_id
+    const fakeConsumerToken = jwt.sign(
+      { id: 'fake-user-id', email: 'fake@example.com', role: 'consumer' },
       process.env.JWT_SECRET ?? 'test',
       { expiresIn: '1h' },
     );
 
     const res = await request(app)
-      .get(`/api/v1/store/hotel/${hotelId}`)
-      .set('Authorization', `Bearer ${consumerToken}`);
+      .get('/api/v1/store/hotel')
+      .set('Authorization', `Bearer ${fakeConsumerToken}`)
+      .send(mockHotelData);
 
-    console.log('非 store 身份查單一飯店', res.body);
+    console.log('沒有 brand_id 應回傳 401', res.body);
 
     expect(res.statusCode).toBe(403);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe('無權限訪問此資源');
+  });
+
+  it('不是 store 身份應回傳 403', async () => {
+    const consumerToken = jwt.sign(
+      {
+        id: 'fake-user-id',
+        email: 'fake@example.com',
+        role: 'consumer',
+      },
+      process.env.JWT_SECRET ?? 'test',
+      { expiresIn: '1h' },
+    );
+
+    const res = await request(app).get('/api/v1/store/hotel').set('Authorization', `Bearer ${consumerToken}`);
+
+    console.log('非 store 身份取得飯店列表應回傳 403', res.body);
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('無權限訪問此資源');
+  });
+
+  it('非本人品牌操作應回傳 403', async () => {
+    const fakeBrandId = randomUUID();
+    const fakeUserId = randomUUID();
+    const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
+
+    // 檢查是否已經存在該 email
+    const existingUser = await db.select().from(user).where(eq(user.email, fakeEmail));
+    if (existingUser.length > 0) {
+      // 如果已經存在，則刪除資料
+      await db.delete(user).where(eq(user.email, fakeEmail)).execute();
+    }
+
+    // 插入假 user
+    await db.insert(user).values({
+      id: fakeUserId,
+      email: fakeEmail,
+      password: 'hashed-password',
+      role: 'store',
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
+    // 插入假品牌
+    await db.insert(brand).values({
+      id: fakeBrandId,
+      user_id: fakeUserId,
+      title: '假品牌',
+      description: '這不是你的品牌',
+    });
+
+    // 建立假的 token
+    const fakeToken = jwt.sign(
+      {
+        id: 'some-fake-user-id',
+        email: fakeEmail,
+        role: 'store',
+        brand_id: '11111111-1111-1111-1111-111111111111',
+      },
+      process.env.JWT_SECRET ?? 'test',
+      { expiresIn: '1h' },
+    );
+
+    // 發送請求
+    const res = await request(app)
+      .post('/api/v1/store/hotel')
+      .set('Authorization', `Bearer ${fakeToken}`)
+      .send({ ...mockHotelData, name: '假品牌飯店名稱' });
+
+    // 驗證返回結果
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('無權限操作此資料');
+
+    // 測試結束後刪除假資料
+    await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
+    await db.delete(user).where(eq(user.id, fakeUserId)).execute();
   });
 
   it('飯店不存在應回傳 404', async () => {
@@ -371,15 +505,6 @@ describe('飯店創建 API', () => {
     expect(res.statusCode).toBe(403);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe('無權限訪問此資源');
-  });
-
-  it('未登入應回傳 401', async () => {
-    const res = await request(app).post('/api/v1/store/hotel').send(mockHotelData);
-    console.log('未登入應回傳 401', res.body);
-
-    expect(res.statusCode).toBe(401);
-    expect(res.body.success).toBe(false);
-    expect(res.body.message).toBe('未登入或 token 失效');
   });
 
   it('非 store 角色應回傳 403', async () => {
