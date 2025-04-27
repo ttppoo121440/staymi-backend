@@ -16,6 +16,11 @@ authStoreRoutes.put(
   checkRolesMiddleware(['store', 'admin']),
   authStoreController.uploadLogo,
 );
-authStoreRoutes.put('/', authMiddleware, checkRolesMiddleware(['store', 'admin']), authStoreController.updateStoreInfo);
+authStoreRoutes.put(
+  '/brand',
+  authMiddleware,
+  checkRolesMiddleware(['store', 'admin']),
+  authStoreController.updateStoreInfo,
+);
 
 export default authStoreRoutes;
