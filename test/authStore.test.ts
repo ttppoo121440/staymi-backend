@@ -162,7 +162,7 @@ describe('測試 AuthStore API', () => {
   });
 
   // 測試更新功能
-  describe('PUT /api/v1/store', () => {
+  describe('PUT /api/v1/store/brand', () => {
     let token: string;
 
     beforeAll(async () => {
@@ -189,7 +189,10 @@ describe('測試 AuthStore API', () => {
         gender: 'm',
       };
 
-      const res = await request(app).put(`/api/v1/store`).set('Authorization', `Bearer ${token}`).send(updatedData);
+      const res = await request(app)
+        .put(`/api/v1/store/brand`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updatedData);
       console.log('應該成功更新商店資訊', res.body);
 
       expect(res.status).toBe(200);
@@ -210,7 +213,7 @@ describe('測試 AuthStore API', () => {
         gender: 'm',
       };
 
-      const res = await request(app).put(`/api/v1/store`).send(updatedData);
+      const res = await request(app).put(`/api/v1/store/brand`).send(updatedData);
       console.log('未授權錯誤回傳:', res.body);
 
       expect(res.status).toBe(401);
@@ -230,7 +233,10 @@ describe('測試 AuthStore API', () => {
 
       // 使用非 store 角色的 token
       const fakeToken = generateToken({ id: randomUUID(), email: signupData.email, role: 'consumer' });
-      const res = await request(app).put(`/api/v1/store`).set('Authorization', `Bearer ${fakeToken}`).send(updatedData);
+      const res = await request(app)
+        .put(`/api/v1/store/brand`)
+        .set('Authorization', `Bearer ${fakeToken}`)
+        .send(updatedData);
       console.log('權限不足錯誤回傳:', res.body);
 
       expect(res.status).toBe(403);
@@ -241,7 +247,7 @@ describe('測試 AuthStore API', () => {
       const fakeStoreId = randomUUID();
       const token = generateToken({ id: fakeStoreId, email: signupData.email, role: 'store' });
       const res = await request(app)
-        .put('/api/v1/store')
+        .put('/api/v1/store/brand')
         .send({
           title: 'Title',
           description: 'Desc',
