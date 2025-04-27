@@ -232,7 +232,7 @@ describe('測試 AuthStore API', () => {
       };
 
       // 使用非 store 角色的 token
-      const fakeToken = generateToken({ id: randomUUID(), email: signupData.email, role: 'consumer' });
+      const fakeToken = generateToken({ id: randomUUID(), role: 'consumer' });
       const res = await request(app)
         .put(`/api/v1/store/brand`)
         .set('Authorization', `Bearer ${fakeToken}`)
@@ -245,7 +245,7 @@ describe('測試 AuthStore API', () => {
 
     it('應該回傳找不到對應的商店資訊 404', async () => {
       const fakeStoreId = randomUUID();
-      const token = generateToken({ id: fakeStoreId, email: signupData.email, role: 'store' });
+      const token = generateToken({ id: fakeStoreId, role: 'store' });
       const res = await request(app)
         .put('/api/v1/store/brand')
         .send({
@@ -306,7 +306,7 @@ describe('測試 AuthStore API', () => {
     });
 
     it('找不到對應的商店資訊應回傳 404', async () => {
-      const fakeToken = generateToken({ id: randomUUID(), email: signupData.email, role: 'store' });
+      const fakeToken = generateToken({ id: randomUUID(), role: 'store' });
       const res = await request(app)
         .put('/api/v1/store/uploadLogo')
         .set('Authorization', `Bearer ${fakeToken}`)
