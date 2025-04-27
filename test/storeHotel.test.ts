@@ -19,7 +19,7 @@ process.env.NODE_ENV = 'test';
 
 const mockHotelData = {
   region: '台中',
-  name: '測試飯店',
+  name: '測試測試飯店',
   address: '台中市中區自由路一段 123 號',
   phone: '0912123123',
   transportation: '近台中火車站',
@@ -46,7 +46,7 @@ const signupData = {
 
 const mockHotelData1 = {
   region: '台中',
-  name: '商家飯店一號',
+  name: '測試商家飯店一號',
   address: '台中市中區自由路一段 123 號',
   phone: '0912123123',
   transportation: '近台中火車站',
@@ -59,7 +59,7 @@ const mockHotelData1 = {
 
 const mockHotelData2 = {
   region: '台北',
-  name: '商家飯店二號',
+  name: '測試商家飯店二號',
   address: '台北市信義區市府路 45 號',
   phone: '0987654321',
   transportation: '近捷運市政府站',
@@ -147,8 +147,8 @@ describe('取得自己的所有飯店列表 API', () => {
     expect(Array.isArray(res.body.data.hotels)).toBe(true);
     expect(res.body.data.hotels.length).toBeGreaterThanOrEqual(2); // 至少兩間
     const hotelNames = res.body.data.hotels.map((hotel: hotelGetAllType) => hotel.name);
-    expect(hotelNames).toContain('商家飯店一號');
-    expect(hotelNames).toContain('商家飯店二號');
+    expect(hotelNames).toContain('測試商家飯店一號');
+    expect(hotelNames).toContain('測試商家飯店二號');
   });
 
   it('未登入應回傳 401', async () => {
@@ -237,7 +237,7 @@ describe('取得單一飯店 API', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.message).toBe('取得飯店資料成功');
-    expect(res.body.data.hotel.name).toBe('測試飯店');
+    expect(res.body.data.hotel.name).toBe('測試測試飯店');
   });
 
   it('未登入應回傳 401', async () => {
