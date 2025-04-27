@@ -30,6 +30,7 @@ export class AdminUserRepo extends BaseRepository {
     if (typeof is_blacklisted === 'boolean') {
       conditions.push(eq(user.is_blacklisted, is_blacklisted));
     }
+    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
     // 使用 paginateQuery 處理分頁
     const { data, pagination } = await this.paginateQuery(
       // getDataQuery
@@ -50,7 +51,7 @@ export class AdminUserRepo extends BaseRepository {
           })
           .from(user)
           .innerJoin(user_profile, eq(user.id, user_profile.user_id))
-          .where(and(...conditions))
+          .where(and(whereCondition))
           .limit(limit)
           .offset(offset),
 
