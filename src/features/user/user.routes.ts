@@ -10,10 +10,11 @@ const userRoutes = express.Router();
 const authController = new AuthController();
 const userController = new UserController();
 
-userRoutes.get('/user-profile', authMiddleware, userController.getUserProfile.bind(userController));
-userRoutes.put('/user-profile', authMiddleware, userController.update.bind(userController));
-userRoutes.post('/signup', authController.signup.bind(authController));
-userRoutes.post('/login', authController.login.bind(authController));
-userRoutes.put('/change-password', authMiddleware, authController.changePassword.bind(authController));
+userRoutes.get('/user-profile', authMiddleware, userController.getUserProfile);
+userRoutes.put('/user-profile', authMiddleware, userController.update);
+userRoutes.post('/signup', authController.signup);
+userRoutes.post('/login', authController.login);
+userRoutes.put('/change-password', authMiddleware, authController.changePassword);
+userRoutes.put('/uploadAvatar', authMiddleware, userController.uploadAvatar);
 
 export default userRoutes;
