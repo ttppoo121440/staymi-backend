@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 
 import { HttpStatus } from '@/types/http-status.enum';
+import { JwtUserPayload } from '@/types/JwtUserPayload';
 import { appError } from '@/utils/appError';
 
 export const authMiddleware = asyncHandler((req: Request, res: Response, next: NextFunction) => {
@@ -18,8 +19,8 @@ export const authMiddleware = asyncHandler((req: Request, res: Response, next: N
     throw new Error('環境變數中未定義 JWT_SECRET');
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  req.user = decoded as { id: string; email: string; role: string; brand_id?: string };
+  const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtUserPayload;
+  req.user = decoded;
 
   next();
 });
