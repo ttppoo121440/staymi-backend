@@ -13,3 +13,8 @@ export type PaginationResult<T> = {
   data: T[];
   pagination: PaginationType;
 };
+
+export const QuerySchema = z.object({
+  currentPage: z.coerce.number().min(1).default(1),
+  perPage: z.coerce.number().min(1).default(10),
+});
