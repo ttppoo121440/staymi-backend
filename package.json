@@ -7,7 +7,7 @@
     "lint": "eslint src/**/*.ts --fix",
     "lint:fix": "eslint --ext .ts src --fix",
     "build": "tsc && tsc-alias",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "test": "jest",
     "prepare": "husky install",
     "drizzle:migrate": "drizzle-kit generate && drizzle-kit push"
