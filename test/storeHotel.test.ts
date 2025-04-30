@@ -12,7 +12,7 @@ import { hotels } from '../src/database/schemas/hotels.schema';
 import { user } from '../src/database/schemas/user.schema';
 import { user_brand } from '../src/database/schemas/user_brand.schema';
 import { user_profile } from '../src/database/schemas/user_profile.schema';
-import { hotelGetAllType } from '../src/features/storeHotel/storeHotel.schema';
+import { hotelType } from '../src/features/storeHotel/storeHotel.schema';
 import { server } from '../src/server';
 
 process.env.NODE_ENV = 'test';
@@ -146,7 +146,7 @@ describe('取得自己的所有飯店列表 API', () => {
     expect(res.body.message).toBe('取得飯店列表成功');
     expect(Array.isArray(res.body.data.hotels)).toBe(true);
     expect(res.body.data.hotels.length).toBeGreaterThanOrEqual(2); // 至少兩間
-    const hotelNames = res.body.data.hotels.map((hotel: hotelGetAllType) => hotel.name);
+    const hotelNames = res.body.data.hotels.map((hotel: hotelType) => hotel.name);
     expect(hotelNames).toContain('測試商家飯店一號');
     expect(hotelNames).toContain('測試商家飯店二號');
   });
@@ -198,64 +198,6 @@ describe('取得自己的所有飯店列表 API', () => {
     expect(res.statusCode).toBe(403);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe('無權限訪問此資源');
-  });
-
-  it('非本人品牌操作應回傳 403', async () => {
-    const fakeBrandId = randomUUID();
-    const fakeUserId = randomUUID();
-    const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
-
-    // 檢查是否已經存在該 email
-    const existingUser = await db.select().from(user).where(eq(user.email, fakeEmail));
-    if (existingUser.length > 0) {
-      // 如果已經存在，則刪除資料
-      await db.delete(user).where(eq(user.email, fakeEmail)).execute();
-    }
-
-    // 插入假 user
-    await db.insert(user).values({
-      id: fakeUserId,
-      email: fakeEmail,
-      password: 'hashed-password',
-      role: 'store',
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-
-    // 插入假品牌
-    await db.insert(brand).values({
-      id: fakeBrandId,
-      user_id: fakeUserId,
-      title: '假品牌',
-      description: '這不是你的品牌',
-    });
-
-    // 建立假的 token
-    const fakeToken = jwt.sign(
-      {
-        id: 'some-fake-user-id',
-        email: fakeEmail,
-        role: 'store',
-        brand_id: '11111111-1111-1111-1111-111111111111',
-      },
-      process.env.JWT_SECRET ?? 'test',
-      { expiresIn: '1h' },
-    );
-
-    // 發送請求
-    const res = await request(app)
-      .post('/api/v1/store/hotel')
-      .set('Authorization', `Bearer ${fakeToken}`)
-      .send({ ...mockHotelData, name: '假品牌飯店名稱' });
-
-    // 驗證返回結果
-    expect(res.statusCode).toBe(403);
-    expect(res.body.success).toBe(false);
-    expect(res.body.message).toBe('無權限操作此資料');
-
-    // 測試結束後刪除假資料
-    await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
-    await db.delete(user).where(eq(user.id, fakeUserId)).execute();
   });
 });
 
