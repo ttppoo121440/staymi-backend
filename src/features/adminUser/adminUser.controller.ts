@@ -19,8 +19,8 @@ export class AdminUserController {
     const parsedQuery = adminUserQuerySchema.parse(req.query);
     const { email = '', is_blacklisted, currentPage, perPage } = parsedQuery;
 
-    const users = await this.adminUserRepo.getAll(email, is_blacklisted, currentPage, perPage);
-    const usersToDTO = adminUserListToDto.parse(users);
+    const result = await this.adminUserRepo.getAll(email, is_blacklisted, currentPage, perPage);
+    const usersToDTO = adminUserListToDto.parse(result);
     res.status(HttpStatus.OK).json(successResponse(usersToDTO, '獲取所有會員資料成功'));
   });
   getById = asyncHandler(async (req: Request, res: Response) => {
@@ -34,12 +34,8 @@ export class AdminUserController {
     const { id } = req.params;
     const { role } = req.body;
     const validatedData = adminUserUpdateRoleSchema.parse({ id, role });
-    const updatedUser = await this.adminUserRepo.updateRole(validatedData);
-    console.log('updatedUser', updatedUser);
-
-    const dtoData = adminUserUpdateRoleToDto.parse(updatedUser);
-    console.log('dtoData', dtoData);
-
+    const result = await this.adminUserRepo.updateRole(validatedData);
+    const dtoData = adminUserUpdateRoleToDto.parse(result);
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新用戶角色成功'));
   });
 }

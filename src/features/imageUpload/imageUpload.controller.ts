@@ -15,10 +15,10 @@ export class ImageUploadController {
     }
 
     const userId: string = (req.user as JwtUserPayload).id;
-    const cloudinaryUrl = await this.fileUploadService.uploadToCloudinary(req.file, userId);
+    const result = await this.fileUploadService.uploadToCloudinary(req.file, userId);
 
     console.log('🔥 req.file:', req.file);
-    console.log('🔥 cloudinaryUrl:', cloudinaryUrl);
-    res.status(HttpStatus.OK).json(successResponse({ image: { url: cloudinaryUrl } }, '上傳成功'));
+    console.log('🔥 cloudinaryUrl:', result);
+    res.status(HttpStatus.OK).json(successResponse({ image: { url: result } }, '上傳成功'));
   });
 }

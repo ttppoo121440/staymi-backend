@@ -17,8 +17,8 @@ export class StoreHotelController {
     const brand_id = res.locals.brand_id;
     const parsedQuery = QuerySchema.parse(req.query);
     const { currentPage, perPage } = parsedQuery;
-    const hotels = await this.storeHotelRepo.getAll(brand_id, currentPage, perPage);
-    const dtoDate = hotelListToDto.parse(hotels);
+    const result = await this.storeHotelRepo.getAll(brand_id, currentPage, perPage);
+    const dtoDate = hotelListToDto.parse(result);
     res.status(HttpStatus.OK).json(successResponse(dtoDate, '取得飯店列表成功'));
   });
   getById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {

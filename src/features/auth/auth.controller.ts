@@ -28,13 +28,13 @@ export class AuthController {
     }
 
     const token = await this.authRepo.login(validatedData);
-    const userInfo = await this.authRepo.getUserByEmail(validatedData.email);
+    const result = await this.authRepo.getUserByEmail(validatedData.email);
 
     const responseData = {
       token,
       user: {
-        name: userInfo.name,
-        avatar: userInfo.avatar,
+        name: result.name,
+        avatar: result.avatar,
       },
     };
     res.status(HttpStatus.OK).json(successResponse(responseData, '登入成功'));
@@ -44,12 +44,12 @@ export class AuthController {
     const validatedData = authCreateToDTO.parse(req.body);
     const newUser = await this.authRepo.signup(validatedData);
     const token = await this.authRepo.login({ email: newUser.email, password: validatedData.password });
-    const userInfo = await this.authRepo.getUserByEmail(newUser.email);
+    const result = await this.authRepo.getUserByEmail(newUser.email);
     const responseData = {
       token,
       user: {
-        name: userInfo.name,
-        avatar: userInfo.avatar,
+        name: result.name,
+        avatar: result.avatar,
       },
     };
     res.status(HttpStatus.CREATED).json(successResponse(responseData, '註冊成功'));
