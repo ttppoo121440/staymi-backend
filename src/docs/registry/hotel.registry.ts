@@ -3,8 +3,8 @@ import { z } from 'zod';
 
 import {
   hotelCreateSchema,
-  hotelCreateToDTO,
-  hotelGetAllToDTO,
+  hotelToDto,
+  hotelListToDto,
   hotelUpdateSchema,
 } from '@/features/storeHotel/storeHotel.schema';
 import { swaggerResponseSchema } from '@/types/swaggerSchema';
@@ -35,7 +35,7 @@ export const registerHotelRoutes = (registry: OpenAPIRegistry): void => {
         description: '取得飯店列表成功',
         content: {
           'application/json': {
-            schema: hotelGetAllToDTO,
+            schema: hotelListToDto,
             examples: {
               'application/json': {
                 summary: '取得飯店列表成功範例',
@@ -177,7 +177,7 @@ export const registerHotelRoutes = (registry: OpenAPIRegistry): void => {
         description: '取得某一個飯店成功',
         content: {
           'application/json': {
-            schema: hotelCreateToDTO,
+            schema: hotelToDto,
             examples: {
               'application/json': {
                 summary: '取得某一個飯店成功範例',
@@ -330,7 +330,7 @@ export const registerHotelRoutes = (registry: OpenAPIRegistry): void => {
         description: '新增飯店成功',
         content: {
           'application/json': {
-            schema: hotelCreateToDTO,
+            schema: hotelToDto,
             examples: {
               'application/json': {
                 summary: '新增飯店成功範例',
@@ -504,7 +504,7 @@ export const registerHotelRoutes = (registry: OpenAPIRegistry): void => {
         description: '修改飯店成功',
         content: {
           'application/json': {
-            schema: hotelCreateToDTO,
+            schema: hotelToDto,
             examples: {
               'application/json': {
                 summary: '修改飯店成功範例',

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { paginationSchema } from '@/types/pagination';
 import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
-export const hotelGetAllSchema = z.object({
+export const hotelSchema = z.object({
   id: z.string().uuid().optional(),
   brand_id: z.string().uuid(),
   region: z.string().max(50),
@@ -26,9 +26,9 @@ export const hotelGetAllSchema = z.object({
   updated_at: zDateOrDefault(),
 });
 
-export const hotelGetAllToDTO = z
+export const hotelListToDto = z
   .object({
-    hotels: z.array(hotelGetAllSchema),
+    hotels: z.array(hotelSchema),
     pagination: paginationSchema,
   })
   .transform((data) => ({
@@ -40,12 +40,12 @@ export const hotelGetAllToDTO = z
     pagination: data.pagination,
   }));
 
-export const hotelCreateSchema = hotelGetAllSchema.omit({
+export const hotelCreateSchema = hotelSchema.omit({
   created_at: true,
   updated_at: true,
 });
 
-export const hotelCreateToDTO = z
+export const hotelToDto = z
   .object({
     hotel: hotelCreateSchema,
   })
@@ -69,23 +69,7 @@ export const hotelUpdateSchema = hotelCreateSchema
     id: z.string().uuid(),
   });
 
-export const hotelUpdateToDTO = z
-  .object({
-    hotel: hotelUpdateSchema,
-  })
-  .transform((data) => ({
-    hotel: {
-      ...data.hotel,
-      updated_at: formatDisplayDate(data.hotel.updated_at, 'YYYY-MM-DD HH:mm:ss'),
-    },
-  }));
-
-export const hotelQuerySchema = z.object({
-  currentPage: z.coerce.number().min(1).default(1),
-  perPage: z.coerce.number().min(1).default(10),
-});
-
-export type hotelGetAllType = z.infer<typeof hotelGetAllSchema>;
-export type hotelGetAllToDTOType = z.infer<typeof hotelGetAllToDTO>;
+export type hotelType = z.infer<typeof hotelSchema>;
+export type hotelListToDtoType = z.infer<typeof hotelListToDto>;
 export type hotelCreateType = z.infer<typeof hotelCreateSchema>;
 export type hotelUpdateType = z.infer<typeof hotelUpdateSchema>;

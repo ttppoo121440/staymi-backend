@@ -33,7 +33,7 @@ export const adminUserToDTO = z
     },
   }));
 
-export const adminUserArrayToDTO = z
+export const adminUserListToDto = z
   .object({
     users: adminUserArraySchema,
     pagination: paginationSchema,
@@ -54,7 +54,7 @@ export const adminUserUpdateRoleSchema = adminUserSchema.pick({
   updated_at: true,
 });
 
-export const adminUserUpdateRoleToDTO = z
+export const adminUserUpdateRoleToDto = z
   .object({
     user: adminUserUpdateRoleSchema,
   })

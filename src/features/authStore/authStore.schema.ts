@@ -26,15 +26,20 @@ export const authStoreUpdateSchema = authStoreSignupSchema
     logo_url: z.string().optional(),
   });
 
-export const authStoreUpdateToDTO = z
+export const authStoreToDto = z
   .object({
     store: authStoreUpdateSchema,
+  })
+  .extend({
+    created_at: zDateOrDefault(),
+    updated_at: zDateOrDefault(),
   })
   .transform((data) => ({
     store: {
       ...data.store,
       birthday: formatDisplayDate(data.store.birthday),
-      updated_at: formatDisplayDate(new Date(), 'YYYY-MM-DD HH:mm:ss'),
+      created_at: formatDisplayDate(data.created_at, 'YYYY-MM-DD HH:mm:ss'),
+      updated_at: formatDisplayDate(data.updated_at, 'YYYY-MM-DD HH:mm:ss'),
     },
   }));
 

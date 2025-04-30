@@ -12,7 +12,7 @@ import { AuthStoreRepo } from './authStore.repo';
 import {
   authStoreSignupSchema,
   authStoreUpdateSchema,
-  authStoreUpdateToDTO,
+  authStoreToDto,
   authStoreUploadLogoSchema,
 } from './authStore.schema';
 
@@ -52,7 +52,7 @@ export class AuthStoreController {
     const validatedData = authStoreUpdateSchema.parse(req.body);
     const userId: string = (req.user as JwtUserPayload).id;
     const updatedUser = await this.authStoreRepo.updateStoreInfo(userId, validatedData);
-    const dtoData = authStoreUpdateToDTO.parse(updatedUser);
+    const dtoData = authStoreToDto.parse(updatedUser);
 
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新成功'));
   });

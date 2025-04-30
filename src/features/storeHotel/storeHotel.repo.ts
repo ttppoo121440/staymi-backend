@@ -7,14 +7,14 @@ import { HttpStatus } from '@/types/http-status.enum';
 import { PaginationType } from '@/types/pagination';
 import { RepoError } from '@/utils/appError';
 
-import { hotelCreateType, hotelGetAllType, hotelUpdateType } from './storeHotel.schema';
+import { hotelCreateType, hotelType, hotelUpdateType } from './storeHotel.schema';
 export class StoreHotelRepo extends BaseRepository {
   async getAll(
     brandId: string,
     currentPage = 1,
     perPage = 10,
-  ): Promise<{ hotels: hotelGetAllType[]; pagination: PaginationType }> {
-    const { data, pagination } = await this.paginateQuery<hotelGetAllType>(
+  ): Promise<{ hotels: hotelType[]; pagination: PaginationType }> {
+    const { data, pagination } = await this.paginateQuery<hotelType>(
       (limit, offset) => db.select().from(hotels).where(eq(hotels.brand_id, brandId)).limit(limit).offset(offset),
       async () => {
         const totalItemsResult = await db
@@ -36,7 +36,7 @@ export class StoreHotelRepo extends BaseRepository {
   async create(data: hotelCreateType): Promise<{ hotel: hotelCreateType }> {
     const result = await db.insert(hotels).values(data).returning();
     if (result.length === 0) {
-      throw new Error('無法創建酒店');
+      throw new RepoError('創建飯店失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return {
       hotel: result[0],
@@ -46,7 +46,7 @@ export class StoreHotelRepo extends BaseRepository {
     const result = await db
       .update(hotels)
       .set({ ...data, updated_at: new Date() })
-      .where(eq(hotels.id, data.id))
+      .where(and(eq(hotels.id, data.id), eq(hotels.brand_id, data.brand_id)))
       .returning();
     if (result.length === 0) {
       throw new RepoError('飯店不存在', HttpStatus.NOT_FOUND);

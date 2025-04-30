@@ -8,9 +8,9 @@ import { AdminUserRepo } from './adminUser.repo';
 import {
   adminUserToDTO,
   adminUserQuerySchema,
-  adminUserArrayToDTO,
+  adminUserListToDto,
   adminUserUpdateRoleSchema,
-  adminUserUpdateRoleToDTO,
+  adminUserUpdateRoleToDto,
 } from './adminUser.schema';
 
 export class AdminUserController {
@@ -20,7 +20,7 @@ export class AdminUserController {
     const { email = '', is_blacklisted, currentPage, perPage } = parsedQuery;
 
     const users = await this.adminUserRepo.getAll(email, is_blacklisted, currentPage, perPage);
-    const usersToDTO = adminUserArrayToDTO.parse(users);
+    const usersToDTO = adminUserListToDto.parse(users);
     res.status(HttpStatus.OK).json(successResponse(usersToDTO, '獲取所有會員資料成功'));
   });
   getById = asyncHandler(async (req: Request, res: Response) => {
@@ -37,7 +37,7 @@ export class AdminUserController {
     const updatedUser = await this.adminUserRepo.updateRole(validatedData);
     console.log('updatedUser', updatedUser);
 
-    const dtoData = adminUserUpdateRoleToDTO.parse(updatedUser);
+    const dtoData = adminUserUpdateRoleToDto.parse(updatedUser);
     console.log('dtoData', dtoData);
 
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新用戶角色成功'));
