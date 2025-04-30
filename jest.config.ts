@@ -6,4 +6,5 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: ['<rootDir>/test/**/*.[jt]s?(x)'],
+  // silent: true,
 };
