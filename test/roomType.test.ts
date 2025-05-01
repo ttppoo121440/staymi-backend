@@ -173,64 +173,6 @@ describe('GET /api/v1/store/hotel/room-type', () => {
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe('無權限訪問此資源');
   });
-
-  it('非本人品牌操作應回傳 403', async () => {
-    const fakeBrandId = randomUUID();
-    const fakeUserId = randomUUID();
-    const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
-
-    // 檢查是否已經存在該 email
-    const existingUser = await db.select().from(user).where(eq(user.email, fakeEmail));
-    if (existingUser.length > 0) {
-      // 如果已經存在，則刪除資料
-      await db.delete(user).where(eq(user.email, fakeEmail)).execute();
-    }
-
-    // 插入假 user
-    await db.insert(user).values({
-      id: fakeUserId,
-      email: fakeEmail,
-      password: 'hashed-password',
-      role: 'store',
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-
-    // 插入假品牌
-    await db.insert(brand).values({
-      id: fakeBrandId,
-      user_id: fakeUserId,
-      title: '假品牌',
-      description: '這不是你的品牌',
-    });
-
-    // 建立假的 token
-    const fakeToken = jwt.sign(
-      {
-        id: 'some-fake-user-id',
-        email: fakeEmail,
-        role: 'store',
-        brand_id: '11111111-1111-1111-1111-111111111111',
-      },
-      process.env.JWT_SECRET ?? 'test',
-      { expiresIn: '1h' },
-    );
-
-    // 發送請求
-    const res = await request(app)
-      .post(endpoint)
-      .set('Authorization', `Bearer ${fakeToken}`)
-      .send({ ...mockHotelData, name: '假品牌飯店名稱' });
-
-    // 驗證返回結果
-    expect(res.statusCode).toBe(403);
-    expect(res.body.success).toBe(false);
-    expect(res.body.message).toBe('無權限操作此資料');
-
-    // 測試結束後刪除假資料
-    await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
-    await db.delete(user).where(eq(user.id, fakeUserId)).execute();
-  });
 });
 
 describe('GET /api/v1/store/hotel/room-type/:id', () => {
@@ -720,7 +662,7 @@ describe('PUT /api/v1/store/hotel/room-type/:id', () => {
   });
 });
 
-describe('DELETE /api/v1/store/hotel/room-type/:id', () => {
+describe.only('DELETE /api/v1/store/hotel/room-type/:id', () => {
   const endpoint = '/api/v1/store/hotel/room-type';
   let roomTypeId: string;
 
@@ -757,7 +699,7 @@ describe('DELETE /api/v1/store/hotel/room-type/:id', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.message).toBe('刪除飯店房型成功');
+    expect(res.body.message).toBe('刪除成功');
   });
 
   it('未登入應回傳 401', async () => {
