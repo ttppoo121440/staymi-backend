@@ -8,7 +8,7 @@ import { bearerSecurity } from '../swagger';
 
 export const registerAdminUserRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
-    tags: ['adminUser'],
+    tags: ['AdminUser'],
     method: 'get',
     path: '/api/v1/admin/users',
     summary: '獲取所有會員資料',
@@ -184,7 +184,7 @@ export const registerAdminUserRoutes = (registry: OpenAPIRegistry): void => {
     },
   });
   registry.registerPath({
-    tags: ['adminUser'],
+    tags: ['AdminUser'],
     method: 'get',
     path: '/api/v1/admin/users/{id}',
     summary: '獲取單一會員資料',
@@ -315,7 +315,7 @@ export const registerAdminUserRoutes = (registry: OpenAPIRegistry): void => {
     },
   });
   registry.registerPath({
-    tags: ['adminUser'],
+    tags: ['AdminUser'],
     method: 'put',
     path: '/api/v1/admin/users/{id}/role',
     summary: '修改會員角色',
