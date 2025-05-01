@@ -8,6 +8,7 @@ import { registerAuthRoutes } from './registry/auth.registry';
 import { registerAuthStoreRoutes } from './registry/authStore.registry';
 import { registerHotelRoutes } from './registry/hotel.registry';
 import { registerImageUploadRoutes } from './registry/imageUpload.registry';
+import { registerRoomTypeRoutes } from './registry/roomType.registry';
 import { registerUserRoutes } from './registry/user.registry';
 
 // 定義一個共用的 Bearer Token 安全設定常數
@@ -29,6 +30,7 @@ registerAdminUserRoutes(registry);
 registerAuthStoreRoutes(registry);
 registerImageUploadRoutes(registry);
 registerHotelRoutes(registry);
+registerRoomTypeRoutes(registry);
 
 // 註冊安全方案
 export function registerSecuritySchemes(registry: OpenAPIRegistry): void {
