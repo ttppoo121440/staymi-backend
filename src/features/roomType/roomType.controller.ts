@@ -51,8 +51,7 @@ export class RoomTypeController {
     const brand_id = res.locals.brand_id;
     const roomTypeId = req.params.id;
     const validatedData = roomTypesDeleteSchema.parse({ id: roomTypeId, brand_id });
-    const result = await this.roomTypeRepo.delete(validatedData);
-    const dtoData = roomTypeDto.parse(result);
-    res.status(HttpStatus.OK).json(successResponse(dtoData, '刪除飯店房型成功'));
+    await this.roomTypeRepo.delete(validatedData);
+    res.status(HttpStatus.OK).json(successResponse(null, '刪除成功'));
   });
 }
