@@ -78,16 +78,12 @@ export class RoomTypeRepo extends BaseRepository {
       roomType: result[0],
     };
   }
-  async delete(data: roomTypesDeleteType): Promise<{ roomType: roomTypesUpdateType }> {
+  async delete(data: roomTypesDeleteType): Promise<void> {
     const result = await db
       .delete(room_types)
-      .where(and(eq(room_types.id, data.id), eq(room_types.brand_id, data.brand_id)))
-      .returning();
-    if (result.length === 0) {
+      .where(and(eq(room_types.id, data.id), eq(room_types.brand_id, data.brand_id)));
+    if (result.rowCount === 0) {
       throw new RepoError('查無此資料，刪除失敗', HttpStatus.NOT_FOUND);
     }
-    return {
-      roomType: result[0],
-    };
   }
 }
