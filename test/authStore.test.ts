@@ -161,6 +161,46 @@ describe('測試 AuthStore API', () => {
     });
   });
 
+  describe('POST /api/v1/store/login', () => {
+    beforeEach(async () => {
+      await request(app).post('/api/v1/store/signup').send(signupData);
+    });
+
+    it('應該成功登入商家 200', async () => {
+      // 嘗試登入
+      const res = await request(app).post('/api/v1/store/login').send({
+        email: signupData.email,
+        password: signupData.password,
+      });
+      console.log('登入成功的回傳:', res.body);
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.user.name).toBe(signupData.name);
+    });
+
+    it('密碼錯誤應該登入失敗 401', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/login')
+        .send({ email: signupData.email, password: 'WrongPassword' });
+      console.log('密碼錯誤的回傳:', res.body);
+
+      expect(res.statusCode).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('密碼錯誤');
+    });
+
+    it('帳號不存在應該登入失敗 404', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/login')
+        .send({ email: 'nonexistent@example.com', password: 'any11111' });
+      console.log('帳號不存在的回傳:', res.body);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('用戶不存在');
+    });
+  });
   // 測試更新功能
   describe('PUT /api/v1/store/brand', () => {
     let token: string;
