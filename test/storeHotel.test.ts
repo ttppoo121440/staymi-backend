@@ -333,10 +333,7 @@ describe('取得單一飯店 API', () => {
     );
 
     // 發送請求
-    const res = await request(app)
-      .post('/api/v1/store/hotel')
-      .set('Authorization', `Bearer ${fakeToken}`)
-      .send({ ...mockHotelData, name: '假品牌飯店名稱' });
+    const res = await request(app).get('/api/v1/store/hotel').set('Authorization', `Bearer ${fakeToken}`);
 
     // 驗證返回結果
     expect(res.statusCode).toBe(403);
