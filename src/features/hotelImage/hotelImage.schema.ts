@@ -8,7 +8,7 @@ export const hotelImagesSchema = z.object({
   hotel_id: z.string(),
   image_url: z.string({ message: '請上傳圖片' }),
   is_cover: z.boolean().default(false),
-  position: z.number().default(0),
+  position: z.number({ message: '請輸入整數' }).default(0),
   created_at: zDateOrDefault(),
   updated_at: zDateOrDefault(),
 });
