@@ -65,13 +65,13 @@ export class AuthStoreRepo {
   }
   async storeLogin(data: AuthLoginType): Promise<string> {
     const result = await db.select().from(user).where(eq(user.email, data.email));
-    const brand_idResult = await db.select().from(user_brand).where(eq(user_brand.user_id, result[0].id));
 
     if (result.length === 0) {
       throw new RepoError('用戶不存在', HttpStatus.NOT_FOUND);
     }
 
     const foundUser = result[0];
+    const brand_idResult = await db.select().from(user_brand).where(eq(user_brand.user_id, result[0].id));
 
     if (foundUser.password === null) {
       throw new RepoError('密碼不存在', HttpStatus.UNAUTHORIZED);
