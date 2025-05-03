@@ -5,12 +5,43 @@ import { authBrandId } from '@/middleware/authBrandId.middleware';
 import { checkRolesMiddleware } from '@/middleware/checkRoles.middleware';
 
 import { HotelImageController } from '../hotelImage/hotelImage.controller';
+import { ProductsController } from '../product/products.controller';
 
 import { StoreHotelController } from './storeHotel.controller';
 
 const storeHotelRoutes = express.Router();
 const storeHotelController = new StoreHotelController();
 const hotelImageController = new HotelImageController();
+const productsController = new ProductsController();
+
+storeHotelRoutes.get(
+  '/:hotelId/products',
+  authMiddleware,
+  checkRolesMiddleware(['store', 'admin']),
+  authBrandId,
+  productsController.getAll,
+);
+storeHotelRoutes.get(
+  '/:hotelId/products/:id',
+  authMiddleware,
+  checkRolesMiddleware(['store', 'admin']),
+  authBrandId,
+  productsController.getById,
+);
+storeHotelRoutes.post(
+  '/:hotelId/products',
+  authMiddleware,
+  checkRolesMiddleware(['store', 'admin']),
+  authBrandId,
+  productsController.create,
+);
+storeHotelRoutes.put(
+  '/:hotelId/products/:id',
+  authMiddleware,
+  checkRolesMiddleware(['store', 'admin']),
+  authBrandId,
+  productsController.update,
+);
 
 storeHotelRoutes.get(
   '/:hotelId/images',
