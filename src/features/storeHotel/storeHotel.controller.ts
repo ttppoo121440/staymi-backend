@@ -48,10 +48,8 @@ export class StoreHotelController {
     const brand_id = res.locals.brand_id;
     const hotelId = req.params.id;
 
-    const hotel = await this.storeHotelRepo.getById({ hotelId });
-    if (!hotel) {
-      return next(appError('飯店不存在', HttpStatus.NOT_FOUND));
-    }
+    await this.storeHotelRepo.getById({ hotelId });
+
     const validatedData = hotelUpdateSchema.parse({ ...req.body, id: hotelId, brand_id });
     const isNameDuplicateHotel = await this.storeHotelRepo.isNameDuplicate(validatedData.name, hotelId);
     if (isNameDuplicateHotel) {
