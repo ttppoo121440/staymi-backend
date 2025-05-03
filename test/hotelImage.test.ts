@@ -357,6 +357,21 @@ describe('飯店圖片 API', () => {
       expect(res.body.message).toBe('請上傳圖片');
     });
 
+    it('資料格式不正確應該回傳 400', async () => {
+      const res = await request(app)
+        .post(`/api/v1/store/hotel/${hotelId}/images`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: true,
+          position: 'invalid-position', // 錯誤的資料類型
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('請輸入整數');
+    });
+
     it('未登入應回傳 401', async () => {
       const res = await request(app).post(`/api/v1/store/hotel/${hotelId}/images`);
 
