@@ -69,6 +69,9 @@ export class StoreHotelRepo extends BaseRepository {
       .select()
       .from(hotels)
       .where(and(...queryConditions));
+    if (result.length === 0) {
+      throw new RepoError('飯店不存在', HttpStatus.NOT_FOUND);
+    }
     return {
       hotel: result[0] ?? null,
     };
