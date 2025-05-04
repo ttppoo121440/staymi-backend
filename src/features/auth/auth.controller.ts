@@ -5,7 +5,7 @@ import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 
 import { env, frontendUrl, serverUrl } from '@/config/env';
-import getRedisClient from '@/config/redisClient';
+import { disconnectRedis, getRedisClient } from '@/config/redisClient';
 import { HttpStatus } from '@/types/http-status.enum';
 import type { JwtUserPayload } from '@/types/JwtUserPayload';
 import { appError } from '@/utils/appError';
@@ -103,6 +103,7 @@ export class AuthController {
     }
 
     await client.del(`line:state:${state}`);
+    await disconnectRedis();
 
     const { access_token, id_token } = await this.authService.getLineToken(code);
     const providerId = await this.authService.getLineUserId(access_token);
