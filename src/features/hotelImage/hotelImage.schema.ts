@@ -13,20 +13,6 @@ export const hotelImagesSchema = z.object({
   updated_at: zDateOrDefault(),
 });
 
-export const hotelImagesCreateSchema = hotelImagesSchema.omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-});
-
-export const hotelImagesUpdateSchema = hotelImagesSchema.omit({
-  created_at: true,
-});
-export const hotelImagesDeleteSchema = hotelImagesSchema.pick({
-  id: true,
-  hotel_id: true,
-});
-
 export const hotelImagesListDto = z
   .object({
     images: z.array(hotelImagesSchema),
@@ -54,6 +40,20 @@ export const hotelImagesDto = z
       updated_at: formatDisplayDate(data.image.updated_at, 'YYYY-MM-DD HH:mm:ss'),
     },
   }));
+
+export const hotelImagesCreateSchema = hotelImagesSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+
+export const hotelImagesUpdateSchema = hotelImagesSchema.omit({
+  created_at: true,
+});
+export const hotelImagesDeleteSchema = hotelImagesSchema.pick({
+  id: true,
+  hotel_id: true,
+});
 
 export type HotelImageType = z.infer<typeof hotelImagesSchema>;
 export type HotelImageCreateType = z.infer<typeof hotelImagesCreateSchema>;
