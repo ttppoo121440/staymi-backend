@@ -9,6 +9,7 @@ import { registerAuthStoreRoutes } from './registry/authStore.registry';
 import { registerHotelRoutes } from './registry/hotel.registry';
 import { registerHotelImageRoutes } from './registry/hotelImage.registry';
 import { registerImageUploadRoutes } from './registry/imageUpload.registry';
+import { registerProductRoutes } from './registry/product.registry';
 import { registerRoomTypeRoutes } from './registry/roomType.registry';
 import { registerUserRoutes } from './registry/user.registry';
 
@@ -33,6 +34,7 @@ registerImageUploadRoutes(registry);
 registerHotelRoutes(registry);
 registerRoomTypeRoutes(registry);
 registerHotelImageRoutes(registry);
+registerProductRoutes(registry);
 
 // 註冊安全方案
 export function registerSecuritySchemes(registry: OpenAPIRegistry): void {
