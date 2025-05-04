@@ -133,22 +133,16 @@ export class AuthController {
     );
   });
   googleCallback = asyncHandler((req: Request, res: Response): Promise<void> => {
-    const { token } = req.user as JwtUserPayload & { token: string };
     const user = req.user as {
       name: string;
       avatar: string;
       token: string;
     };
-    const userInfo = {
-      token: user.token,
-      user: {
-        name: user.name,
-        avatar: user.avatar,
-      },
-    };
-
-    res.status(HttpStatus.OK).json(successResponse(userInfo, '登入成功'));
-    res.redirect(`${serverUrl}/api/v1/users/login/success?token=${token}`);
+    res.redirect(
+      `${frontendUrl}/callback?pathname=/&token=${user.token}&name=${user.name}&avatar=${encodeURIComponent(
+        user.avatar,
+      )}`,
+    );
     return Promise.resolve();
   });
 }
