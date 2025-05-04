@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
-import { env, serverUrl } from '@/config/env';
+import { env } from '@/config/env';
 import { AuthService } from '@/features/auth/auth.service';
 
 const authService = new AuthService();
@@ -12,7 +12,7 @@ passport.use(
     {
       clientID: env.clientID,
       clientSecret: env.clientSecret,
-      callbackURL: `${serverUrl}/api/v1/users/google/callback`,
+      callbackURL: `https://staymi.vercel.app/api/v1/users/google/callback`,
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
