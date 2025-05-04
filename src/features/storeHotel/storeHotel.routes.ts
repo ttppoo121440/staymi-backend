@@ -42,6 +42,13 @@ storeHotelRoutes.put(
   authBrandId,
   productsController.update,
 );
+storeHotelRoutes.patch(
+  '/:hotelId/products/:id',
+  authMiddleware,
+  checkRolesMiddleware(['store', 'admin']),
+  authBrandId,
+  productsController.softDelete,
+);
 
 storeHotelRoutes.get(
   '/:hotelId/images',
