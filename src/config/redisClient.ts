@@ -15,7 +15,7 @@ client.on('error', (err) => {
 
 let connected = false;
 
-const getRedisClient = async (): Promise<RedisClientType> => {
+export const getRedisClient = async (): Promise<RedisClientType> => {
   if (!connected) {
     await client.connect();
     connected = true;
@@ -23,4 +23,9 @@ const getRedisClient = async (): Promise<RedisClientType> => {
   return client;
 };
 
-export default getRedisClient;
+export const disconnectRedis = async (): Promise<void> => {
+  if (connected) {
+    await client.quit();
+    connected = false;
+  }
+};
