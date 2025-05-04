@@ -44,4 +44,14 @@ export class ProductsController {
     const dtoData = productsDto.parse(result);
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新伴手禮成功'));
   });
+  softDelete = asyncHandler(async (req: Request, res: Response) => {
+    const hotelId = req.params.hotelId;
+    const id = req.params.id;
+
+    await this.storeHotelRepo.getById({ hotelId });
+    const { is_active } = await this.productsRepo.selectIsActive(id, hotelId);
+    await this.productsRepo.softDelete(id, hotelId, !is_active);
+    const message = is_active ? '還原伴手禮成功' : '刪除伴手禮成功';
+    res.status(200).json(successResponse(null, message));
+  });
 }
