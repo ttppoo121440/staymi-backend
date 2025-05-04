@@ -36,3 +36,26 @@ export type CreateUserByProviderInput = {
   email?: string;
   avatar?: string;
 };
+
+export type GoogleTokens = {
+  access_token: string;
+  id_token: string;
+};
+
+export type GoogleProfile = {
+  email: string;
+  name?: string;
+  picture?: string;
+  sub: string;
+};
+
+export type ProfileType = {
+  id: string; // providerId
+  emails?: { value: string }[];
+  displayName: string;
+  photos?: { value: string }[];
+};
+
+export type SerializedUser = {
+  id: string;
+};
