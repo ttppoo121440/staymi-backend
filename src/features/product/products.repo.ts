@@ -68,13 +68,26 @@ export class ProductsRepo extends BaseRepository {
       product: result[0],
     };
   }
-  async softDelete(id: string, hotelId: string): Promise<void> {
+  async softDelete(id: string, hotelId: string, isActive: boolean): Promise<void> {
     const result = await db
       .update(products)
-      .set({ is_active: true })
+      .set({ is_active: isActive })
       .where(and(eq(products.id, id), eq(products.hotel_id, hotelId)));
     if (result.rowCount === 0) {
       throw new RepoError('刪除伴手禮失敗', HttpStatus.NOT_FOUND);
     }
+  }
+  async selectIsActive(id: string, hotelId: string): Promise<{ is_active: boolean }> {
+    const result = await db
+      .select({ is_active: products.is_active })
+      .from(products)
+      .where(and(eq(products.id, id), eq(products.hotel_id, hotelId)))
+      .limit(1);
+    if (result.length === 0) {
+      throw new RepoError('查無此伴手禮', HttpStatus.NOT_FOUND);
+    }
+    return {
+      is_active: result[0].is_active,
+    };
   }
 }
