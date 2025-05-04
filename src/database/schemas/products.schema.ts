@@ -11,7 +11,7 @@ export const products = pgTable('products', {
   features: varchar('features', { length: 255 }).notNull(),
   description: text('description').notNull(),
   imageUrl: varchar('imageUrl', { length: 255 }).notNull(),
-  is_active: boolean('is_active').default(false),
+  is_active: boolean('is_active').notNull().default(false),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
 });
