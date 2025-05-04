@@ -435,7 +435,7 @@ describe('飯店圖片 API', () => {
     });
   });
 
-  describe.only('PUT /api/v1/store/hotel/:hotelId/products/:id', () => {
+  describe('PUT /api/v1/store/hotel/:hotelId/products/:id', () => {
     let productId: string;
 
     const originalProduct = {
@@ -562,6 +562,137 @@ describe('飯店圖片 API', () => {
         .put(`/api/v1/store/hotel/${fakeHotelId}/products/${productId}`)
         .set('Authorization', `Bearer ${token}`)
         .send(updatedProduct);
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('飯店不存在');
+    });
+  });
+
+  describe('PATCH /api/v1/store/hotel/:hotelId/products/:id', () => {
+    let productId: string;
+
+    beforeAll(async () => {
+      const createRes = await request(app)
+        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          name: '軟刪除測試產品',
+          description: '用於測試刪除功能',
+          features: '可還原',
+          imageUrl: 'https://example.com/delete.jpg',
+        });
+
+      productId = createRes.body.data.product.id;
+    });
+
+    it('應該成功執行軟刪除，並將 is_active 變更為 true 200', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe('刪除伴手禮成功');
+
+      const product = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+      expect(product[0].is_active).toBe(true);
+    });
+
+    it('應該成功執行還原，並將 is_active 變更回 false 200', async () => {
+      await db.update(products).set({ is_active: true }).where(eq(products.id, productId));
+
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe('還原伴手禮成功');
+
+      const product = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+      expect(product[0].is_active).toBe(false);
+    });
+
+    it('未登入應回傳 401', async () => {
+      const res = await request(app).patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`).send({
+        is_active: false,
+      });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('未登入或 token 失效');
+    });
+
+    it('不是 store 身份應回傳 403', async () => {
+      const consumerToken = jwt.sign(
+        { id: 'fake-id', role: 'consumer', email: 'fake@example.com' },
+        process.env.JWT_SECRET ?? 'test',
+        { expiresIn: '1h' },
+      );
+
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .set('Authorization', `Bearer ${consumerToken}`)
+        .send();
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('無權限訪問此資源');
+    });
+
+    it('無品牌身份應回傳 403', async () => {
+      const fakeConsumerToken = jwt.sign(
+        { id: 'fake-user-id', email: 'fake@example.com', role: 'consumer' },
+        process.env.JWT_SECRET ?? 'test',
+        { expiresIn: '1h' },
+      );
+
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('無權限訪問此資源');
+    });
+
+    it('沒有 brand_id 應回傳 403', async () => {
+      const fakeConsumerToken = jwt.sign(
+        { id: 'fake-user-id', email: 'fake@example.com', role: 'consumer' },
+        process.env.JWT_SECRET ?? 'test',
+        { expiresIn: '1h' },
+      );
+
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('無權限訪問此資源');
+    });
+
+    it('伴手禮不存在應回傳 404', async () => {
+      const fakeProductId = randomUUID();
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${hotelId}/products/${fakeProductId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('查無此伴手禮');
+    });
+
+    it('飯店不存在應回傳 404', async () => {
+      const fakeHotelId = randomUUID();
+
+      const res = await request(app)
+        .patch(`/api/v1/store/hotel/${fakeHotelId}/products/${productId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send();
 
       expect(res.status).toBe(404);
       expect(res.body.success).toBe(false);
