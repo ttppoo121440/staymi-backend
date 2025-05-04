@@ -36,15 +36,11 @@ export const roomTypeDto = z
   .object({
     roomType: roomTypesSchema,
   })
-  .extend({
-    created_at: zDateOrDefault(),
-    updated_at: zDateOrDefault(),
-  })
   .transform((data) => ({
     roomType: {
       ...data.roomType,
-      created_at: formatDisplayDate(data.created_at, 'YYYY-MM-DD HH:mm:ss'),
-      updated_at: formatDisplayDate(data.updated_at, 'YYYY-MM-DD HH:mm:ss'),
+      created_at: formatDisplayDate(data.roomType.created_at, 'YYYY-MM-DD HH:mm:ss'),
+      updated_at: formatDisplayDate(data.roomType.updated_at, 'YYYY-MM-DD HH:mm:ss'),
     },
   }));
 

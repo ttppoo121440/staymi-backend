@@ -40,26 +40,22 @@ export const hotelListToDto = z
     pagination: data.pagination,
   }));
 
-export const hotelCreateSchema = hotelSchema.omit({
-  created_at: true,
-  updated_at: true,
-});
-
 export const hotelToDto = z
   .object({
-    hotel: hotelCreateSchema,
-  })
-  .extend({
-    created_at: zDateOrDefault(),
-    updated_at: zDateOrDefault(),
+    hotel: hotelSchema,
   })
   .transform((data) => ({
     hotel: {
       ...data.hotel,
-      created_at: formatDisplayDate(data.created_at, 'YYYY-MM-DD HH:mm:ss'),
-      updated_at: formatDisplayDate(data.updated_at, 'YYYY-MM-DD HH:mm:ss'),
+      created_at: formatDisplayDate(data.hotel.created_at, 'YYYY-MM-DD HH:mm:ss'),
+      updated_at: formatDisplayDate(data.hotel.updated_at, 'YYYY-MM-DD HH:mm:ss'),
     },
   }));
+
+export const hotelCreateSchema = hotelSchema.omit({
+  created_at: true,
+  updated_at: true,
+});
 
 export const hotelUpdateSchema = hotelCreateSchema
   .extend({
