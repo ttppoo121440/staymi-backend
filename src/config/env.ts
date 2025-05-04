@@ -29,6 +29,15 @@ if (!process.env.REDIS_HOST) {
 if (!process.env.REDIS_PORT) {
   throw new Error('❌ Missing REDIS_PORT in environment variables');
 }
+if (!process.env.GOOGLE_CLIENT_ID) {
+  throw new Error('❌ Missing GOOGLE_CLIENT_ID in environment variables');
+}
+if (!process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error('❌ Missing GOOGLE_CLIENT_SECRET in environment variables');
+}
+if (!process.env.SESSION_SECRET) {
+  throw new Error('❌ Missing SESSION_SECRET in environment variables');
+}
 
 export const env = {
   PORT: process.env.PORT ?? 6543,
@@ -45,6 +54,9 @@ export const env = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_HOST: process.env.REDIS_HOST,
   REDIS_PORT: process.env.REDIS_PORT,
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  sessionSecret: process.env.SESSION_SECRET,
 };
 
 export const serverUrl = process.env.NODE_ENV === 'production' ? env.PROD : env.DEV;
