@@ -1,4 +1,5 @@
 import express from 'express';
+import passport from 'passport';
 
 import { authMiddleware } from '@/middleware/auth.middleware';
 
@@ -18,5 +19,19 @@ userRoutes.put('/change-password', authMiddleware, authController.changePassword
 userRoutes.put('/uploadAvatar', authMiddleware, userController.uploadAvatar);
 userRoutes.get('/line', authController.redirectToLine);
 userRoutes.get('/line/callback', authController.handleLineCallback);
+userRoutes.get(
+  '/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+  }),
+);
+userRoutes.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/login',
+    session: false, // 不使用 session
+  }),
+  authController.googleCallback,
+);
 
 export default userRoutes;

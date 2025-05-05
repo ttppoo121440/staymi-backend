@@ -24,3 +24,5 @@ export const hotel_rooms = pgTable('hotel_rooms', {
 
 export type InsertHotelRoom = InferInsertModel<typeof hotel_rooms>;
 export type SelectHotelRoom = InferSelectModel<typeof hotel_rooms>;
+export type UpdateHotelRoom = Partial<InsertHotelRoom>;
+export type DeleteHotelRoom = Pick<SelectHotelRoom, 'id' | 'hotel_id'>;

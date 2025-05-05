@@ -8,6 +8,7 @@ import { registerAuthRoutes } from './registry/auth.registry';
 import { registerAuthStoreRoutes } from './registry/authStore.registry';
 import { registerHotelRoutes } from './registry/hotel.registry';
 import { registerHotelImageRoutes } from './registry/hotelImage.registry';
+import { registerHotelRoomRoutes } from './registry/hotelRoom.registry';
 import { registerImageUploadRoutes } from './registry/imageUpload.registry';
 import { registerProductRoutes } from './registry/product.registry';
 import { registerRoomTypeRoutes } from './registry/roomType.registry';
@@ -34,6 +35,7 @@ registerImageUploadRoutes(registry);
 registerHotelRoutes(registry);
 registerRoomTypeRoutes(registry);
 registerHotelImageRoutes(registry);
+registerHotelRoomRoutes(registry);
 registerProductRoutes(registry);
 
 // 註冊安全方案
