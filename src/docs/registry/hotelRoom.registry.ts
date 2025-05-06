@@ -272,7 +272,6 @@ export const registerHotelRoomRoutes = (registry: OpenAPIRegistry): void => {
               'application/json': {
                 summary: '新增飯店房間範例',
                 value: {
-                  hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
                   room_type_id: 'd59c40d8-cc4a-45b0-929f-4282091b6302',
                   basePrice: 4999,
                   description: '包含陽台的海景雙人房。',
