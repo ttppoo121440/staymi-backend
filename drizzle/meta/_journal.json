@@ -120,6 +120,27 @@
       "when": 1746283916439,
       "tag": "0016_petite_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1746456261312,
+      "tag": "0017_zippy_omega_red",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1746456989837,
+      "tag": "0018_heavy_dark_phoenix",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1746539403933,
+      "tag": "0019_adorable_mystique",
+      "breakpoints": true
     }
   ]
 }
