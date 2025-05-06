@@ -1,10 +1,8 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { boolean, integer, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { hotels } from './hotels.schema';
 import { room_types } from './room_types.schema';
-
-export const userBrandRoleEnum = pgEnum('user_brand_role', ['owner', 'manager', 'staff']);
 
 export const hotel_rooms = pgTable('hotel_rooms', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -16,7 +14,7 @@ export const hotel_rooms = pgTable('hotel_rooms', {
     .references(() => room_types.id),
   basePrice: integer('basePrice').notNull(),
   description: text('description').notNull(),
-  imageUrl: varchar('imageUrl', { length: 255 }),
+  images: varchar('images').array().default([]),
   is_active: boolean('is_active').notNull().default(true),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
