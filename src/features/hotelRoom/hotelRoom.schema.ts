@@ -10,7 +10,7 @@ const hotelRoomSchema = z.object({
   room_type_id: z.string({ message: '請填寫房型 id' }).uuid({ message: '請填正確 id 格式' }),
   basePrice: z.number({ message: '請填寫原始金額' }).min(1, '金額不得小於 1'),
   description: z.string({ message: '請填寫房間敘述' }),
-  imageUrl: z.string().optional(),
+  images: z.array(z.string()).optional(),
   is_active: z.boolean(),
   created_at: zDateOrDefault(),
   updated_at: zDateOrDefault(),
@@ -22,7 +22,8 @@ const editableFields = hotelRoomSchema
     room_type_id: true,
     basePrice: true,
     description: true,
-    imageUrl: true,
+    images: true,
+    is_active: true,
   })
   .partial();
 
@@ -35,7 +36,7 @@ export const hotelRoomUpdateSchema = z
   })
   .merge(editableFields);
 
-export const hotelRoomUpdateIsActiveSchema = z.object({
+export const hotelRoomToggleActiveSchema = z.object({
   id: z.string().uuid({ message: '請填正確 id 格式' }),
   hotel_id: z.string().uuid(),
   is_active: z.boolean(),

@@ -9,14 +9,12 @@ import {
   UpdateHotelRoom,
 } from '@/database/schemas/hotel_rooms.schema';
 import { BaseRepository } from '@/repositories/base-repository';
-import { HttpStatus } from '@/types/http-status.enum';
 import { PaginationType } from '@/types/pagination';
-import { RepoError } from '@/utils/appError';
 
-function buildHotelRoomConditions(conditions: Partial<{ hotelRoomId: string; hotelId: string }>): SQL[] {
+function buildHotelRoomConditions(conditions: Partial<{ id: string; hotelId: string }>): SQL[] {
   const queryConditions: SQL[] = [];
-  if (conditions.hotelRoomId) {
-    queryConditions.push(eq(hotel_rooms.id, conditions.hotelRoomId));
+  if (conditions.id) {
+    queryConditions.push(eq(hotel_rooms.id, conditions.id));
   }
   if (conditions.hotelId) {
     queryConditions.push(eq(hotel_rooms.hotel_id, conditions.hotelId));
@@ -50,50 +48,35 @@ export class HotelRoomRepo extends BaseRepository {
     };
   }
 
-  async getById(
-    conditions: Partial<{ hotelRoomId: string; hotelId: string }>,
-  ): Promise<{ hotelRoom: SelectHotelRoom } | null> {
+  async getById(conditions: Partial<{ id: string; hotelId: string }>): Promise<SelectHotelRoom | null> {
     const queryConditions = buildHotelRoomConditions(conditions);
 
     const result = await db
       .select()
       .from(hotel_rooms)
       .where(and(...queryConditions));
-    return {
-      hotelRoom: result[0] ?? null,
-    };
-  }
-  async create(data: InsertHotelRoom): Promise<{ hotelRoom: SelectHotelRoom }> {
-    const result = await db.insert(hotel_rooms).values(data).returning();
-    if (result.length === 0) {
-      throw new RepoError('創建房間失敗', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    return {
-      hotelRoom: result[0],
-    };
+    return result[0] ?? null;
   }
 
-  async update(data: UpdateHotelRoom): Promise<{ hotelRoom: SelectHotelRoom }> {
-    const queryConditions = buildHotelRoomConditions({ hotelRoomId: data.id, hotelId: data.hotel_id });
+  async create(data: InsertHotelRoom): Promise<SelectHotelRoom | null> {
+    const result = await db.insert(hotel_rooms).values(data).returning();
+    return result.length > 0 ? result[0] : null;
+  }
+
+  async update(data: UpdateHotelRoom): Promise<SelectHotelRoom | null> {
+    const queryConditions = buildHotelRoomConditions({ id: data.id, hotelId: data.hotel_id });
 
     const result = await db
       .update(hotel_rooms)
       .set({ ...data, updated_at: new Date() })
       .where(and(...queryConditions))
       .returning();
-    if (result.length === 0) {
-      throw new RepoError('飯店房間不存在', HttpStatus.NOT_FOUND);
-    }
-    return {
-      hotelRoom: result[0],
-    };
+    return result.length > 0 ? result[0] : null;
   }
-  async delete(data: DeleteHotelRoom): Promise<void> {
-    const queryConditions = buildHotelRoomConditions({ hotelRoomId: data.id, hotelId: data.hotel_id });
+  async delete(data: DeleteHotelRoom): Promise<boolean> {
+    const queryConditions = buildHotelRoomConditions({ id: data.id, hotelId: data.hotel_id });
 
     const result = await db.delete(hotel_rooms).where(and(...queryConditions));
-    if (result.rowCount === 0) {
-      throw new RepoError('查無此資料，刪除失敗', HttpStatus.NOT_FOUND);
-    }
+    return (result.rowCount ?? 0) > 0;
   }
 }

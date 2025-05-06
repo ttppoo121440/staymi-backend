@@ -12,7 +12,7 @@ import {
   hotelRoomDeleteSchema,
   hotelRoomDto,
   hotelRoomListDto,
-  hotelRoomUpdateIsActiveSchema,
+  hotelRoomToggleActiveSchema,
   hotelRoomUpdateSchema,
 } from './hotelRoom.schema';
 
@@ -20,7 +20,7 @@ export class HotelRoomController {
   constructor(private hotelRoomRepo = new HotelRoomRepo()) {}
 
   getAll = asyncHandler(async (req: Request, res: Response) => {
-    const hotelId = res.locals.hotel_id;
+    const { hotel_id: hotelId } = res.locals;
 
     const parsedQuery = QuerySchema.parse(req.query);
     const { currentPage, perPage } = parsedQuery;
@@ -30,58 +30,68 @@ export class HotelRoomController {
   });
 
   getById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const hotelId = res.locals.hotel_id;
-    const hotelRoomId = req.params.id;
+    const { hotel_id: hotelId } = res.locals;
+    const { id: hotelRoomId } = req.params;
 
-    const result = await this.hotelRoomRepo.getById({ hotelRoomId, hotelId: hotelId });
-    if (!result?.hotelRoom) {
+    const result = await this.hotelRoomRepo.getById({ id: hotelRoomId, hotelId: hotelId });
+    if (!result) {
       return next(appError('飯店房間不存在', HttpStatus.NOT_FOUND));
     }
-    const dtoData = hotelRoomDto.parse(result);
+    const dtoData = hotelRoomDto.parse({ hotelRoom: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '取得飯店房間資料成功'));
   });
 
-  create = asyncHandler(async (req: Request, res: Response) => {
-    const validatedData = hotelRoomCreateSchema.parse({ ...req.body });
+  create = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { hotel_id: hotelId } = res.locals;
+
+    const validatedData = hotelRoomCreateSchema.parse({ ...req.body, hotel_id: hotelId });
     const result = await this.hotelRoomRepo.create(validatedData);
-    const dtoData = hotelRoomDto.parse(result);
+    if (!result) {
+      return next(appError('創建飯店房間失敗', HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+    const dtoData = hotelRoomDto.parse({ hotelRoom: result });
     res.status(HttpStatus.CREATED).json(successResponse(dtoData, '創建飯店房間成功'));
   });
 
-  update = asyncHandler(async (req: Request, res: Response) => {
-    const hotelId = res.locals.hotel_id;
-    const hotelRoomId = req.params.id;
+  update = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { hotel_id: hotelId } = res.locals;
+    const { id: hotelRoomId } = req.params;
 
     const validatedData = hotelRoomUpdateSchema.parse({ ...req.body, id: hotelRoomId, hotel_id: hotelId });
-    await this.hotelRoomRepo.getById({ hotelRoomId });
     const result = await this.hotelRoomRepo.update(validatedData);
-    const dtoData = hotelRoomDto.parse(result);
-    res.status(HttpStatus.OK).json(successResponse(dtoData, '更新飯店房間成功'));
-  });
-  updateIsActive = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const hotelId = res.locals.hotel_id;
-    const hotelRoomId = req.params.id;
-    const { is_active } = req.body;
-
-    const existed = await this.hotelRoomRepo.getById({ hotelRoomId });
-    if (!existed?.hotelRoom) {
+    if (!result) {
       return next(appError('飯店房間不存在', HttpStatus.NOT_FOUND));
     }
+    const dtoData = hotelRoomDto.parse({ hotelRoom: result });
+    res.status(HttpStatus.OK).json(successResponse(dtoData, '更新飯店房間成功'));
+  });
 
-    const validatedData = hotelRoomUpdateIsActiveSchema.parse({
-      is_active: is_active,
+  toggleActive = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { hotel_id: hotelId } = res.locals;
+    const { id: hotelRoomId } = req.params;
+
+    const hotelRoom = await this.hotelRoomRepo.getById({ id: hotelRoomId, hotelId: hotelId });
+    if (!hotelRoom) {
+      return next(appError('飯店房間不存在', HttpStatus.NOT_FOUND));
+    }
+    const validatedData = hotelRoomToggleActiveSchema.parse({
+      is_active: !hotelRoom.is_active,
       id: hotelRoomId,
       hotel_id: hotelId,
     });
     const result = await this.hotelRoomRepo.update(validatedData);
-    const dtoData = hotelRoomDto.parse(result);
+    const dtoData = hotelRoomDto.parse({ hotelRoom: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '飯店房間狀態切換成功'));
   });
-  delete = asyncHandler(async (req: Request, res: Response) => {
-    const hotelId = res.locals.hotel_id;
-    const hotelRoomId = req.params.id;
+
+  delete = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { hotel_id: hotelId } = res.locals;
+    const { id: hotelRoomId } = req.params;
     const validatedData = hotelRoomDeleteSchema.parse({ id: hotelRoomId, hotel_id: hotelId });
-    await this.hotelRoomRepo.delete(validatedData);
-    res.status(HttpStatus.OK).json(successResponse(null, '刪除成功'));
+    const result = await this.hotelRoomRepo.delete(validatedData);
+    if (!result) {
+      return next(appError('查無此資料，刪除失敗', HttpStatus.NOT_FOUND));
+    }
+    res.status(HttpStatus.OK).json(successResponse(null, '飯店房間刪除成功'));
   });
 }

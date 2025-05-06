@@ -14,7 +14,7 @@ hotelRoomRoutes.patch(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
-  hotelRoomController.updateIsActive,
+  hotelRoomController.toggleActive,
 );
 
 hotelRoomRoutes.put(
