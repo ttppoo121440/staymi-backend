@@ -15,7 +15,7 @@ import { generateToken } from '@/utils/jwt';
 import { AuthRepo } from './auth.repo';
 import { authCreateToDTO, AuthLoginSchema, AuthUpdatePasswordSchema } from './auth.schema';
 import { AuthService } from './auth.service';
-import { LineIdTokenProfileType } from './auth.types';
+import { FacebookProfile, LineIdTokenProfileType } from './auth.types';
 
 export class AuthController {
   constructor(private authRepo = new AuthRepo(), private authService = new AuthService()) {}
@@ -88,6 +88,24 @@ export class AuthController {
 
     res.redirect(lineAuthUrl);
   });
+  redirectToFacebook = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const clientId = env.FB_CLIENT_ID;
+    const redirectUrl = encodeURIComponent(`${serverUrl}/api/v1/users/facebook/callback`);
+    const redirectTo = typeof req.query.redirectTo === 'string' ? req.query.redirectTo : '/';
+
+    if (!redirectTo.startsWith('/')) {
+      return next(appError('導向路徑不正確', HttpStatus.BAD_REQUEST));
+    }
+
+    const state = randomUUID();
+    const client = await getRedisClient();
+    await client.set(`facebook:state:${state}`, redirectTo, { EX: 300 });
+
+    const scope = 'email,public_profile';
+    const fbAuthUrl = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectUrl}&state=${state}&scope=${scope}&auth_type=rerequest`;
+
+    res.redirect(fbAuthUrl);
+  });
   handleLineCallback = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { code, state } = req.query;
 
@@ -131,6 +149,49 @@ export class AuthController {
       `${frontendUrl}/callback?pathname=${encodeURIComponent(redirectTo)}&token=${userToken}&name=${
         userInfo.name
       }&avatar=${encodeURIComponent(userInfo.avatar)}`,
+    );
+  });
+  handleFacebookCallback = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { code, state } = req.query;
+
+    if (!code || typeof code !== 'string') {
+      return next(appError('缺少 code', HttpStatus.BAD_REQUEST));
+    }
+
+    const client = await getRedisClient();
+    const redirectTo = await client.get(`facebook:state:${state}`);
+    if (!redirectTo) return next(appError('無效或過期的 state', HttpStatus.FORBIDDEN));
+    await client.del(`facebook:state:${state}`);
+
+    const access_token = await this.authService.getFacebookToken(code);
+    const profileRes: FacebookProfile = await this.authService.getFacebookProfile(access_token);
+    const { id: providerId, name, email, picture } = profileRes;
+
+    if (!email) {
+      return next(appError('Facebook 帳號未提供 Email, 無法登入', HttpStatus.BAD_REQUEST));
+    }
+
+    let userInfo = await this.authRepo.findUserByProviderId(providerId);
+
+    if (!userInfo) {
+      userInfo = await this.authRepo.createByProvider({
+        provider: 'facebook',
+        providerId,
+        name,
+        email,
+        avatar: picture ?? '',
+      });
+    }
+
+    const userToken = generateToken({
+      id: userInfo.id,
+      role: userInfo.role,
+    });
+
+    return res.redirect(
+      `${frontendUrl}/callback?pathname=${encodeURIComponent(
+        redirectTo,
+      )}&token=${userToken}&name=${name}&avatar=${encodeURIComponent(userInfo.avatar)}`,
     );
   });
   googleCallback = asyncHandler((req: Request, res: Response): Promise<void> => {
