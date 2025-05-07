@@ -5,7 +5,7 @@ import { env, serverUrl } from '@/config/env';
 import { generateToken } from '@/utils/jwt';
 
 import { AuthRepo } from './auth.repo';
-import { LineProfile, LineTokens, ProfileType, UserInfoType } from './auth.types';
+import { LineProfile, LineTokens, ProfileType, UserInfoType, FacebookProfile } from './auth.types';
 
 export class AuthService {
   constructor(private authRepo = new AuthRepo()) {}
@@ -47,6 +47,43 @@ export class AuthService {
     }
 
     return profile.userId;
+  }
+
+  async getFacebookToken(code: string): Promise<string> {
+    const tokenRes = await axios.get('https://graph.facebook.com/v22.0/oauth/access_token', {
+      params: {
+        client_id: env.FB_CLIENT_ID,
+        client_secret: env.FB_CLIENT_SECRET,
+        redirect_uri: `${serverUrl}/api/v1/users/facebook/callback`,
+        code,
+      },
+    });
+    const { access_token } = tokenRes.data;
+    if (!access_token) {
+      throw new Error('Facebook 回傳資料異常');
+    }
+    return access_token;
+  }
+
+  async getFacebookProfile(access_token: string): Promise<FacebookProfile> {
+    const profileRes = await axios.get('https://graph.facebook.com/me', {
+      params: {
+        access_token,
+        fields: 'id, name, email, picture',
+      },
+    });
+
+    const { id, name, email, picture } = profileRes.data;
+    if (!id || !email) {
+      throw new Error('Facebook 回傳使用者資料不完全');
+    }
+
+    return {
+      id,
+      name,
+      email,
+      picture: picture?.data?.url || '',
+    };
   }
 
   async handleGoogleLogin(profile: ProfileType): Promise<UserInfoType & { token: string }> {

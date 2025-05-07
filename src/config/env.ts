@@ -57,6 +57,8 @@ export const env = {
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   sessionSecret: process.env.SESSION_SECRET,
+  FB_CLIENT_ID: process.env.FB_CLIENT_ID,
+  FB_CLIENT_SECRET: process.env.FB_CLIENT_SECRET,
 };
 
 export const serverUrl = process.env.NODE_ENV === 'production' ? env.PROD : env.DEV;

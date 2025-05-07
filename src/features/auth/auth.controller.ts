@@ -15,7 +15,7 @@ import { generateToken } from '@/utils/jwt';
 import { AuthRepo } from './auth.repo';
 import { authCreateToDTO, AuthLoginSchema, AuthUpdatePasswordSchema } from './auth.schema';
 import { AuthService } from './auth.service';
-import { LineIdTokenProfileType } from './auth.types';
+import { FacebookProfile, LineIdTokenProfileType } from './auth.types';
 
 export class AuthController {
   constructor(private authRepo = new AuthRepo(), private authService = new AuthService()) {}
@@ -87,6 +87,24 @@ export class AuthController {
     const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
 
     res.redirect(lineAuthUrl);
+  });
+  redirectToFacebook = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const clientId = env.FB_CLIENT_ID;
+    const redirectUrl = encodeURIComponent(`${serverUrl}/api/v1/users/facebook/callback`);
+    const redirectTo = typeof req.query.redirectTo === 'string' ? req.query.redirectTo : '/';
+
+    if (!redirectTo.startsWith('/')) {
+      return next(appError('導向路徑不正確', HttpStatus.BAD_REQUEST));
+    }
+
+    const state = randomUUID();
+    const client = await getRedisClient();
+    await client.set(`facebook:state:${state}`, redirectTo, { EX: 300 });
+
+    const scope = 'email,public_profile';
+    const fbAuthUrl = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectUrl}&state=${state}&scope=${scope}&auth_type=rerequest`;
+
+    res.redirect(fbAuthUrl);
   });
   handleLineCallback = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { code, state } = req.query;

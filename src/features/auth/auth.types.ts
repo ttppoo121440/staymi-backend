@@ -49,6 +49,13 @@ export type GoogleProfile = {
   sub: string;
 };
 
+export type FacebookProfile = {
+  id: string;
+  name: string;
+  email: string;
+  picture?: string;
+};
+
 export type ProfileType = {
   id: string; // providerId
   emails?: { value: string }[];
