@@ -19,6 +19,8 @@ userRoutes.put('/change-password', authMiddleware, authController.changePassword
 userRoutes.put('/uploadAvatar', authMiddleware, userController.uploadAvatar);
 userRoutes.get('/line', authController.redirectToLine);
 userRoutes.get('/line/callback', authController.handleLineCallback);
+userRoutes.get('/facebook', authController.redirectToFacebook);
+userRoutes.get('/facebook/callback', authController.handleFacebookCallback);
 userRoutes.get(
   '/google',
   passport.authenticate('google', {
