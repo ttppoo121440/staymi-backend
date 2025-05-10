@@ -14,6 +14,7 @@ import { registerProductRoutes } from './registry/product.registry';
 import { registerProductPlanRoutes } from './registry/productPlan.registry';
 import { registerRoomPlanRoutes } from './registry/roomPlan.registry';
 import { registerRoomTypeRoutes } from './registry/roomType.registry';
+import { registerSubscriptionRoutes } from './registry/subscription.registry';
 import { registerUserRoutes } from './registry/user.registry';
 
 // 定義一個共用的 Bearer Token 安全設定常數
@@ -41,6 +42,7 @@ registerHotelRoomRoutes(registry);
 registerRoomPlanRoutes(registry);
 registerProductRoutes(registry);
 registerProductPlanRoutes(registry);
+registerSubscriptionRoutes(registry);
 
 // 註冊安全方案
 export function registerSecuritySchemes(registry: OpenAPIRegistry): void {
