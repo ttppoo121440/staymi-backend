@@ -79,4 +79,8 @@ export class RoomPlanRepo extends BaseRepository {
     const result = await db.delete(room_plans).where(and(...queryConditions));
     return (result.rowCount ?? 0) > 0;
   }
+  async getPriceById(id: string): Promise<SelectRoomPlan[]> {
+    const result = await db.select().from(room_plans).where(eq(room_plans.id, id));
+    return result;
+  }
 }
