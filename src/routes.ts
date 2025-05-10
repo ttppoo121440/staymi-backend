@@ -9,12 +9,14 @@ import productPlanRoutes from './features/productPlan/productPlan.routes';
 import roomPlanRoutes from './features/roomPlan/roomPlan.routes';
 import roomTypeRoutes from './features/roomType/roomType.routes';
 import storeHotelRoutes from './features/storeHotel/storeHotel.routes';
+import subscriptionRoutes from './features/subscription/subscription.routes';
 import userRoutes from './features/user/user.routes';
 import { NotFound } from './utils/appResponse';
 
 export const setupRoutes = (app: Application): void => {
   app.use('/api/v1/admin/users', adminUserRoutes);
   app.use('/api/v1/users', userRoutes);
+  app.use('/api/v1/users/subscriptions', subscriptionRoutes);
   app.use('/api/v1/store/hotel/room-type', roomTypeRoutes);
   app.use('/api/v1/store/hotel/hotel-rooms', hotelRoomRoutes);
   app.use('/api/v1/store/hotel/room-plan', roomPlanRoutes);
