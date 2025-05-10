@@ -1,0 +1,1 @@
+ALTER TABLE "order_room_product" ADD COLUMN "transaction_id" varchar(100);
