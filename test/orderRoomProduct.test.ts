@@ -15,7 +15,9 @@ import { server } from '@/server';
 import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 
+process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
+
 const testUser = {
   email: `testUser+${Date.now()}@example.com`,
   password: 'Password123!',

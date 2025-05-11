@@ -14,6 +14,7 @@ import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { server } from '../src/server';
 
 process.env.NODE_ENV = 'test';
+jest.setTimeout(30000);
 
 const signupData = {
   email: `store+${Date.now()}@example.com`,
@@ -662,7 +663,7 @@ describe('PUT /api/v1/store/hotel/room-type/:id', () => {
   });
 });
 
-describe.only('DELETE /api/v1/store/hotel/room-type/:id', () => {
+describe('DELETE /api/v1/store/hotel/room-type/:id', () => {
   const endpoint = '/api/v1/store/hotel/room-type';
   let roomTypeId: string;
 
