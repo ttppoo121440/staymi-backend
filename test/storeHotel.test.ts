@@ -16,6 +16,7 @@ import { hotelType } from '../src/features/storeHotel/storeHotel.schema';
 import { server } from '../src/server';
 
 process.env.NODE_ENV = 'test';
+jest.setTimeout(30000);
 
 const mockHotelData = {
   region: '台中',

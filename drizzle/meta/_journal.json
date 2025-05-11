@@ -141,6 +141,48 @@
       "when": 1746539403933,
       "tag": "0019_adorable_mystique",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1746850171053,
+      "tag": "0020_flashy_jamie_braddock",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1746850307891,
+      "tag": "0021_normal_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1746852547521,
+      "tag": "0022_certain_kylun",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1746854053711,
+      "tag": "0023_greedy_salo",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1746888733964,
+      "tag": "0024_fancy_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1746961449364,
+      "tag": "0025_chubby_thunderbolts",
+      "breakpoints": true
     }
   ]
 }

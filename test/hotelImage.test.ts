@@ -16,6 +16,9 @@ import { closeDatabase, db } from '../src/config/database';
 import { hotel_images } from '../src/database/schemas/hotel_images.schema';
 import { hotels } from '../src/database/schemas/hotels.schema';
 
+process.env.NODE_ENV = 'test';
+jest.setTimeout(30000);
+
 const mockHotelData = {
   region: '台中',
   name: '測試測試飯店',

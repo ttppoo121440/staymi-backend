@@ -26,3 +26,4 @@ export type InsertRoomPlan = InferInsertModel<typeof room_plans>;
 export type SelectRoomPlan = InferSelectModel<typeof room_plans>;
 export type UpdateRoomPlan = Partial<InsertRoomPlan>;
 export type DeleteRoomPlan = Pick<SelectRoomPlan, 'id' | 'hotel_id'>;
+export type SelectRoomPlanPrice = Pick<SelectRoomPlan, 'subscription_price' | 'price'>;

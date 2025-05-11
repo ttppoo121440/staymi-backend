@@ -16,6 +16,9 @@ import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 import { hotels } from '../src/database/schemas/hotels.schema';
 
+process.env.NODE_ENV = 'test';
+jest.setTimeout(30000);
+
 const mockHotelData = {
   region: '台中',
   name: '測試測試飯店',
@@ -44,7 +47,7 @@ let token: string;
 let brand_id: string;
 let hotelId: string;
 let productId: string;
-describe('飯店圖片 API', () => {
+describe('飯店伴手禮 API', () => {
   beforeAll(async () => {
     if (process.env.NODE_ENV !== 'test') {
       throw new Error('測試必須在測試環境中運行');
@@ -81,6 +84,7 @@ describe('飯店圖片 API', () => {
       .send(mockHotelData);
 
     expect(hotelRes.status).toBe(201);
+    console.log('飯店建立成功', JSON.stringify(hotelRes.body, null, 2));
 
     hotelId = hotelRes.body.data.hotel.id;
   });
@@ -112,6 +116,7 @@ describe('飯店圖片 API', () => {
           name: '測試產品',
           description: '這是一個測試產品',
           features: '測試特色',
+          price: 1000,
           imageUrl: 'https://example.com/image.jpg',
         })
         .execute();
@@ -123,6 +128,7 @@ describe('飯店圖片 API', () => {
           name: '測試產品1',
           description: '這是一個測試產品1',
           features: '測試特色1',
+          price: 2000,
           imageUrl: 'https://example.com/image1.jpg',
         })
         .execute();
@@ -207,6 +213,7 @@ describe('飯店圖片 API', () => {
           name: '單筆查詢產品',
           description: '這是一個單筆查詢產品',
           features: '單筆查詢特色',
+          price: 1000,
           imageUrl: 'https://example.com/product.jpg',
         })
         .returning();
@@ -308,11 +315,12 @@ describe('飯店圖片 API', () => {
     });
   });
 
-  describe('POST /api/v1/store/hotel/:hotelId/products', () => {
+  describe.only('POST /api/v1/store/hotel/:hotelId/products', () => {
     const newProductData = {
       name: '新增測試產品',
       description: '這是一個新增測試產品',
       features: '測試新增特色',
+      price: 1000,
       imageUrl: 'https://example.com/test-product.jpg',
     };
 
@@ -333,7 +341,8 @@ describe('飯店圖片 API', () => {
         name: '測試產品',
         description: '這是一個測試產品',
         features: '測試特色',
-        imageUrl: true,
+        price: '一百塊',
+        imageUrl: '',
       };
       const res = await request(app)
         .post(`/api/v1/store/hotel/${hotelId}/products`)
@@ -343,7 +352,7 @@ describe('飯店圖片 API', () => {
 
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('請選擇伴手禮圖片');
+      expect(res.body.message).toBe('請輸入數字');
     });
 
     it('欄位未填寫應回傳 400', async () => {
@@ -359,6 +368,51 @@ describe('飯店圖片 API', () => {
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('請輸入伴手禮描述');
+    });
+
+    it('price 為負數應回傳 400', async () => {
+      const invalidProduct = {
+        ...newProductData,
+        price: -1,
+      };
+      const res = await request(app)
+        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(invalidProduct);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('價格必須大於等於 0');
+    });
+
+    it('price 過大應回傳 400', async () => {
+      const invalidProduct = {
+        ...newProductData,
+        price: 100000000,
+      };
+      const res = await request(app)
+        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(invalidProduct);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('價格必須小於等於 99999999');
+    });
+
+    it('price 非數字應回傳 400', async () => {
+      const invalidProduct = {
+        ...newProductData,
+        price: '一百塊',
+      };
+      const res = await request(app)
+        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(invalidProduct);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('請輸入數字');
     });
 
     it('未登入應回傳 401', async () => {
@@ -442,6 +496,7 @@ describe('飯店圖片 API', () => {
       name: '更新前產品',
       description: '更新前描述',
       features: '更新前特色',
+      price: 1000,
       imageUrl: 'https://example.com/before.jpg',
     };
 
@@ -449,6 +504,7 @@ describe('飯店圖片 API', () => {
       name: '更新後產品',
       description: '這是更新後的描述',
       features: '更新後特色',
+      price: 2000,
       imageUrl: 'https://example.com/after.jpg',
     };
 

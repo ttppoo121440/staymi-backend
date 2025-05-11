@@ -35,5 +35,12 @@ userRoutes.get(
   }),
   authController.googleCallback,
 );
+//僅供期中考核使用
+userRoutes.get('/isAuth', authMiddleware, (_, res) => {
+  return res.json({
+    success: true,
+    message: '驗證成功!',
+  });
+});
 
 export default userRoutes;

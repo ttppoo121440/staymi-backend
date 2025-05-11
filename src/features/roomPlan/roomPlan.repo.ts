@@ -6,6 +6,7 @@ import {
   InsertRoomPlan,
   room_plans,
   SelectRoomPlan,
+  SelectRoomPlanPrice,
   UpdateRoomPlan,
 } from '@/database/schemas/room_plans.schema';
 import { BaseRepository } from '@/repositories/base-repository';
@@ -78,5 +79,12 @@ export class RoomPlanRepo extends BaseRepository {
 
     const result = await db.delete(room_plans).where(and(...queryConditions));
     return (result.rowCount ?? 0) > 0;
+  }
+  async getPriceById(id: string): Promise<SelectRoomPlanPrice[]> {
+    const result = await db
+      .select({ subscription_price: room_plans.subscription_price, price: room_plans.price })
+      .from(room_plans)
+      .where(eq(room_plans.id, id));
+    return result;
   }
 }
