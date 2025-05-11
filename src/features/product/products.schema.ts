@@ -10,7 +10,7 @@ export const productsSchema = z.object({
   features: z.string({ message: '請輸入伴手禮特色' }).max(255),
   description: z.string({ message: '請輸入伴手禮描述' }).max(255),
   price: z
-    .number({ invalid_type_error: '請輸入伴手禮價格' })
+    .number({ invalid_type_error: '請輸入數字', required_error: '請輸入伴手禮價格' })
     .min(0, { message: '價格必須大於等於 0' })
     .max(99999999, { message: '價格必須小於等於 99999999' }),
   imageUrl: z.string({ message: '請選擇伴手禮圖片' }),
