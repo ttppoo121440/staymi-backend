@@ -5,7 +5,12 @@ import { order_room_product } from '@/database/schemas/order_room_product.schema
 import { BaseRepository } from '@/repositories/base-repository';
 import { PaginationType } from '@/types/pagination';
 
-import { OrderRoomProductCreateType, OrderRoomProductType, StatusType } from './orderRoomProduct.schema';
+import {
+  OrderRoomProductCreateType,
+  OrderRoomProductType,
+  OrderRoomProductUpdateType,
+  StatusType,
+} from './orderRoomProduct.schema';
 
 export class OrderRoomProductRepo extends BaseRepository {
   async getAll(
@@ -43,6 +48,18 @@ export class OrderRoomProductRepo extends BaseRepository {
       pagination,
     };
   }
+  async getById(id: string, user_id: string): Promise<{ order: OrderRoomProductType } | null> {
+    const queryConditions = [eq(order_room_product.id, id), eq(order_room_product.user_id, user_id)];
+    const result = await db
+      .select()
+      .from(order_room_product)
+      .where(and(...queryConditions))
+      .limit(1);
+    return {
+      order: result[0] ?? null,
+    };
+  }
+
   async create(total_price: number, data: OrderRoomProductCreateType): Promise<{ order: OrderRoomProductType }> {
     const result = await db
       .insert(order_room_product)
@@ -50,6 +67,21 @@ export class OrderRoomProductRepo extends BaseRepository {
       .returning();
     return {
       order: result[0],
+    };
+  }
+  async updateStatus(
+    id: string,
+    user_id: string,
+    data: OrderRoomProductUpdateType,
+  ): Promise<{ order: OrderRoomProductUpdateType | null }> {
+    const queryConditions = [eq(order_room_product.id, id), eq(order_room_product.user_id, user_id)];
+    const result = await db
+      .update(order_room_product)
+      .set({ status: data.status, updated_at: new Date() })
+      .where(and(...queryConditions))
+      .returning();
+    return {
+      order: result[0] ?? null,
     };
   }
 }
