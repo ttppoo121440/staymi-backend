@@ -2,6 +2,7 @@ import express from 'express';
 
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { authBrandId } from '@/middleware/authBrandId.middleware';
+import { authHotelId } from '@/middleware/authHotelId.middleware';
 import { checkRolesMiddleware } from '@/middleware/checkRoles.middleware';
 
 import { HotelRoomController } from './hotelRoom.controller';
@@ -14,6 +15,7 @@ hotelRoomRoutes.patch(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
+  authHotelId,
   hotelRoomController.toggleActive,
 );
 
@@ -22,6 +24,7 @@ hotelRoomRoutes.put(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
+  authHotelId,
   hotelRoomController.update,
 );
 
@@ -30,6 +33,7 @@ hotelRoomRoutes.get(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
+  authHotelId,
   hotelRoomController.getById,
 );
 
@@ -38,6 +42,7 @@ hotelRoomRoutes.delete(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
+  authHotelId,
   hotelRoomController.delete,
 );
 
@@ -46,6 +51,7 @@ hotelRoomRoutes.get(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
+  authHotelId,
   hotelRoomController.getAll,
 );
 
@@ -54,6 +60,7 @@ hotelRoomRoutes.post(
   authMiddleware,
   checkRolesMiddleware(['store', 'admin']),
   authBrandId,
+  authHotelId,
   hotelRoomController.create,
 );
 
