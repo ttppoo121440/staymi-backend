@@ -1,18 +1,20 @@
 import { z } from 'zod';
 
-import { paginationSchema } from '@/types/pagination';
+import { paginationSchema, QuerySchema } from '@/types/pagination';
 import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
-const StatusEnum = z.enum(['pending', 'confirmed', 'cancelled']);
+const StatusEnum = z.enum(['pending', 'confirmed', 'cancelled'], {
+  message: '狀態只能是 pending、confirmed、cancelled',
+});
 
 export const orderRoomProductSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  hotel_id: z.string().uuid(),
-  room_plans_id: z.string().uuid(),
+  id: z.string().uuid({ message: '請填正確 id 格式' }),
+  user_id: z.string().uuid({ message: '請填正確 id 格式' }),
+  hotel_id: z.string().uuid({ message: '請填正確 id 格式' }),
+  room_plans_id: z.string().uuid({ message: '請填正確 id 格式' }),
   check_in_date: zDateOrDefault(),
   check_out_date: zDateOrDefault(),
-  total_price: z.number(),
+  total_price: z.number().optional(),
   status: StatusEnum,
   payment_name: z.string({ message: '請輸入付款人姓名' }).max(50),
   payment_phone: z.string({ message: '請輸入付款人電話' }).max(20),
@@ -59,6 +61,23 @@ export const orderRoomProductCreateSchema = orderRoomProductSchema.omit({
   created_at: true,
 });
 
+export const orderRoomProductUpdateSchema = orderRoomProductSchema.pick({
+  status: true,
+});
+
+export const orderBodySchema = orderRoomProductSchema.pick({
+  hotel_id: true,
+  room_plans_id: true,
+});
+export const orderParamsIdSchema = z.object({
+  id: z.string().uuid({ message: '請填正確 id 格式' }),
+});
+
+export const orderQuerySchema = QuerySchema.extend({
+  status: StatusEnum.optional(),
+});
+
 export type OrderRoomProductType = z.infer<typeof orderRoomProductSchema>;
 export type OrderRoomProductCreateType = z.infer<typeof orderRoomProductCreateSchema>;
 export type StatusType = z.infer<typeof StatusEnum>;
+export type OrderRoomProductUpdateType = z.infer<typeof orderRoomProductUpdateSchema>;
