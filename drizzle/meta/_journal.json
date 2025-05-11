@@ -176,6 +176,13 @@
       "when": 1746888733964,
       "tag": "0024_fancy_robbie_robertson",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1746961449364,
+      "tag": "0025_chubby_thunderbolts",
+      "breakpoints": true
     }
   ]
 }
