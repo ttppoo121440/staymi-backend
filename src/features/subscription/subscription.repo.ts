@@ -17,4 +17,15 @@ export class SubscriptionRepo {
 
     return result[0] ?? null;
   }
+  async getPlanByUserId(userId: string): Promise<subscriptionType | null> {
+    const result = await db
+      .select({
+        plan: subscriptions.plan,
+        end_at: subscriptions.end_at,
+      })
+      .from(subscriptions)
+      .where(eq(subscriptions.user_id, userId));
+
+    return result[0] ?? null;
+  }
 }
