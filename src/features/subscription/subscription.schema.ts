@@ -15,6 +15,12 @@ export const subscriptionSchema = subscripttionBaseSchema.omit({ id: true, user_
   end_at: zDateOrDefault(),
 });
 
+export const subscriptionIsRecurringSchema = subscripttionBaseSchema
+  .omit({ id: true, user_id: true, status: true, plan: true })
+  .extend({
+    is_recurring: z.boolean(),
+  });
+
 // 資料轉換為 DTO 格式
 export const subscriptionToDTO = z
   .object({
@@ -27,4 +33,9 @@ export const subscriptionToDTO = z
     },
   }));
 
+export const subscriptionIsRecurringToDTO = z.object({
+  is_recurring: z.boolean(),
+});
+
 export type subscriptionType = z.infer<typeof subscriptionSchema>;
+export type subscriptionIsRecurringType = z.infer<typeof subscriptionIsRecurringSchema>;
