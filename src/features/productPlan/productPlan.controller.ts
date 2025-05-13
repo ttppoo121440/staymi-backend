@@ -7,14 +7,7 @@ import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
 import { ProductPlanRepo } from './productPlan.repo';
-import {
-  productPlanCreateSchema,
-  productPlanDeleteSchema,
-  productPlanDto,
-  productPlanListDto,
-  productPlanToggleActiveSchema,
-  productPlanUpdateSchema,
-} from './productPlan.schema';
+import { productPlanDto, productPlanListDto } from './productPlan.schema';
 
 export class ProductPlanController {
   constructor(private productPlanRepo = new ProductPlanRepo()) {}
@@ -44,8 +37,7 @@ export class ProductPlanController {
   create = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { hotel_id: hotelId } = res.locals;
 
-    const validatedData = productPlanCreateSchema.parse({ ...req.body, hotel_id: hotelId });
-    const result = await this.productPlanRepo.create(validatedData);
+    const result = await this.productPlanRepo.create({ ...req.body, hotel_id: hotelId });
     if (!result) {
       return next(appError('創建計畫失敗', HttpStatus.INTERNAL_SERVER_ERROR));
     }
@@ -57,8 +49,7 @@ export class ProductPlanController {
     const { hotel_id: hotelId } = res.locals;
     const { id: productPlanId } = req.params;
 
-    const validatedData = productPlanUpdateSchema.parse({ ...req.body, id: productPlanId, hotel_id: hotelId });
-    const result = await this.productPlanRepo.update(validatedData);
+    const result = await this.productPlanRepo.update({ ...req.body, id: productPlanId, hotel_id: hotelId });
     if (!result) {
       return next(appError('計畫不存在', HttpStatus.NOT_FOUND));
     }
@@ -74,12 +65,11 @@ export class ProductPlanController {
     if (!productPlan) {
       return next(appError('計畫不存在', HttpStatus.NOT_FOUND));
     }
-    const validatedData = productPlanToggleActiveSchema.parse({
+    const result = await this.productPlanRepo.update({
       is_active: !productPlan.is_active,
       id: productPlanId,
       hotel_id: hotelId,
     });
-    const result = await this.productPlanRepo.update(validatedData);
     const dtoData = productPlanDto.parse({ productPlan: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '計畫狀態切換成功'));
   });
@@ -88,8 +78,7 @@ export class ProductPlanController {
     const { hotel_id: hotelId } = res.locals;
     const { id: productPlanId } = req.params;
 
-    const validatedData = productPlanDeleteSchema.parse({ id: productPlanId, hotel_id: hotelId });
-    const result = await this.productPlanRepo.delete(validatedData);
+    const result = await this.productPlanRepo.delete({ id: productPlanId, hotel_id: hotelId });
     if (!result) {
       return next(appError('查無此資料，刪除失敗', HttpStatus.NOT_FOUND));
     }
