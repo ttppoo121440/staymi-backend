@@ -1,12 +1,11 @@
 import express from 'express';
 
 import { authMiddleware } from '@/middleware/auth.middleware';
-import { zodMiddleware } from '@/middleware/zodMiddleware';
+import { uuidParams, zodMiddleware } from '@/middleware/zodMiddleware';
 
 import { OrderRoomProductController } from './orderRoomProduct.controller';
 import {
   orderBodySchema,
-  orderParamsIdSchema,
   orderQuerySchema,
   orderRoomProductCreateSchema,
   orderRoomProductUpdateSchema,
@@ -25,7 +24,7 @@ orderRoomProductRoutes.get(
   '/:id',
   authMiddleware,
   zodMiddleware({
-    params: orderParamsIdSchema,
+    params: uuidParams('id'),
     body: orderBodySchema,
   }),
   orderRoomProductController.getById,
@@ -42,7 +41,7 @@ orderRoomProductRoutes.put(
   '/:id',
   authMiddleware,
   zodMiddleware({
-    params: orderParamsIdSchema,
+    params: uuidParams('id'),
     body: orderRoomProductUpdateSchema,
   }),
   orderRoomProductController.updateStatus,
