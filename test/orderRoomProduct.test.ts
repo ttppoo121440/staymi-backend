@@ -331,7 +331,7 @@ describe('訂單 API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('請填正確 id 格式');
+      expect(res.body.message).toBe('id 格式錯誤');
     });
 
     it('未登入應回傳 401', async () => {
