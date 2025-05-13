@@ -13,7 +13,6 @@ import { user_brand } from '../src/database/schemas/user_brand.schema';
 import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { server } from '../src/server';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
 
 const signupData = {
