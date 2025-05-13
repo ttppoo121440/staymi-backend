@@ -1,6 +1,9 @@
+import path from 'path';
+
 import dotenv from 'dotenv';
 
-dotenv.config();
+const envPath = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+dotenv.config({ path: path.resolve(process.cwd(), envPath) });
 
 if (!process.env.DATABASE_URL) {
   throw new Error('❌ DATABASE_URL 環境變數未設置');
