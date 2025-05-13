@@ -9,14 +9,11 @@ import { user } from '../src/database/schemas/user.schema';
 import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { server } from '../src/server';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
-
-const uniqueEmail = `testuser+${Date.now()}@example.com`;
 
 describe('使用者資料 API', () => {
   const testUser = {
-    email: uniqueEmail,
+    email: `testUser+${Date.now()}@example.com`,
     password: 'Password123!',
     name: '測試使用者',
     phone: '0912345678',
