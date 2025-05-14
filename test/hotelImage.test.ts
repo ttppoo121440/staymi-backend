@@ -16,12 +16,11 @@ import { closeDatabase, db } from '../src/config/database';
 import { hotel_images } from '../src/database/schemas/hotel_images.schema';
 import { hotels } from '../src/database/schemas/hotels.schema';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
 
 const mockHotelData = {
   region: '台中',
-  name: '測試測試飯店',
+  name: '測試圖片飯店',
   address: '台中市中區自由路一段 123 號',
   phone: '0912123123',
   transportation: '近台中火車站',

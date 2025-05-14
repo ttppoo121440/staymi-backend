@@ -10,14 +10,11 @@ import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { Role } from '../src/features/auth/auth.schema';
 import { server } from '../src/server';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
-
-const uniqueEmail = `admin+${Date.now()}@example.com`;
 
 describe('後台 - 使用者查詢 API', () => {
   const adminUser = {
-    email: uniqueEmail,
+    email: `admin+${Date.now()}@example.com`,
     password: 'Admin123!',
     name: '後台管理員',
     phone: '0988888888',

@@ -18,8 +18,14 @@ const productPlanSchema = z.object({
   updated_at: zDateOrDefault(),
 });
 
-//可編輯的欄位
-const editableFields = productPlanSchema
+export const productPlanCreateSchema = productPlanSchema.omit({
+  id: true,
+  hotel_id: true,
+  created_at: true,
+  updated_at: true,
+});
+
+export const productPlanUpdateSchema = productPlanSchema
   .pick({
     product_id: true,
     price: true,
@@ -28,26 +34,6 @@ const editableFields = productPlanSchema
     is_active: true,
   })
   .partial();
-
-export const productPlanCreateSchema = productPlanSchema.omit({ id: true, created_at: true, updated_at: true });
-
-export const productPlanUpdateSchema = z
-  .object({
-    id: z.string().uuid({ message: '請填正確 id 格式' }),
-    hotel_id: z.string().uuid(),
-  })
-  .merge(editableFields);
-
-export const productPlanToggleActiveSchema = z.object({
-  id: z.string().uuid({ message: '請填正確 id 格式' }),
-  hotel_id: z.string().uuid(),
-  is_active: z.boolean(),
-});
-
-export const productPlanDeleteSchema = z.object({
-  id: z.string().uuid({ message: '請填正確 id 格式' }),
-  hotel_id: z.string().uuid(),
-});
 
 export const productPlanDto = z
   .object({

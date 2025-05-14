@@ -16,7 +16,6 @@ import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 import { hotels } from '../src/database/schemas/hotels.schema';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
 
 const mockHotelData = {
@@ -315,7 +314,7 @@ describe('飯店伴手禮 API', () => {
     });
   });
 
-  describe.only('POST /api/v1/store/hotel/:hotelId/products', () => {
+  describe('POST /api/v1/store/hotel/:hotelId/products', () => {
     const newProductData = {
       name: '新增測試產品',
       description: '這是一個新增測試產品',
@@ -637,6 +636,7 @@ describe('飯店伴手禮 API', () => {
           description: '用於測試刪除功能',
           features: '可還原',
           imageUrl: 'https://example.com/delete.jpg',
+          price: 1000,
         });
 
       productId = createRes.body.data.product.id;
