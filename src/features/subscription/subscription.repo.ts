@@ -1,11 +1,13 @@
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { subscriptions } from '@/database/schemas/subscriptions.schema';
+import { BaseRepository } from '@/repositories/base-repository';
+import { PaginationType } from '@/types/pagination';
 
-import { subscriptionType, subscriptionIsRecurringType } from './subscription.schema';
+import { subscriptionType, subscriptionIsRecurringType, subscriptionHistoryType } from './subscription.schema';
 
-export class SubscriptionRepo {
+export class SubscriptionRepo extends BaseRepository {
   async getPlanByUserId(userId: string): Promise<subscriptionType | null> {
     const result = await db
       .select({
@@ -42,5 +44,36 @@ export class SubscriptionRepo {
       .returning();
 
     return result[0] ?? null;
+  }
+
+  async getPlanHistoryByUserId(
+    userId: string,
+    currentPage: number,
+    perPage: number,
+  ): Promise<{ history: subscriptionHistoryType[]; pagination: PaginationType }> {
+    const { data, pagination } = await this.paginateQuery<subscriptionHistoryType>(
+      (limit, offset) =>
+        db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.user_id, userId))
+          .orderBy(desc(subscriptions.created_at))
+          .limit(limit)
+          .offset(offset),
+      async () => {
+        const totalItemsResult = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(subscriptions)
+          .where(eq(subscriptions.user_id, userId));
+        return Number(totalItemsResult[0]?.count ?? 0);
+      },
+      currentPage,
+      perPage,
+    );
+
+    return {
+      history: data,
+      pagination,
+    };
   }
 }

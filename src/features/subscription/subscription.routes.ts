@@ -5,18 +5,13 @@ import { checkRolesMiddleware } from '@/middleware/checkRoles.middleware';
 import { zodMiddleware } from '@/middleware/zodMiddleware';
 
 import { SubscriptionController } from './subscription.controller';
-import { subscriptionIsRecurringBodySchema } from './subscription.schema';
+import { subscriptionIsRecurringBodySchema, subscriptionHistoryQuerySchema } from './subscription.schema';
 
 const subscriptionRoutes = express.Router();
 const subscriptionController = new SubscriptionController();
 
 // 查詢個人訂閱狀態
-subscriptionRoutes.get(
-  '/',
-  authMiddleware,
-  checkRolesMiddleware(['consumer']),
-  subscriptionController.getPlan
-);
+subscriptionRoutes.get('/', authMiddleware, checkRolesMiddleware(['consumer']), subscriptionController.getPlan);
 
 // 取消自動訂閱狀態
 subscriptionRoutes.put(
@@ -27,6 +22,17 @@ subscriptionRoutes.put(
     body: subscriptionIsRecurringBodySchema,
   }),
   subscriptionController.updateIsRecurring,
+);
+
+// 查詢訂閱紀錄
+subscriptionRoutes.get(
+  '/history',
+  authMiddleware,
+  checkRolesMiddleware(['consumer']),
+  zodMiddleware({
+    query: subscriptionHistoryQuerySchema,
+  }),
+  subscriptionController.getPlanHistory,
 );
 
 export default subscriptionRoutes;

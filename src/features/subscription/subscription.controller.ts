@@ -3,11 +3,12 @@ import asyncHandler from 'express-async-handler';
 
 import { HttpStatus } from '@/types/http-status.enum';
 import type { JwtUserPayload } from '@/types/JwtUserPayload';
+import { QuerySchema } from '@/types/pagination';
 import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
 import { SubscriptionRepo } from './subscription.repo';
-import { subscriptionToDTO, subscriptionIsRecurringToDTO } from './subscription.schema';
+import { subscriptionToDTO, subscriptionIsRecurringToDTO, subscriptionHistoryToDTO } from './subscription.schema';
 
 export class SubscriptionController {
   constructor(private subscriptionRepo: SubscriptionRepo = new SubscriptionRepo()) {}
@@ -43,5 +44,16 @@ export class SubscriptionController {
     const dtoData = subscriptionIsRecurringToDTO.parse(result);
     const msg = dtoData.is_recurring ? '設定自動訂閱成功' : '取消訂閱成功';
     res.status(HttpStatus.OK).json(successResponse(undefined, msg));
+  });
+
+  getPlanHistory = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const id: string = (req.user as JwtUserPayload).id;
+    const { currentPage, perPage } = QuerySchema.parse(req.query);
+    const result = await this.subscriptionRepo.getPlanHistoryByUserId(id, currentPage, perPage);
+    if (result.history.length == 0) {
+      return next(appError('查無訂閱紀錄', HttpStatus.NOT_FOUND));
+    }
+    const dtoData = subscriptionHistoryToDTO.parse(result);
+    res.status(HttpStatus.OK).json(successResponse(dtoData, '訂閱紀錄取得成功'));
   });
 }
