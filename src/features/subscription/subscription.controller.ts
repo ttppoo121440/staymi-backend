@@ -27,9 +27,6 @@ export class SubscriptionController {
   updateIsRecurring = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const id: string = (req.user as JwtUserPayload).id;
     const { is_recurring } = req.body as { is_recurring: boolean };
-    if (typeof is_recurring !== 'boolean') {
-      return next(appError('參數錯誤，請確認 is_recurring 為布林值', HttpStatus.BAD_REQUEST));
-    }
 
     // 取得最新一筆訂閱資料
     const latestIsRecurring = await this.subscriptionRepo.getLatestIsRecurringByUserId(id);
