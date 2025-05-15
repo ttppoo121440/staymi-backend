@@ -2,10 +2,10 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import {
-  hotelImagesCreateSchema,
-  hotelImagesDto,
-  hotelImagesListDto,
-  hotelImagesUpdateSchema,
+  hotelImageCreateSchema,
+  hotelImageDto,
+  hotelImageListDto,
+  hotelImageUpdateSchema,
 } from '@/features/hotelImage/hotelImage.schema';
 import { swaggerResponseSchema } from '@/types/swaggerSchema';
 
@@ -15,16 +15,10 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['HotelImages'],
     method: 'get',
-    path: '/api/v1/store/hotel/{hotel_id}/images',
+    path: '/api/v1/store/hotel/images',
     summary: '取得飯店分館圖片列表',
     ...bearerSecurity,
     request: {
-      params: z.object({
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
-      }),
       query: z.object({
         currentPage: z.number().optional().openapi({
           description: '目前頁數',
@@ -41,7 +35,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
         description: '取得飯店分館圖片成功',
         content: {
           'application/json': {
-            schema: hotelImagesListDto,
+            schema: hotelImageListDto,
             examples: {
               'application/json': {
                 summary: '取得飯店分館圖片成功範例',
@@ -154,7 +148,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['HotelImages'],
     method: 'get',
-    path: '/api/v1/store/hotel/{hotel_id}/images/{id}',
+    path: '/api/v1/store/hotel/images/{id}',
     summary: '取得某一個飯店圖片',
     ...bearerSecurity,
     request: {
@@ -163,10 +157,6 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
           description: '飯店分館圖片的唯一識別碼',
           example: '1007a1a8-fd54-4b69-857b-cf9fedee1ae1',
         }),
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
       }),
     },
     responses: {
@@ -174,7 +164,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
         description: '取得飯店分館圖片成功成功',
         content: {
           'application/json': {
-            schema: hotelImagesDto,
+            schema: hotelImageDto,
             examples: {
               'application/json': {
                 summary: '取得飯店分館圖片成功範例',
@@ -293,20 +283,14 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['HotelImages'],
     method: 'post',
-    path: '/api/v1/store/hotel/{hotel_id}/images',
+    path: '/api/v1/store/hotel/images',
     summary: '新增飯店分館圖片',
     ...bearerSecurity,
     request: {
-      params: z.object({
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
-      }),
       body: {
         content: {
           'application/json': {
-            schema: hotelImagesCreateSchema,
+            schema: hotelImageCreateSchema,
             examples: {
               'application/json': {
                 summary: '新增飯店分館圖片成功範例',
@@ -326,7 +310,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
         description: '新增飯店分館圖片成功',
         content: {
           'application/json': {
-            schema: hotelImagesDto,
+            schema: hotelImageDto,
             examples: {
               'application/json': {
                 summary: '新增飯店分館圖片成功範例',
@@ -462,7 +446,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['HotelImages'],
     method: 'put',
-    path: '/api/v1/store/hotel/{hotel_id}/images/{id}',
+    path: '/api/v1/store/hotel/images/{id}',
     summary: '更新飯店分館圖片',
     ...bearerSecurity,
     request: {
@@ -471,15 +455,11 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
           description: '飯店分館圖片的唯一識別碼',
           example: '1007a1a8-fd54-4b69-857b-cf9fedee1ae1',
         }),
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
       }),
       body: {
         content: {
           'application/json': {
-            schema: hotelImagesUpdateSchema,
+            schema: hotelImageUpdateSchema,
             examples: {
               'application/json': {
                 summary: '更新飯店分館圖片範例',
@@ -499,7 +479,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
         description: '更新飯店分館圖片成功',
         content: {
           'application/json': {
-            schema: hotelImagesDto,
+            schema: hotelImageDto,
             examples: {
               'application/json': {
                 summary: '更新飯店分館圖片成功範例',
@@ -635,7 +615,7 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['HotelImages'],
     method: 'delete',
-    path: '/api/v1/store/hotel/{hotel_id}/images/{id}',
+    path: '/api/v1/store/hotel/images/{id}',
     summary: '刪除圖片',
     ...bearerSecurity,
     request: {
@@ -643,10 +623,6 @@ export const registerHotelImageRoutes = (registry: OpenAPIRegistry): void => {
         id: z.string().uuid().openapi({
           description: '飯店分館圖片的唯一識別碼',
           example: '1007a1a8-fd54-4b69-857b-cf9fedee1ae1',
-        }),
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
         }),
       }),
     },

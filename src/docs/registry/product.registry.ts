@@ -15,16 +15,10 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['Products'],
     method: 'get',
-    path: '/api/v1/store/hotel/{hotel_id}/products',
+    path: '/api/v1/store/hotel/products',
     summary: '取得伴手禮列表',
     ...bearerSecurity,
     request: {
-      params: z.object({
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
-      }),
       query: z.object({
         currentPage: z.number().optional().openapi({
           description: '目前頁數',
@@ -165,7 +159,7 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['Products'],
     method: 'get',
-    path: '/api/v1/store/hotel/{hotel_id}/products/{id}',
+    path: '/api/v1/store/hotel/products/{id}',
     summary: '取得伴手禮',
     ...bearerSecurity,
     request: {
@@ -173,10 +167,6 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
         id: z.string().uuid().openapi({
           description: '伴手禮的唯一識別碼',
           example: '1007a1a8-fd54-4b69-857b-cf9fedee1ae1',
-        }),
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
         }),
       }),
     },
@@ -304,16 +294,10 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['Products'],
     method: 'post',
-    path: '/api/v1/store/hotel/{hotel_id}/products',
+    path: '/api/v1/store/hotel/products',
     summary: '新增伴手禮',
     ...bearerSecurity,
     request: {
-      params: z.object({
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
-      }),
       body: {
         content: {
           'application/json': {
@@ -475,7 +459,7 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['Products'],
     method: 'put',
-    path: '/api/v1/store/hotel/{hotel_id}/products/{id}',
+    path: '/api/v1/store/hotel/products/{id}',
     summary: '更新伴手禮',
     ...bearerSecurity,
     request: {
@@ -483,10 +467,6 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
         id: z.string().uuid().openapi({
           description: '伴手禮的唯一識別碼',
           example: '1007a1a8-fd54-4b69-857b-cf9fedee1ae1',
-        }),
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
         }),
       }),
       body: {
@@ -650,7 +630,7 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
   registry.registerPath({
     tags: ['Products'],
     method: 'patch',
-    path: '/api/v1/store/hotel/{hotel_id}/products/{id}',
+    path: '/api/v1/store/hotel/products/{id}',
     summary: '刪除伴手禮',
     ...bearerSecurity,
     request: {
@@ -658,10 +638,6 @@ export const registerProductRoutes = (registry: OpenAPIRegistry): void => {
         id: z.string().uuid().openapi({
           description: '伴手禮的唯一識別碼',
           example: '1007a1a8-fd54-4b69-857b-cf9fedee1ae1',
-        }),
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
         }),
       }),
     },
