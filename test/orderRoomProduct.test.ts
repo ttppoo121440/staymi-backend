@@ -5,9 +5,15 @@ import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 
+import { brand } from '@/database/schemas/brand.schema';
+import { hotel_rooms } from '@/database/schemas/hotel_rooms.schema';
+import { hotels } from '@/database/schemas/hotels.schema';
 import { order_room_product } from '@/database/schemas/order_room_product.schema';
+import { room_plans } from '@/database/schemas/room_plans.schema';
+import { room_types } from '@/database/schemas/room_types.schema';
 import { subscriptions } from '@/database/schemas/subscriptions.schema';
 import { user } from '@/database/schemas/user.schema';
+import { user_brand } from '@/database/schemas/user_brand.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
 import { OrderRoomProductType } from '@/features/orderRoomProduct/orderRoomProduct.schema';
 import { server } from '@/server';
@@ -15,7 +21,6 @@ import { server } from '@/server';
 import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
 
 const testUser = {
@@ -27,24 +32,71 @@ const testUser = {
   gender: 'm',
 };
 
+const testStore = {
+  email: `store+${Date.now()}@example.com`,
+  password: 'password123',
+  title: 'My Store',
+  description: 'A test store',
+  name: '測試使用者',
+  phone: '0912345678',
+  birthday: '2000-01-01',
+  gender: 'm',
+};
+
 let token: string;
 let userId: string;
+let hotelId: string;
+let storeToken: string;
+let brandId: string;
+let roomPlanId: string;
+
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
+
+const closeDb = async (): Promise<void> => {
+  const existingUsersStore = await db.select().from(user).where(eq(user.email, testStore.email));
+  const existingUsers = await db.select().from(user).where(eq(user.email, testUser.email));
+
+  // 刪除一般 user 的資料
+  if (existingUsers.length > 0) {
+    const existingUser = existingUsers[0];
+    await db.delete(order_room_product).where(eq(order_room_product.user_id, existingUser.id)).execute();
+    await db.delete(subscriptions).where(eq(subscriptions.user_id, existingUser.id)).execute();
+    await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+    await db.delete(user).where(eq(user.id, existingUser.id)).execute();
+  }
+
+  // 刪除商家 user 的資料
+  if (existingUsersStore.length > 0) {
+    const existingUser = existingUsersStore[0];
+
+    const brandRecord = await db.select().from(brand).where(eq(brand.user_id, existingUser.id));
+    const brandId = brandRecord[0]?.id;
+
+    const hotelRecord = await db.select().from(hotels).where(eq(hotels.brand_id, brandId));
+    const hotelId = hotelRecord[0]?.id;
+
+    await db.delete(room_plans).where(eq(room_plans.hotel_id, hotelId)).execute();
+    await db.delete(hotel_rooms).where(eq(hotel_rooms.hotel_id, hotelId)).execute();
+
+    await db.delete(room_types).where(eq(room_types.brand_id, brandId)).execute();
+    await db.delete(hotels).where(eq(hotels.brand_id, brandId)).execute();
+
+    await db.delete(user_brand).where(eq(user_brand.brand_id, brandId)).execute();
+    await db.delete(brand).where(eq(brand.id, brandId)).execute();
+
+    await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+    await db.delete(user).where(eq(user.id, existingUser.id)).execute();
+  }
+};
+
 describe('訂單 API', () => {
   beforeAll(async () => {
     if (process.env.NODE_ENV !== 'test') {
       throw new Error('測試必須在測試環境中運行');
     }
-
-    // 清除測試帳號資料（避免重複）
-    const existingUsers = await db.select().from(user).where(eq(user.email, testUser.email));
-    if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
-      await db.delete(order_room_product).where(eq(order_room_product.user_id, existingUser.id)).execute();
-      await db.delete(subscriptions).where(eq(subscriptions.user_id, existingUser.id)).execute();
-      await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
-      await db.delete(user).where(eq(user.id, existingUser.id)).execute();
-    }
-
+    await closeDb();
     // 註冊與登入
     await request(app).post('/api/v1/users/signup').send(testUser);
 
@@ -56,18 +108,85 @@ describe('訂單 API', () => {
     token = loginRes.body.data.token;
     const decoded = jwt.decode(token) as { id: string };
     userId = decoded.id;
+
+    // 註冊並登入
+    await request(app).post('/api/v1/store/signup').send(testStore);
+
+    const storeLoginRes = await request(app).post('/api/v1/store/login').send({
+      email: testStore.email,
+      password: testStore.password,
+    });
+
+    expect(storeLoginRes.status).toBe(200);
+    storeToken = storeLoginRes.body.data.token;
+
+    const storeDecoded = jwt.decode(storeToken) as { brand_id: string };
+    brandId = storeDecoded.brand_id;
+
+    const hotelRes = await request(app)
+      .post('/api/v1/store/hotel')
+      .set('Authorization', `Bearer ${storeToken}`)
+      .send({
+        region: '台中',
+        name: '訂單測試商家飯店一號',
+        address: '台中市中區自由路一段 123 號',
+        phone: '0912123123',
+        transportation: '近台中火車站',
+        hotel_policies: '禁止吸菸',
+        latitude: '24.147736',
+        longitude: '120.673648',
+        hotel_facilities: ['WiFi', '電視'],
+        is_active: true,
+      });
+    console.log('飯店建立回傳', JSON.stringify(hotelRes.body, null, 2));
+
+    hotelId = hotelRes.body.data.hotel.id;
+
+    const roomTypeId = await db
+      .insert(room_types)
+      .values({
+        name: 'Standard Room',
+        description: 'A standard room with basic amenities',
+        room_service: ['WiFi', 'TV'],
+        brand_id: brandId,
+      })
+      .returning({ id: room_types.id });
+
+    const hotelRoomId = await db
+      .insert(hotel_rooms)
+      .values({
+        hotel_id: hotelId,
+        room_type_id: roomTypeId[0]?.id,
+        basePrice: 1000,
+        is_active: true,
+        description: 'A standard room with basic amenities',
+        images: ['https://example.com/image1.jpg'],
+      })
+      .returning({ id: hotel_rooms.id });
+
+    console.log('房型建立回傳', JSON.stringify(hotelRoomId[0], null, 2));
+
+    const roomPlanRes = await request(app)
+      .post('/api/v1/store/hotel/room-plan')
+      .set('Authorization', `Bearer ${storeToken}`)
+      .send({
+        hotel_id: hotelId,
+        hotel_room_id: hotelRoomId[0]?.id,
+        price: 1500,
+        subscription_price: 1000,
+        images: ['https://example.com/image1.jpg'],
+        start_date: formatDate(new Date()),
+        end_date: formatDate(new Date(Date.now() + 30 * 86400000)),
+        is_active: true,
+      });
+    roomPlanId = roomPlanRes.body.data.roomPlan.id;
+    console.log('房型計畫 ID', roomPlanId);
+
+    console.log('房型計畫建立回傳', JSON.stringify(roomPlanRes.body, null, 2));
   });
 
   afterAll(async () => {
-    const existingUsers = await db.select().from(user).where(eq(user.email, testUser.email));
-    if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
-
-      await db.delete(order_room_product).where(eq(order_room_product.user_id, existingUser.id)).execute();
-      await db.delete(subscriptions).where(eq(subscriptions.user_id, existingUser.id)).execute();
-      await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
-      await db.delete(user).where(eq(user.id, existingUser.id)).execute();
-    }
+    await closeDb();
     await closeDatabase();
     if (server) {
       server.close();
@@ -80,8 +199,8 @@ describe('訂單 API', () => {
         .insert(order_room_product)
         .values({
           user_id: userId,
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(),
           total_price: 1000,
@@ -162,8 +281,8 @@ describe('訂單 API', () => {
         .insert(order_room_product)
         .values({
           user_id: userId,
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(),
           total_price: 1000,
@@ -187,8 +306,8 @@ describe('訂單 API', () => {
         .get(`/api/v1/users/order/${orderId}`)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
         });
 
       console.log('取得單筆訂單', JSON.stringify(res.body, null, 2));
@@ -204,15 +323,15 @@ describe('訂單 API', () => {
         .get(`/api/v1/users/order/not-a-uuid`)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
         });
 
       console.log('傳入錯誤格式 id 應回傳 400', JSON.stringify(res.body, null, 2));
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('請填正確 id 格式');
+      expect(res.body.message).toBe('id 格式錯誤');
     });
 
     it('未登入應回傳 401', async () => {
@@ -227,8 +346,8 @@ describe('訂單 API', () => {
       const fakeId = randomUUID();
 
       const res = await request(app).get(`/api/v1/users/order/${fakeId}`).set('Authorization', `Bearer ${token}`).send({
-        hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-        room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+        hotel_id: hotelId,
+        room_plans_id: roomPlanId,
       });
 
       console.log('找不到訂單應回傳 404', JSON.stringify(res.body, null, 2));
@@ -256,8 +375,8 @@ describe('訂單 API', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           user_id: userId,
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 2)),
           total_price: 1500,
@@ -292,8 +411,8 @@ describe('訂單 API', () => {
         .post('/api/v1/users/order')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 2)),
           payment_name: '付款人',
@@ -325,8 +444,8 @@ describe('訂單 API', () => {
         .post('/api/v1/users/order')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
           payment_name: '付款人',
@@ -347,8 +466,8 @@ describe('訂單 API', () => {
         .post('/api/v1/users/order')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
           payment_name: '付款人',
@@ -366,8 +485,8 @@ describe('訂單 API', () => {
 
     it('建立訂單失敗 - 缺少必要欄位 400', async () => {
       const res = await request(app).post('/api/v1/users/order').set('Authorization', `Bearer ${token}`).send({
-        hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-        room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+        hotel_id: hotelId,
+        room_plans_id: roomPlanId,
         total_price: 999,
       });
 
@@ -378,8 +497,8 @@ describe('訂單 API', () => {
 
     it('建立訂單失敗 - 未登入 401', async () => {
       const res = await request(app).post('/api/v1/users/order').send({
-        hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-        room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+        hotel_id: hotelId,
+        room_plans_id: roomPlanId,
         total_price: 1000,
         payment_name: '測試',
         payment_phone: '0911222333',
@@ -403,7 +522,7 @@ describe('訂單 API', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           user_id: userId,
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
+          hotel_id: hotelId,
           room_plans_id: uuid,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
@@ -429,7 +548,7 @@ describe('訂單 API', () => {
         .send({
           user_id: userId,
           hotel_id: uuid,
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
           payment_name: '付款人',
@@ -455,8 +574,8 @@ describe('訂單 API', () => {
         .insert(order_room_product)
         .values({
           user_id: userId,
-          hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-          room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(),
           total_price: 1000,

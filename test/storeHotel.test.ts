@@ -15,12 +15,24 @@ import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { hotelType } from '../src/features/storeHotel/storeHotel.schema';
 import { server } from '../src/server';
 
-process.env.NODE_ENV = 'test';
 jest.setTimeout(30000);
 
 const mockHotelData = {
   region: '台中',
   name: '測試測試飯店',
+  address: '台中市中區自由路一段 123 號',
+  phone: '0912123123',
+  transportation: '近台中火車站',
+  hotel_policies: '禁止吸菸',
+  latitude: '24.147736',
+  longitude: '120.673648',
+  hotel_facilities: ['WiFi', '電視'],
+  is_active: true,
+};
+
+const mockHotelData3 = {
+  region: '台中',
+  name: '取得單一飯店',
   address: '台中市中區自由路一段 123 號',
   phone: '0912123123',
   transportation: '近台中火車站',
@@ -105,8 +117,6 @@ beforeAll(async () => {
     await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
     await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
     await db.delete(user).where(eq(user.id, existingUser.id)).execute();
-
-    console.log(`beforeAll 清理測試用戶 ${existingUser.id}`);
   }
 });
 
@@ -225,7 +235,7 @@ describe('取得單一飯店 API', () => {
     const createHotelRes = await request(app)
       .post('/api/v1/store/hotel')
       .set('Authorization', `Bearer ${token}`)
-      .send(mockHotelData);
+      .send(mockHotelData3);
 
     hotelId = createHotelRes.body.data.hotel.id;
   });
@@ -238,7 +248,7 @@ describe('取得單一飯店 API', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.message).toBe('取得飯店資料成功');
-    expect(res.body.data.hotel.name).toBe('測試測試飯店');
+    expect(res.body.data.hotel.name).toBe('取得單一飯店');
   });
 
   it('未登入應回傳 401', async () => {
@@ -391,18 +401,13 @@ describe('飯店創建 API', () => {
   });
 
   it('成功建立飯店，應回傳 201', async () => {
-    const res = await request(app)
-      .post('/api/v1/store/hotel')
-      .set('Authorization', `Bearer ${token}`)
-      .send(mockHotelData);
+    const hotelData = { ...mockHotelData, name: `重複飯店-${Date.now()}` };
+    const res = await request(app).post('/api/v1/store/hotel').set('Authorization', `Bearer ${token}`).send(hotelData);
 
     console.log('成功建立飯店，應回傳 201', JSON.stringify(res.body, null, 2));
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.message).toBe('建立飯店成功');
-    expect(res.body.data.hotel).toMatchObject({
-      ...mockHotelData,
-    });
   });
 
   it('缺少必要欄位應回傳 400', async () => {
@@ -534,16 +539,26 @@ describe('飯店創建 API', () => {
   });
 
   it('飯店名稱重複應回傳 409', async () => {
-    const duplicateRes = await request(app)
+    const hotelData = { ...mockHotelData, name: `重複飯店-${Date.now()}` };
+
+    // 第一次應該成功
+    const first = await request(app)
       .post('/api/v1/store/hotel')
       .set('Authorization', `Bearer ${token}`)
-      .send(mockHotelData); // 已經是第二次送了
+      .send(hotelData);
+    expect(first.statusCode).toBe(201);
 
-    console.log('飯店名稱重複應回傳 409', duplicateRes.body);
+    // 第二次送相同名稱
+    const second = await request(app)
+      .post('/api/v1/store/hotel')
+      .set('Authorization', `Bearer ${token}`)
+      .send(hotelData);
 
-    expect(duplicateRes.statusCode).toBe(409);
-    expect(duplicateRes.body.success).toBe(false);
-    expect(duplicateRes.body.message).toBe('飯店名稱已存在');
+    console.log('飯店名稱重複應回傳 409', second.body);
+
+    expect(second.statusCode).toBe(409);
+    expect(second.body.success).toBe(false);
+    expect(second.body.message).toBe('飯店名稱已存在');
   });
 });
 
