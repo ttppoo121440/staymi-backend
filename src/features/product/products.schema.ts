@@ -46,13 +46,16 @@ export const productsDto = z
 
 export const productsCreateSchema = productsSchema.omit({
   id: true,
+  hotel_id: true,
   created_at: true,
   updated_at: true,
 });
 export const productsUpdateSchema = productsSchema.omit({
+  id: true,
+  hotel_id: true,
   created_at: true,
 });
 
 export type ProductsSchema = z.infer<typeof productsSchema>;
-export type ProductsCreateType = z.infer<typeof productsCreateSchema>;
-export type ProductsUpdateType = z.infer<typeof productsUpdateSchema>;
+export type ProductsCreateType = z.infer<typeof productsCreateSchema> & { hotel_id: string };
+export type ProductsUpdateType = z.infer<typeof productsUpdateSchema> & { id: string; hotel_id: string };

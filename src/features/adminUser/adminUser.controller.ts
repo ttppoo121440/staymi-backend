@@ -9,8 +9,8 @@ import {
   adminUserToDTO,
   adminUserQuerySchema,
   adminUserListToDto,
-  adminUserUpdateRoleSchema,
   adminUserUpdateRoleToDto,
+  adminUserUpdateRoleType,
 } from './adminUser.schema';
 
 export class AdminUserController {
@@ -33,8 +33,9 @@ export class AdminUserController {
   updateRole = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { role } = req.body;
-    const validatedData = adminUserUpdateRoleSchema.parse({ id, role });
-    const result = await this.adminUserRepo.updateRole(validatedData);
+    const data = { id, role } as adminUserUpdateRoleType;
+
+    const result = await this.adminUserRepo.updateRole(data);
     const dtoData = adminUserUpdateRoleToDto.parse(result);
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新用戶角色成功'));
   });

@@ -2,8 +2,10 @@ import express from 'express';
 import passport from 'passport';
 
 import { authMiddleware } from '@/middleware/auth.middleware';
+import { zodMiddleware } from '@/middleware/zodMiddleware';
 
 import { AuthController } from '../auth/auth.controller';
+import { AuthCreateSchema, AuthLoginSchema, AuthUpdatePasswordSchema } from '../auth/auth.schema';
 
 import { UserController } from './user.controller';
 
@@ -13,9 +15,14 @@ const userController = new UserController();
 
 userRoutes.get('/user-profile', authMiddleware, userController.getUserProfile);
 userRoutes.put('/user-profile', authMiddleware, userController.update);
-userRoutes.post('/signup', authController.signup);
-userRoutes.post('/login', authController.login);
-userRoutes.put('/change-password', authMiddleware, authController.changePassword);
+userRoutes.post('/signup', zodMiddleware({ body: AuthCreateSchema }), authController.signup);
+userRoutes.post('/login', zodMiddleware({ body: AuthLoginSchema }), authController.login);
+userRoutes.put(
+  '/change-password',
+  authMiddleware,
+  zodMiddleware({ body: AuthUpdatePasswordSchema }),
+  authController.changePassword,
+);
 userRoutes.put('/uploadAvatar', authMiddleware, userController.uploadAvatar);
 userRoutes.get('/line', authController.redirectToLine);
 userRoutes.get('/line/callback', authController.handleLineCallback);

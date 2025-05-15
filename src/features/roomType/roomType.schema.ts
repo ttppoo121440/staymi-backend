@@ -30,7 +30,12 @@ export const roomTypesListDto = z
     pagination: data.pagination,
   }));
 
-export const roomTypesCreateSchema = roomTypesSchema.omit({ id: true, created_at: true, updated_at: true });
+export const roomTypesCreateSchema = roomTypesSchema.omit({
+  id: true,
+  brand_id: true,
+  created_at: true,
+  updated_at: true,
+});
 
 export const roomTypeDto = z
   .object({
@@ -44,11 +49,11 @@ export const roomTypeDto = z
     },
   }));
 
-export const roomTypesUpdateSchema = roomTypesSchema.omit({ created_at: true });
+export const roomTypesUpdateSchema = roomTypesSchema.omit({ id: true, brand_id: true, created_at: true });
 
 export const roomTypesDeleteSchema = roomTypesSchema.pick({ id: true, brand_id: true });
 
 export type roomTypes = z.infer<typeof roomTypesSchema>;
-export type roomTypesCreateType = z.infer<typeof roomTypesCreateSchema>;
-export type roomTypesUpdateType = z.infer<typeof roomTypesUpdateSchema>;
+export type roomTypesCreateType = z.infer<typeof roomTypesCreateSchema> & { brand_id: string };
+export type roomTypesUpdateType = z.infer<typeof roomTypesUpdateSchema> & { id: string; brand_id: string };
 export type roomTypesDeleteType = z.infer<typeof roomTypesDeleteSchema>;
