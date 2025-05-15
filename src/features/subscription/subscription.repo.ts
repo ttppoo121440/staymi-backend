@@ -5,7 +5,12 @@ import { subscriptions } from '@/database/schemas/subscriptions.schema';
 import { BaseRepository } from '@/repositories/base-repository';
 import { PaginationType } from '@/types/pagination';
 
-import { subscriptionType, subscriptionIsRecurringType, subscriptionHistoryType } from './subscription.schema';
+import {
+  subscriptionType,
+  subscriptionIsRecurringType,
+  subscriptionHistoryType,
+  subscriptionPlanType,
+} from './subscription.schema';
 
 export class SubscriptionRepo extends BaseRepository {
   async getPlanByUserId(userId: string): Promise<subscriptionType | null> {
@@ -75,5 +80,33 @@ export class SubscriptionRepo extends BaseRepository {
       history: data,
       pagination,
     };
+  }
+
+  async updatePlanByUserIdAndPlan(userId: string, plan: 'free' | 'plus' | 'pro'): Promise<subscriptionPlanType | null> {
+    const latest = await db
+      .select({ id: subscriptions.id, plan: subscriptions.plan })
+      .from(subscriptions)
+      .where(eq(subscriptions.user_id, userId))
+      .orderBy(desc(subscriptions.created_at))
+      .limit(1);
+    // 無訂閱資訊
+    if (latest.length === 0) {
+      return null;
+    }
+    // 與當前訂閱方案相同
+    if (latest[0].plan === plan) {
+      return { plan: latest[0].plan, isUpdate: false };
+    }
+
+    const result = await db
+      .update(subscriptions)
+      .set({ plan })
+      .where(and(eq(subscriptions.user_id, userId), eq(subscriptions.id, latest[0].id)))
+      .returning();
+
+    if (!result[0]) {
+      return null;
+    }
+    return { plan: result[0].plan, isUpdate: true };
   }
 }

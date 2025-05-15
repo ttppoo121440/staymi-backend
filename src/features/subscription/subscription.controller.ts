@@ -56,4 +56,21 @@ export class SubscriptionController {
     const dtoData = subscriptionHistoryToDTO.parse(result);
     res.status(HttpStatus.OK).json(successResponse(dtoData, '訂閱紀錄取得成功'));
   });
+
+  updatePlan = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const id: string = (req.user as JwtUserPayload).id;
+    const { plan } = req.body as { plan: 'free' | 'plus' | 'pro' };
+    const result = await this.subscriptionRepo.updatePlanByUserIdAndPlan(id, plan);
+    if (!result) {
+      return next(appError('找不到訂閱資訊，請先訂閱', HttpStatus.NOT_FOUND));
+    }
+
+    // 未變更方案
+    if (!result.isUpdate) {
+      res.status(HttpStatus.OK).json(successResponse(undefined, `已是此訂閱方案${plan}`));
+      return;
+    }
+
+    res.status(HttpStatus.OK).json(successResponse(undefined, '訂閱方案變更成功'));
+  });
 }

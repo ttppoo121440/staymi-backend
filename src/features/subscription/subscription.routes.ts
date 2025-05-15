@@ -5,7 +5,11 @@ import { checkRolesMiddleware } from '@/middleware/checkRoles.middleware';
 import { zodMiddleware } from '@/middleware/zodMiddleware';
 
 import { SubscriptionController } from './subscription.controller';
-import { subscriptionIsRecurringBodySchema, subscriptionHistoryQuerySchema } from './subscription.schema';
+import {
+  subscriptionIsRecurringBodySchema,
+  subscriptionHistoryQuerySchema,
+  subscriptionPlanBodySchema,
+} from './subscription.schema';
 
 const subscriptionRoutes = express.Router();
 const subscriptionController = new SubscriptionController();
@@ -33,6 +37,17 @@ subscriptionRoutes.get(
     query: subscriptionHistoryQuerySchema,
   }),
   subscriptionController.getPlanHistory,
+);
+
+// 變更訂閱方案
+subscriptionRoutes.put(
+  '/plan',
+  authMiddleware,
+  checkRolesMiddleware(['consumer']),
+  zodMiddleware({
+    body: subscriptionPlanBodySchema,
+  }),
+  subscriptionController.updatePlan,
 );
 
 export default subscriptionRoutes;
