@@ -49,7 +49,6 @@ export const adminUserListToDto = z
   }));
 
 export const adminUserUpdateRoleSchema = adminUserSchema.pick({
-  id: true,
   role: true,
   updated_at: true,
 });
@@ -91,4 +90,4 @@ export type adminUserType = z.infer<typeof adminUserSchema>;
 export type adminUserArrayType = z.infer<typeof adminUserArraySchema>;
 export type adminUserResponseType = z.infer<typeof adminUserResponseSchema>;
 export type adminUserQueryType = z.infer<typeof adminUserQuerySchema>;
-export type adminUserUpdateRoleType = z.infer<typeof adminUserUpdateRoleSchema>;
+export type adminUserUpdateRoleType = z.infer<typeof adminUserUpdateRoleSchema> & { id: string };

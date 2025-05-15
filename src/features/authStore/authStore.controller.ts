@@ -6,23 +6,16 @@ import { JwtUserPayload } from '@/types/JwtUserPayload';
 import { successResponse } from '@/utils/appResponse';
 
 import { AuthRepo } from '../auth/auth.repo';
-import { AuthLoginSchema } from '../auth/auth.schema';
 
 import { AuthStoreRepo } from './authStore.repo';
-import {
-  authStoreSignupSchema,
-  authStoreUpdateSchema,
-  authStoreToDto,
-  authStoreUploadLogoSchema,
-} from './authStore.schema';
+import { authStoreToDto } from './authStore.schema';
 
 export class AuthStoreController {
   constructor(private authStoreRepo = new AuthStoreRepo(), private authRepo = new AuthRepo()) {}
 
   signup = asyncHandler(async (req: Request, res: Response) => {
-    const validatedData = authStoreSignupSchema.parse(req.body);
-    const newStore = await this.authStoreRepo.signup(validatedData);
-    const token = await this.authStoreRepo.storeLogin({ email: newStore.email, password: validatedData.password });
+    const newStore = await this.authStoreRepo.signup(req.body);
+    const token = await this.authStoreRepo.storeLogin({ email: newStore.email, password: req.body.password });
     const result = await this.authRepo.getUserByEmail(newStore.email);
     const responseData = {
       token,
@@ -35,9 +28,8 @@ export class AuthStoreController {
   });
 
   storeLogin = asyncHandler(async (req: Request, res: Response) => {
-    const validatedData = AuthLoginSchema.parse(req.body);
-    const token = await this.authStoreRepo.storeLogin(validatedData);
-    const result = await this.authRepo.getUserByEmail(validatedData.email);
+    const token = await this.authStoreRepo.storeLogin(req.body);
+    const result = await this.authRepo.getUserByEmail(req.body.email);
     const responseData = {
       token,
       user: {
@@ -49,9 +41,8 @@ export class AuthStoreController {
   });
 
   updateStoreInfo = asyncHandler(async (req: Request, res: Response) => {
-    const validatedData = authStoreUpdateSchema.parse(req.body);
     const userId: string = (req.user as JwtUserPayload).id;
-    const result = await this.authStoreRepo.updateStoreInfo(userId, validatedData);
+    const result = await this.authStoreRepo.updateStoreInfo(userId, req.body);
     const dtoData = authStoreToDto.parse(result);
 
     res.status(HttpStatus.OK).json(successResponse(dtoData, '更新成功'));
@@ -59,8 +50,7 @@ export class AuthStoreController {
 
   uploadLogo = asyncHandler(async (req: Request, res: Response) => {
     const id: string = (req.user as JwtUserPayload).id;
-    const validatedData = authStoreUploadLogoSchema.parse({ id: id, ...req.body });
-    const result = await this.authStoreRepo.uploadLogo(validatedData);
+    const result = await this.authStoreRepo.uploadLogo({ id, ...req.body });
 
     res.status(HttpStatus.OK).json(successResponse(result, '上傳成功'));
   });

@@ -39,7 +39,6 @@ export const AuthLoginSchema = AuthResponseSchema.pick({
 });
 
 export const AuthUpdatePasswordSchema = z.object({
-  id: z.string().uuid(),
   oldPassword: z.string({ message: '請輸入舊密碼' }).min(8, { message: '舊密碼至少8個字' }),
   newPassword: z.string({ message: '請輸入新密碼' }).min(8, { message: '新密碼至少8個字' }),
 });
@@ -47,6 +46,6 @@ export const AuthUpdatePasswordSchema = z.object({
 export type AuthLoginType = z.infer<typeof AuthLoginSchema>;
 export type AuthCreateType = z.infer<typeof AuthCreateSchema>;
 export type AuthResponseType = z.infer<typeof AuthResponseSchema>;
-export type AuthUpdatePasswordType = z.infer<typeof AuthUpdatePasswordSchema>;
+export type AuthUpdatePasswordType = z.infer<typeof AuthUpdatePasswordSchema> & { id: string };
 
 export type Role = (typeof roleEnumList)[number];

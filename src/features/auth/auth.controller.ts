@@ -13,7 +13,6 @@ import { successResponse } from '@/utils/appResponse';
 import { generateToken } from '@/utils/jwt';
 
 import { AuthRepo } from './auth.repo';
-import { authCreateToDTO, AuthLoginSchema, AuthUpdatePasswordSchema } from './auth.schema';
 import { AuthService } from './auth.service';
 import { FacebookProfile, LineIdTokenProfileType } from './auth.types';
 
@@ -21,14 +20,12 @@ export class AuthController {
   constructor(private authRepo = new AuthRepo(), private authService = new AuthService()) {}
 
   login = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const validatedData = AuthLoginSchema.parse(req.body);
-
-    if (!validatedData.email || !validatedData.password) {
+    if (!req.body.email || !req.body.password) {
       next(appError('請輸入信箱與密碼', HttpStatus.BAD_REQUEST));
     }
 
-    const token = await this.authRepo.login(validatedData);
-    const result = await this.authRepo.getUserByEmail(validatedData.email);
+    const token = await this.authRepo.login(req.body);
+    const result = await this.authRepo.getUserByEmail(req.body.email);
 
     const responseData = {
       token,
@@ -41,9 +38,8 @@ export class AuthController {
   });
 
   signup = asyncHandler(async (req: Request, res: Response) => {
-    const validatedData = authCreateToDTO.parse(req.body);
-    const newUser = await this.authRepo.signup(validatedData);
-    const token = await this.authRepo.login({ email: newUser.email, password: validatedData.password });
+    const newUser = await this.authRepo.signup(req.body);
+    const token = await this.authRepo.login({ email: newUser.email, password: req.body.password });
     const result = await this.authRepo.getUserByEmail(newUser.email);
     const responseData = {
       token,
@@ -59,13 +55,8 @@ export class AuthController {
     if (!id) {
       next(appError('用戶不存在', HttpStatus.NOT_FOUND));
     }
-    const validatedData = AuthUpdatePasswordSchema.parse({ ...req.body, id });
 
-    if (!validatedData.oldPassword || !validatedData.newPassword) {
-      next(appError('請提供舊密碼和新密碼', HttpStatus.BAD_REQUEST));
-    }
-
-    await this.authRepo.changePassword(validatedData);
+    await this.authRepo.changePassword({ ...req.body, id });
     res.status(HttpStatus.OK).json(successResponse(null, '密碼已更新'));
   });
   redirectToLine = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
