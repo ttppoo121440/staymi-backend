@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { paginationSchema } from '@/types/pagination';
 import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
-export const hotelImagesSchema = z.object({
+export const hotelImageSchema = z.object({
   id: z.string(),
   hotel_id: z.string(),
   image_url: z.string({ message: '請上傳圖片' }),
@@ -13,9 +13,9 @@ export const hotelImagesSchema = z.object({
   updated_at: zDateOrDefault(),
 });
 
-export const hotelImagesListDto = z
+export const hotelImageListDto = z
   .object({
-    images: z.array(hotelImagesSchema),
+    images: z.array(hotelImageSchema),
     pagination: paginationSchema,
   })
   .transform((data) => {
@@ -29,9 +29,9 @@ export const hotelImagesListDto = z
     };
   });
 
-export const hotelImagesDto = z
+export const hotelImageDto = z
   .object({
-    image: hotelImagesSchema,
+    image: hotelImageSchema,
   })
   .transform((data) => ({
     image: {
@@ -41,21 +41,24 @@ export const hotelImagesDto = z
     },
   }));
 
-export const hotelImagesCreateSchema = hotelImagesSchema.omit({
+export const hotelImageCreateSchema = hotelImageSchema.omit({
   id: true,
+  hotel_id: true,
   created_at: true,
   updated_at: true,
 });
 
-export const hotelImagesUpdateSchema = hotelImagesSchema.omit({
+export const hotelImageUpdateSchema = hotelImageSchema.omit({
+  id: true,
+  hotel_id: true,
   created_at: true,
 });
-export const hotelImagesDeleteSchema = hotelImagesSchema.pick({
+export const hotelImageDeleteSchema = hotelImageSchema.pick({
   id: true,
   hotel_id: true,
 });
 
-export type HotelImageType = z.infer<typeof hotelImagesSchema>;
-export type HotelImageCreateType = z.infer<typeof hotelImagesCreateSchema>;
-export type HotelImageUpdateType = z.infer<typeof hotelImagesUpdateSchema>;
-export type HotelImageDeleteType = z.infer<typeof hotelImagesDeleteSchema>;
+export type HotelImageType = z.infer<typeof hotelImageSchema>;
+export type HotelImageCreateType = z.infer<typeof hotelImageCreateSchema> & { hotel_id: string };
+export type HotelImageUpdateType = z.infer<typeof hotelImageUpdateSchema> & { id: string; hotel_id: string };
+export type HotelImageDeleteType = z.infer<typeof hotelImageDeleteSchema>;
