@@ -42,30 +42,30 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
           'application/json': {
             schema: orderRoomProductListDto,
             examples: {
-              'application/json': {
-                summary: '取得訂房訂單列表成功範例',
+              無伴手禮: {
+                summary: '無伴手禮範例',
                 value: {
                   success: true,
                   message: '取得訂房訂單列表成功',
                   data: {
                     orders: [
                       {
-                        id: 'cbc01c7e-4944-444e-b575-80a09989f906',
-                        user_id: 'fea56c48-59ae-42e6-81ea-35f00d84f757',
-                        hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-                        room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
-                        check_in_date: '2025-05-12',
-                        check_out_date: '2025-05-12',
+                        id: '1c48c688-943f-4e1a-9bca-bf6beba5e92f',
+                        check_in_date: '2025-05-18',
+                        check_out_date: '2025-05-18',
                         total_price: 1000,
                         status: 'pending',
                         payment_name: '測試付款人',
                         payment_phone: '0912345678',
-                        payment_email: 'payment_email1747047895334@example.com',
+                        payment_email: 'payment_email1747531284593@example.com',
                         contact_name: '測試聯絡人',
                         contact_phone: '0912345678',
-                        contact_email: 'contact_email1747047895334@example.com',
-                        created_at: '2025-05-12 19:04:55',
-                        updated_at: '2025-05-12 19:04:55',
+                        contact_email: 'contact_email1747531284593@example.com',
+                        created_at: '2025-05-18 09:21:24',
+                        updated_at: '2025-05-18 09:21:24',
+                        order_item: null,
+                        hotel_name: '訂單測試商家飯店一號',
+                        room_name: 'Standard Room',
                       },
                     ],
                     pagination: {
@@ -73,6 +73,65 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
                       perPage: 10,
                       totalPages: 1,
                       totalItems: 1,
+                    },
+                  },
+                },
+              },
+              有伴手禮: {
+                summary: '有伴手禮範例',
+                value: {
+                  success: true,
+                  message: '取得訂房訂單列表成功',
+                  data: {
+                    orders: [
+                      {
+                        id: '0f952b24-1e0f-48db-97f5-7a52cccc8e20',
+                        check_in_date: '2025-05-18',
+                        check_out_date: '2025-05-19',
+                        total_price: 8500,
+                        status: 'pending',
+                        payment_name: '付款人',
+                        payment_phone: '0911222333',
+                        payment_email: 'gift@example.com',
+                        contact_name: '聯絡人',
+                        contact_phone: '0911222333',
+                        contact_email: 'gift@example.com',
+                        created_at: '2025-05-18 09:29:44',
+                        updated_at: '2025-05-18 09:29:44',
+                        order_item: {
+                          id: 'e74a8451-aabe-47a1-bf5c-c1fe355bd01a',
+                          quantity: 7,
+                          unit_price: 1000,
+                          status: 'pending',
+                        },
+                        hotel_name: '訂單測試商家飯店一號',
+                        room_name: 'Standard Room',
+                        product_name: '高級伴手禮',
+                      },
+                      {
+                        id: 'e6489f76-00f6-44cc-9f45-d00b4c6e9983',
+                        check_in_date: '2025-05-18',
+                        check_out_date: '2025-05-18',
+                        total_price: 1000,
+                        status: 'pending',
+                        payment_name: '測試付款人',
+                        payment_phone: '0912345678',
+                        payment_email: 'payment_email1747531784086@example.com',
+                        contact_name: '測試聯絡人',
+                        contact_phone: '0912345678',
+                        contact_email: 'contact_email1747531784086@example.com',
+                        created_at: '2025-05-18 09:29:44',
+                        updated_at: '2025-05-18 09:29:44',
+                        order_item: null,
+                        hotel_name: '訂單測試商家飯店一號',
+                        room_name: 'Standard Room',
+                      },
+                    ],
+                    pagination: {
+                      currentPage: 1,
+                      perPage: 10,
+                      totalPages: 1,
+                      totalItems: 2,
                     },
                   },
                 },
@@ -151,34 +210,71 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
     },
     responses: {
       200: {
-        description: '取得訂房訂單成功',
+        description: '取得訂房訂單列表成功',
         content: {
           'application/json': {
-            schema: orderRoomProductDto,
+            schema: orderRoomProductListDto,
             examples: {
-              'application/json': {
-                summary: '取得訂房訂單成功範例',
+              無伴手禮: {
+                summary: '無伴手禮範例',
                 value: {
                   success: true,
                   message: '取得訂房訂單成功',
                   data: {
                     order: {
-                      id: 'df96621e-ca40-4865-8d90-5c2407850e2f',
-                      user_id: '55db203e-33a4-4ad1-a33c-2e989b3daf76',
-                      hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-                      room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
-                      check_in_date: '2025-05-12',
-                      check_out_date: '2025-05-12',
+                      id: '9952b3e8-2dd0-4277-bc66-265810d68661',
+                      check_in_date: '2025-05-18',
+                      check_out_date: '2025-05-18',
                       total_price: 1000,
                       status: 'pending',
                       payment_name: '測試付款人',
                       payment_phone: '0912345678',
-                      payment_email: 'payment_email1747048445155@example.com',
+                      payment_email: 'payment_email1747532011086@example.com',
                       contact_name: '測試聯絡人',
                       contact_phone: '0912345678',
-                      contact_email: 'contact_email1747048445155@example.com',
-                      created_at: '2025-05-12 19:14:05',
-                      updated_at: '2025-05-12 19:14:05',
+                      contact_email: 'contact_email1747532011086@example.com',
+                      created_at: '2025-05-18 09:33:31',
+                      updated_at: '2025-05-18 09:33:31',
+                      hotel_name: '訂單測試商家飯店一號',
+                      hotel_region: '台中',
+                      hotel_address: '台中市中區自由路一段 123 號',
+                      hotel_phone: '0912123123',
+                      room_name: 'Standard Room',
+                      product_name: null,
+                      product_price: null,
+                      product_quantity: null,
+                    },
+                  },
+                },
+              },
+              有伴手禮: {
+                summary: '有伴手禮範例',
+                value: {
+                  success: true,
+                  message: '取得訂房訂單成功',
+                  data: {
+                    order: {
+                      id: 'f18ec28f-1bcd-4526-8b33-fe80ea639ecf',
+                      check_in_date: '2025-05-18',
+                      check_out_date: '2025-05-19',
+                      total_price: 8500,
+                      status: 'pending',
+                      payment_name: '付款人',
+                      payment_phone: '0911222333',
+                      payment_email: 'gift@example.com',
+                      contact_name: '聯絡人',
+                      contact_phone: '0911222333',
+                      contact_email: 'gift@example.com',
+                      created_at: '2025-05-18 09:33:31',
+                      updated_at: '2025-05-18 09:33:31',
+                      hotel_name: '訂單測試商家飯店一號',
+                      hotel_region: '台中',
+                      hotel_address: '台中市中區自由路一段 123 號',
+                      hotel_phone: '0912123123',
+                      room_name: 'Standard Room',
+                      product_name: '高級伴手禮',
+                      product_price: 1000,
+                      product_quantity: 7,
                     },
                   },
                 },
@@ -221,6 +317,23 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
           },
         },
       },
+      404: {
+        description: 'order_id 不存在',
+        content: {
+          'application/json': {
+            schema: swaggerResponseSchema,
+            examples: {
+              'application/json': {
+                summary: '找不到對應的訂房訂單範例',
+                value: {
+                  message: '找不到對應的訂房訂單',
+                  status: false,
+                },
+              },
+            },
+          },
+        },
+      },
       500: {
         description: '伺服器錯誤',
         content: {
@@ -248,35 +361,41 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
     summary: '建立訂房訂單',
     ...bearerSecurity,
     request: {
-      params: z.object({
-        hotel_id: z.string().uuid().openapi({
-          description: '飯店的唯一識別碼',
-          example: '2d4e0239-766a-4b7b-a38a-2077be3f60ce',
-        }),
-      }),
       body: {
         content: {
           'application/json': {
             schema: orderRoomProductCreateSchema,
             examples: {
-              'application/json': {
-                summary: '建立訂房訂單範例',
+              無伴手禮: {
+                summary: '建立訂房訂單範例（無伴手禮）',
                 value: {
-                  user_id: '55db203e-33a4-4ad1-a33c-2e989b3daf76',
-                  hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-                  room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
-                  check_in_date: '2025-05-12',
-                  check_out_date: '2025-05-12',
-                  total_price: 1000,
-                  status: 'pending',
-                  payment_name: '測試付款人',
-                  payment_phone: '0912345678',
-                  payment_email: 'payment_email1747048445155@example.com',
-                  contact_name: '測試聯絡人',
-                  contact_phone: '0912345678',
-                  contact_email: 'contact_email1747048445155@example.com',
-                  created_at: '2025-05-12 19:14:05',
-                  updated_at: '2025-05-12 19:14:05',
+                  hotel_id: '13d5e9eb-51b2-404c-995c-2869d60c1248',
+                  room_plans_id: 'dd904803-e529-44d2-bd0b-927afd07001d',
+                  check_in_date: '2025-05-18',
+                  check_out_date: '2025-05-20',
+                  payment_name: '付款人B',
+                  payment_phone: '0922333444',
+                  payment_email: 'payer@example.com',
+                  contact_name: '聯絡人B',
+                  contact_phone: '0922333444',
+                  contact_email: 'contact@example.com',
+                },
+              },
+              有伴手禮: {
+                summary: '建立訂房訂單範例（有伴手禮）',
+                value: {
+                  hotel_id: '518a39cd-0018-4263-b51b-fb4bf6612d21',
+                  room_plans_id: '4ef6e1ec-0db8-4551-82eb-bec1a0a54a2b',
+                  check_in_date: '2025-05-18',
+                  check_out_date: '2025-05-19',
+                  payment_name: '付款人',
+                  payment_phone: '0911222333',
+                  payment_email: 'gift@example.com',
+                  contact_name: '聯絡人',
+                  contact_phone: '0911222333',
+                  contact_email: 'gift@example.com',
+                  product_plans_id: 'f2093119-4a99-44f4-ad72-0e2dfa19a63b',
+                  quantity: 5,
                 },
               },
             },
@@ -291,20 +410,17 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
           'application/json': {
             schema: orderRoomProductDto,
             examples: {
-              'application/json': {
-                summary: '訂房訂單建立成功範例',
+              無伴手禮: {
+                summary: '訂房訂單建立成功範例（無伴手禮）',
                 value: {
                   success: true,
                   message: '訂房訂單建立成功',
                   data: {
                     order: {
-                      id: '0bc5c81a-76c2-4bc1-8354-fa81667d372b',
-                      user_id: '09bc05b5-a6d3-4c18-b7e9-b5d7ba811009',
-                      hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-                      room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
-                      check_in_date: '2025-05-12',
-                      check_out_date: '2025-05-14',
-                      total_price: 5000,
+                      id: 'df0f5224-60ec-4315-b2dc-e199aaa361e7',
+                      check_in_date: '2025-05-18',
+                      check_out_date: '2025-05-20',
+                      total_price: 2000,
                       status: 'pending',
                       payment_name: '付款人B',
                       payment_phone: '0922333444',
@@ -312,8 +428,38 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
                       contact_name: '聯絡人B',
                       contact_phone: '0922333444',
                       contact_email: 'contact@example.com',
-                      created_at: '2025-05-12 19:37:03',
-                      updated_at: '1970-01-01 08:00:00',
+                      created_at: '2025-05-18 09:48:59',
+                      updated_at: '2025-05-18 09:48:59',
+                    },
+                  },
+                },
+              },
+              有伴手禮: {
+                summary: '訂房訂單建立成功範例（有伴手禮）',
+                value: {
+                  success: true,
+                  message: '訂房訂單建立成功',
+                  data: {
+                    order: {
+                      id: '651aa4db-c67d-4dc3-8e53-ea4d875c2d5e',
+                      check_in_date: '2025-05-18',
+                      check_out_date: '2025-05-19',
+                      total_price: 6500,
+                      status: 'pending',
+                      payment_name: '付款人',
+                      payment_phone: '0911222333',
+                      payment_email: 'gift@example.com',
+                      contact_name: '聯絡人',
+                      contact_phone: '0911222333',
+                      contact_email: 'gift@example.com',
+                      created_at: '2025-05-18 09:45:43',
+                      updated_at: '2025-05-18 09:45:43',
+                    },
+                    order_item: {
+                      id: 'a90cebfe-2984-44d5-95b2-82bcd0b48f4d',
+                      quantity: 5,
+                      unit_price: 1000,
+                      status: 'pending',
                     },
                   },
                 },
@@ -443,22 +589,19 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
                   message: '訂房訂單狀態更新成功',
                   data: {
                     order: {
-                      id: 'cb4c54c7-8161-4c8d-b4f8-56486e240764',
-                      user_id: 'af63c337-f533-4ca1-8fe3-ee8fada0e6e5',
-                      hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-                      room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
-                      check_in_date: '2025-05-12',
-                      check_out_date: '2025-05-12',
+                      id: '1c219eec-44df-4585-b332-b533f9b5dbfe',
+                      check_in_date: '2025-05-18',
+                      check_out_date: '2025-05-18',
                       total_price: 1000,
                       status: 'confirmed',
                       payment_name: '測試付款人',
                       payment_phone: '0912345678',
-                      payment_email: 'payment_email1747051954393@example.com',
+                      payment_email: 'payment_email1747533594642@example.com',
                       contact_name: '測試聯絡人',
                       contact_phone: '0912345678',
-                      contact_email: 'contact_email1747051954393@example.com',
-                      created_at: '2025-05-12 20:12:34',
-                      updated_at: '2025-05-12 20:12:34',
+                      contact_email: 'contact_email1747533594642@example.com',
+                      created_at: '2025-05-18 09:59:54',
+                      updated_at: '2025-05-18 09:59:54',
                     },
                   },
                 },
@@ -502,29 +645,15 @@ export const registerOrderRoomProductRoutes = (registry: OpenAPIRegistry): void 
         },
       },
       404: {
-        description: 'hotel_id 或 room_plans_id 或 id 不存在',
+        description: '找不到對應的訂房訂單',
         content: {
           'application/json': {
             schema: swaggerResponseSchema,
             examples: {
-              'id 不存在': {
-                summary: 'id 不存在範例',
+              找不到對應的訂房訂單: {
+                summary: '找不到對應的訂房訂單範例',
                 value: {
-                  message: 'id 不存在',
-                  status: false,
-                },
-              },
-              'hotel_id 不存在': {
-                summary: 'hotel_id 不存在範例',
-                value: {
-                  message: 'hotel_id 不存在',
-                  status: false,
-                },
-              },
-              'room_plans_id 不存在': {
-                summary: 'room_plans_id 不存在範例',
-                value: {
-                  message: 'room_plans_id 不存在',
+                  message: '找不到對應的訂房訂單',
                   status: false,
                 },
               },
