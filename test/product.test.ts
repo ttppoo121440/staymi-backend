@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import { describe, it, beforeAll, afterAll, expect } from '@jest/globals';
+import dotenv from 'dotenv';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
@@ -16,6 +17,7 @@ import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 import { hotels } from '../src/database/schemas/hotels.schema';
 
+dotenv.config({ path: '.env.test' });
 jest.setTimeout(30000);
 
 const mockHotelData = {
@@ -106,7 +108,7 @@ describe('飯店伴手禮 API', () => {
     }
   });
 
-  describe('GET /api/v1/store/hotels/:hotelId/products', () => {
+  describe('GET /api/v1/store/hotels/products', () => {
     beforeAll(async () => {
       await db
         .insert(products)
@@ -134,9 +136,7 @@ describe('飯店伴手禮 API', () => {
     });
 
     it('應該成功取得指定飯店的產品列表 200', async () => {
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await request(app).get(`/api/v1/store/hotel/products`).set('Authorization', `Bearer ${token}`);
       console.log('應該成功取得指定飯店的產品列表', JSON.stringify(res.body, null, 2));
 
       expect(res.status).toBe(200);
@@ -146,7 +146,7 @@ describe('飯店伴手禮 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).get(`/api/v1/store/hotel/${hotelId}/products`);
+      const res = await request(app).get(`/api/v1/store/hotel/products`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -161,7 +161,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products`)
+        .get(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${fakeConsumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -181,29 +181,16 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products`)
+        .get(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${consumerToken}`);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('無權限訪問此資源');
     });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${fakeHotelId}/products`)
-        .set('Authorization', `Bearer ${token}`);
-
-      console.log('查詢不存在飯店', res.body);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
   });
 
-  describe('GET /api/v1/store/hotel/:hotelId/products/:id', () => {
+  describe('GET /api/v1/store/hotel/products/:id', () => {
     beforeAll(async () => {
       const insertResult = await db
         .insert(products)
@@ -222,7 +209,7 @@ describe('飯店伴手禮 API', () => {
 
     it('應該成功取得指定產品 200', async () => {
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .get(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${token}`);
       console.log('應該成功取得指定產品 200', JSON.stringify(res.body, null, 2));
       expect(res.statusCode).toBe(200);
@@ -232,7 +219,7 @@ describe('飯店伴手禮 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).get(`/api/v1/store/hotel/${hotelId}/products/${productId}`);
+      const res = await request(app).get(`/api/v1/store/hotel/products/${productId}`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -247,7 +234,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .get(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${fakeConsumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -267,7 +254,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .get(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${consumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -283,7 +270,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .get(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${fakeConsumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -291,21 +278,10 @@ describe('飯店伴手禮 API', () => {
       expect(res.body.message).toBe('無權限訪問此資源');
     });
 
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${fakeHotelId}/products/${productId}`)
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
-
     it('產品不存在應回傳 404', async () => {
       const fakeProductId = randomUUID();
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/products/${fakeProductId}`)
+        .get(`/api/v1/store/hotel/products/${fakeProductId}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.statusCode).toBe(404);
@@ -314,7 +290,7 @@ describe('飯店伴手禮 API', () => {
     });
   });
 
-  describe('POST /api/v1/store/hotel/:hotelId/products', () => {
+  describe('POST /api/v1/store/hotel/products', () => {
     const newProductData = {
       name: '新增測試產品',
       description: '這是一個新增測試產品',
@@ -325,7 +301,7 @@ describe('飯店伴手禮 API', () => {
 
     it('應該成功新增產品 201', async () => {
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send(newProductData);
       console.log('應該成功新增產品 201', JSON.stringify(res.body, null, 2));
@@ -344,7 +320,7 @@ describe('飯店伴手禮 API', () => {
         imageUrl: '',
       };
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidProductData);
       console.log('欄位格式錯誤應回傳 400', JSON.stringify(res.body, null, 2));
@@ -361,7 +337,7 @@ describe('飯店伴手禮 API', () => {
         imageUrl: 'https://example.com/test-product.jpg',
       };
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidProductData);
       expect(res.statusCode).toBe(400);
@@ -375,7 +351,7 @@ describe('飯店伴手禮 API', () => {
         price: -1,
       };
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidProduct);
 
@@ -390,7 +366,7 @@ describe('飯店伴手禮 API', () => {
         price: 100000000,
       };
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidProduct);
 
@@ -405,7 +381,7 @@ describe('飯店伴手禮 API', () => {
         price: '一百塊',
       };
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidProduct);
 
@@ -415,7 +391,7 @@ describe('飯店伴手禮 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).post(`/api/v1/store/hotel/${hotelId}/products`).send(newProductData);
+      const res = await request(app).post(`/api/v1/store/hotel/products`).send(newProductData);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -434,7 +410,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${consumerToken}`)
         .send(newProductData);
 
@@ -451,8 +427,9 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .post(`/api/v1/store/hotel/products`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send(newProductData);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -467,28 +444,17 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .post(`/api/v1/store/hotel/products`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send(newProductData);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('無權限訪問此資源');
     });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .post(`/api/v1/store/hotel/${fakeHotelId}/products`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(newProductData);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
   });
 
-  describe('PUT /api/v1/store/hotel/:hotelId/products/:id', () => {
+  describe('PUT /api/v1/store/hotel/products/:id', () => {
     let productId: string;
 
     const originalProduct = {
@@ -517,7 +483,7 @@ describe('飯店伴手禮 API', () => {
 
     it('應該成功更新產品 200', async () => {
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .put(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${token}`)
         .send(updatedProduct);
       console.log('應該成功更新產品 200', JSON.stringify(res.body, null, 2));
@@ -533,7 +499,7 @@ describe('飯店伴手禮 API', () => {
       };
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .put(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidPayload);
 
@@ -543,7 +509,7 @@ describe('飯店伴手禮 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).put(`/api/v1/store/hotel/${hotelId}/products/${productId}`).send(updatedProduct);
+      const res = await request(app).put(`/api/v1/store/hotel/products/${productId}`).send(updatedProduct);
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
@@ -558,7 +524,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .put(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${consumerToken}`)
         .send(updatedProduct);
 
@@ -575,8 +541,9 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .put(`/api/v1/store/hotel/products/${productId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send(updatedProduct);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -591,8 +558,9 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .put(`/api/v1/store/hotel/products/${productId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send(updatedProduct);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -602,34 +570,21 @@ describe('飯店伴手禮 API', () => {
     it('伴手禮不存在應回傳 404', async () => {
       const fakeProductId = randomUUID();
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/products/${fakeProductId}`)
+        .put(`/api/v1/store/hotel/products/${fakeProductId}`)
         .set('Authorization', `Bearer ${token}`)
         .send(updatedProduct);
       expect(res.status).toBe(404);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('查無此伴手禮');
     });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-
-      const res = await request(app)
-        .put(`/api/v1/store/hotel/${fakeHotelId}/products/${productId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(updatedProduct);
-
-      expect(res.status).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
   });
 
-  describe('PATCH /api/v1/store/hotel/:hotelId/products/:id', () => {
+  describe('PATCH /api/v1/store/hotel/products/:id', () => {
     let productId: string;
 
     beforeAll(async () => {
       const createRes = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/products`)
+        .post(`/api/v1/store/hotel/products`)
         .set('Authorization', `Bearer ${token}`)
         .send({
           name: '軟刪除測試產品',
@@ -644,7 +599,7 @@ describe('飯店伴手禮 API', () => {
 
     it('應該成功執行軟刪除，並將 is_active 變更為 true 200', async () => {
       const res = await request(app)
-        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .patch(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
 
@@ -660,7 +615,7 @@ describe('飯店伴手禮 API', () => {
       await db.update(products).set({ is_active: true }).where(eq(products.id, productId));
 
       const res = await request(app)
-        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .patch(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
 
@@ -673,7 +628,7 @@ describe('飯店伴手禮 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`).send({
+      const res = await request(app).patch(`/api/v1/store/hotel/products/${productId}`).send({
         is_active: false,
       });
 
@@ -690,7 +645,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .patch(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${consumerToken}`)
         .send();
 
@@ -707,7 +662,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .patch(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${fakeConsumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -723,7 +678,7 @@ describe('飯店伴手禮 API', () => {
       );
 
       const res = await request(app)
-        .patch(`/api/v1/store/hotel/${hotelId}/products/${productId}`)
+        .patch(`/api/v1/store/hotel/products/${productId}`)
         .set('Authorization', `Bearer ${fakeConsumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -734,25 +689,12 @@ describe('飯店伴手禮 API', () => {
     it('伴手禮不存在應回傳 404', async () => {
       const fakeProductId = randomUUID();
       const res = await request(app)
-        .patch(`/api/v1/store/hotel/${hotelId}/products/${fakeProductId}`)
+        .patch(`/api/v1/store/hotel/products/${fakeProductId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
       expect(res.status).toBe(404);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('查無此伴手禮');
-    });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-
-      const res = await request(app)
-        .patch(`/api/v1/store/hotel/${fakeHotelId}/products/${productId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send();
-
-      expect(res.status).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
     });
   });
 });
