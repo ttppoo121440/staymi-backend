@@ -1,7 +1,8 @@
 import { randomUUID } from 'crypto';
 
 import { describe, beforeAll, afterAll } from '@jest/globals';
-import { eq } from 'drizzle-orm';
+import dotenv from 'dotenv';
+import { eq, inArray } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 
@@ -9,6 +10,9 @@ import { brand } from '@/database/schemas/brand.schema';
 import { hotel_rooms } from '@/database/schemas/hotel_rooms.schema';
 import { hotels } from '@/database/schemas/hotels.schema';
 import { order_room_product } from '@/database/schemas/order_room_product.schema';
+import { order_room_product_item } from '@/database/schemas/order_room_product_item.schema';
+import { product_plans } from '@/database/schemas/product_plans.schema';
+import { products } from '@/database/schemas/products.schema';
 import { room_plans } from '@/database/schemas/room_plans.schema';
 import { room_types } from '@/database/schemas/room_types.schema';
 import { subscriptions } from '@/database/schemas/subscriptions.schema';
@@ -21,6 +25,7 @@ import { server } from '@/server';
 import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 
+dotenv.config({ path: '.env.test' });
 jest.setTimeout(30000);
 
 const testUser = {
@@ -61,6 +66,19 @@ const closeDb = async (): Promise<void> => {
   // 刪除一般 user 的資料
   if (existingUsers.length > 0) {
     const existingUser = existingUsers[0];
+    await db
+      .delete(order_room_product_item)
+      .where(
+        inArray(
+          order_room_product_item.order_id,
+          db
+            .select({ id: order_room_product.id })
+            .from(order_room_product)
+            .where(eq(order_room_product.user_id, existingUser.id)),
+        ),
+      )
+      .execute();
+
     await db.delete(order_room_product).where(eq(order_room_product.user_id, existingUser.id)).execute();
     await db.delete(subscriptions).where(eq(subscriptions.user_id, existingUser.id)).execute();
     await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
@@ -77,6 +95,8 @@ const closeDb = async (): Promise<void> => {
     const hotelRecord = await db.select().from(hotels).where(eq(hotels.brand_id, brandId));
     const hotelId = hotelRecord[0]?.id;
 
+    await db.delete(product_plans).where(eq(product_plans.hotel_id, hotelId)).execute();
+    await db.delete(products).where(eq(products.hotel_id, hotelId)).execute();
     await db.delete(room_plans).where(eq(room_plans.hotel_id, hotelId)).execute();
     await db.delete(hotel_rooms).where(eq(hotel_rooms.hotel_id, hotelId)).execute();
 
@@ -138,7 +158,6 @@ describe('訂單 API', () => {
         hotel_facilities: ['WiFi', '電視'],
         is_active: true,
       });
-    console.log('飯店建立回傳', JSON.stringify(hotelRes.body, null, 2));
 
     hotelId = hotelRes.body.data.hotel.id;
 
@@ -164,8 +183,6 @@ describe('訂單 API', () => {
       })
       .returning({ id: hotel_rooms.id });
 
-    console.log('房型建立回傳', JSON.stringify(hotelRoomId[0], null, 2));
-
     const roomPlanRes = await request(app)
       .post('/api/v1/store/hotel/room-plan')
       .set('Authorization', `Bearer ${storeToken}`)
@@ -180,9 +197,6 @@ describe('訂單 API', () => {
         is_active: true,
       });
     roomPlanId = roomPlanRes.body.data.roomPlan.id;
-    console.log('房型計畫 ID', roomPlanId);
-
-    console.log('房型計畫建立回傳', JSON.stringify(roomPlanRes.body, null, 2));
   });
 
   afterAll(async () => {
@@ -204,7 +218,6 @@ describe('訂單 API', () => {
           check_in_date: new Date(),
           check_out_date: new Date(),
           total_price: 1000,
-          status: 'pending',
           payment_name: '測試付款人',
           payment_phone: '0912345678',
           payment_email: `payment_email${Date.now()}@example.com`,
@@ -217,14 +230,66 @@ describe('訂單 API', () => {
         .execute();
     });
 
-    it('應該成功取得指定飯店的產品列表 200', async () => {
+    it('應該成功取得指定飯店的訂單列表 200', async () => {
       const res = await request(app).get(`/api/v1/users/order`).set('Authorization', `Bearer ${token}`);
-      console.log('應該成功取得指定飯店的產品列表', JSON.stringify(res.body, null, 2));
+      console.log('應該成功取得指定飯店的訂單列表', JSON.stringify(res.body, null, 2));
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body.data.orders)).toBe(true);
       expect(res.body.data.orders.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('有伴手禮的訂單列表 200', async () => {
+      // 建立一個新的伴手禮計畫
+      const newProductData = {
+        name: '高級伴手禮',
+        description: '這是一個高級伴手禮',
+        features: '測試新增特色',
+        price: 1000,
+        imageUrl: 'https://example.com/test-product.jpg',
+      };
+
+      const newProductDataRes = await request(app)
+        .post(`/api/v1/store/hotel/products`)
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send(newProductData);
+
+      const productPlanRes = await request(app)
+        .post('/api/v1/store/hotel/product-plan')
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send({
+          hotel_id: hotelId,
+          product_id: newProductDataRes.body.data.product.id,
+          price: 1000,
+          start_date: formatDate(new Date()),
+          end_date: formatDate(new Date(Date.now() + 30 * 86400000)),
+          is_active: true,
+        });
+
+      await request(app)
+        .post('/api/v1/users/order')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+          check_in_date: new Date(),
+          check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
+          payment_name: '付款人',
+          payment_phone: '0911222333',
+          payment_email: 'gift@example.com',
+          contact_name: '聯絡人',
+          contact_phone: '0911222333',
+          contact_email: 'gift@example.com',
+          product_plans_id: productPlanRes.body.data.productPlan.id,
+          quantity: 7,
+        });
+
+      const res = await request(app).get(`/api/v1/users/order`).set('Authorization', `Bearer ${token}`);
+
+      console.log('有伴手禮的訂單列表', JSON.stringify(res.body, null, 2));
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
     });
 
     it('應該成功取得 status 為 pending 的訂單 200', async () => {
@@ -318,6 +383,64 @@ describe('訂單 API', () => {
       expect(res.body.data.order.id).toBe(orderId);
     });
 
+    it('有伴手禮的訂單 200', async () => {
+      // 建立一個新的伴手禮計畫
+      const newProductData = {
+        name: '高級伴手禮',
+        description: '這是一個高級伴手禮',
+        features: '測試新增特色',
+        price: 1000,
+        imageUrl: 'https://example.com/test-product.jpg',
+      };
+
+      const newProductDataRes = await request(app)
+        .post(`/api/v1/store/hotel/products`)
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send(newProductData);
+
+      const productPlanRes = await request(app)
+        .post('/api/v1/store/hotel/product-plan')
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send({
+          hotel_id: hotelId,
+          product_id: newProductDataRes.body.data.product.id,
+          price: 1000,
+          start_date: formatDate(new Date()),
+          end_date: formatDate(new Date(Date.now() + 30 * 86400000)),
+          is_active: true,
+        });
+
+      const orderIdResult = await request(app)
+        .post('/api/v1/users/order')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+          check_in_date: new Date(),
+          check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
+          payment_name: '付款人',
+          payment_phone: '0911222333',
+          payment_email: 'gift@example.com',
+          contact_name: '聯絡人',
+          contact_phone: '0911222333',
+          contact_email: 'gift@example.com',
+          product_plans_id: productPlanRes.body.data.productPlan.id,
+          quantity: 7,
+        });
+
+      const res = await request(app)
+        .get(`/api/v1/users/order/${orderIdResult.body.data.order.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+        });
+
+      console.log('有伴手禮的訂單', JSON.stringify(res.body, null, 2));
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+    });
+
     it('傳入錯誤格式 id 應回傳 400', async () => {
       const res = await request(app)
         .get(`/api/v1/users/order/not-a-uuid`)
@@ -374,13 +497,10 @@ describe('訂單 API', () => {
         .post('/api/v1/users/order')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          user_id: userId,
           hotel_id: hotelId,
           room_plans_id: roomPlanId,
           check_in_date: new Date(),
           check_out_date: new Date(new Date().setDate(new Date().getDate() + 2)),
-          total_price: 1500,
-          status: 'pending',
           payment_name: '付款人B',
           payment_phone: '0922333444',
           payment_email: 'payer@example.com',
@@ -388,6 +508,7 @@ describe('訂單 API', () => {
           contact_phone: '0922333444',
           contact_email: 'contact@example.com',
         });
+
       console.log('應該成功建立訂單', JSON.stringify(res.body, null, 2));
 
       expect(res.status).toBe(201);
@@ -461,7 +582,7 @@ describe('訂單 API', () => {
       expect(res.body.success).toBe(true);
     });
 
-    it('建立訂單成功 - 無訂閱 (使用 price) 200', async () => {
+    it('建立訂單成功 - 無訂閱 (使用 price) 201', async () => {
       const res = await request(app)
         .post('/api/v1/users/order')
         .set('Authorization', `Bearer ${token}`)
@@ -483,6 +604,73 @@ describe('訂單 API', () => {
       expect(res.body.success).toBe(true);
     });
 
+    it('建立訂單成功 - 有伴手禮 201', async () => {
+      // 建立一個新的伴手禮計畫
+      const newProductData = {
+        name: '高級伴手禮',
+        description: '這是一個高級伴手禮',
+        features: '測試新增特色',
+        price: 1000,
+        imageUrl: 'https://example.com/test-product.jpg',
+      };
+
+      const newProductDataRes = await request(app)
+        .post(`/api/v1/store/hotel/products`)
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send(newProductData);
+
+      const productPlanRes = await request(app)
+        .post('/api/v1/store/hotel/product-plan')
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send({
+          hotel_id: hotelId,
+          product_id: newProductDataRes.body.data.product.id,
+          price: 1000,
+          start_date: formatDate(new Date()),
+          end_date: formatDate(new Date(Date.now() + 30 * 86400000)),
+          is_active: true,
+        });
+
+      const res = await request(app)
+        .post('/api/v1/users/order')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+          check_in_date: new Date(),
+          check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
+          payment_name: '付款人',
+          payment_phone: '0911222333',
+          payment_email: 'gift@example.com',
+          contact_name: '聯絡人',
+          contact_phone: '0911222333',
+          contact_email: 'gift@example.com',
+          product_plans_id: productPlanRes.body.data.productPlan.id,
+          quantity: 5,
+        });
+
+      console.log('有伴手禮的訂單', {
+        hotel_id: hotelId,
+        room_plans_id: roomPlanId,
+        check_in_date: new Date(),
+        check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
+        payment_name: '付款人',
+        payment_phone: '0911222333',
+        payment_email: 'gift@example.com',
+        contact_name: '聯絡人',
+        contact_phone: '0911222333',
+        contact_email: 'gift@example.com',
+        product_plans_id: productPlanRes.body.data.productPlan.id,
+        quantity: 5,
+      });
+
+      console.log('建立訂單成功 - 有伴手禮', JSON.stringify(res.body, null, 2));
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.order).toHaveProperty('id');
+    });
+
     it('建立訂單失敗 - 缺少必要欄位 400', async () => {
       const res = await request(app).post('/api/v1/users/order').set('Authorization', `Bearer ${token}`).send({
         hotel_id: hotelId,
@@ -493,6 +681,100 @@ describe('訂單 API', () => {
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBeDefined();
+    });
+
+    it('建立訂單失敗 - 有伴手禮但缺少必要欄位（quantity）400', async () => {
+      const newProductRes = await request(app)
+        .post(`/api/v1/store/hotel/products`)
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send({
+          name: '錯誤測試伴手禮',
+          description: '不完整資料',
+          features: '錯誤測試',
+          price: 1000,
+          imageUrl: 'https://example.com/fail-product.jpg',
+        });
+
+      const productPlanRes = await request(app)
+        .post('/api/v1/store/hotel/product-plan')
+        .set('Authorization', `Bearer ${storeToken}`)
+        .send({
+          hotel_id: hotelId,
+          product_id: newProductRes.body.data.product.id,
+          price: 1000,
+          start_date: formatDate(new Date()),
+          end_date: formatDate(new Date(Date.now() + 30 * 86400000)),
+          is_active: true,
+        });
+
+      // 少了 quantity，應觸發 schema 錯誤
+      const res = await request(app)
+        .post('/api/v1/users/order')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+          check_in_date: new Date(),
+          check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
+          payment_name: '付款人',
+          payment_phone: '0911222333',
+          payment_email: 'gift@example.com',
+          contact_name: '聯絡人',
+          contact_phone: '0911222333',
+          contact_email: 'gift@example.com',
+          product_plans_id: productPlanRes.body.data.productPlan.id,
+        });
+      console.log('建立訂單失敗 - 有伴手禮但缺少必要欄位（quantity）400', JSON.stringify(res.body, null, 2));
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('請填寫數量');
+    });
+
+    it('建立訂單失敗 - check_in_date 大於 check_out_date 400', async () => {
+      const res = await request(app)
+        .post('/api/v1/users/order')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+          check_in_date: new Date('2025-05-20'),
+          check_out_date: new Date('2025-05-19'), // 退房日早於入住日
+          payment_name: '付款人',
+          payment_phone: '0911222333',
+          payment_email: 'test@example.com',
+          contact_name: '聯絡人',
+          contact_phone: '0911222333',
+          contact_email: 'test@example.com',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('退房日期必須晚於入住日期');
+    });
+
+    it('建立訂單失敗 - check_in_date 是過去日期 400', async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const res = await request(app).post('/api/v1/users/order').set('Authorization', `Bearer ${token}`).send({
+        hotel_id: hotelId,
+        room_plans_id: roomPlanId,
+        check_in_date: yesterday, // 過去日期
+        check_out_date: tomorrow,
+        payment_name: '付款人',
+        payment_phone: '0911222333',
+        payment_email: 'test@example.com',
+        contact_name: '聯絡人',
+        contact_phone: '0911222333',
+        contact_email: 'test@example.com',
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('check_in_date 不可為過去日期');
     });
 
     it('建立訂單失敗 - 未登入 401', async () => {
@@ -513,6 +795,31 @@ describe('訂單 API', () => {
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
+    });
+
+    it('建立訂單失敗 - 伴手禮建立失敗導致交易回滾 404', async () => {
+      // 刻意送不存在的 product_plans_id，觸發錯誤
+      const res = await request(app)
+        .post('/api/v1/users/order')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          hotel_id: hotelId,
+          room_plans_id: roomPlanId,
+          check_in_date: new Date(),
+          check_out_date: new Date(new Date().setDate(new Date().getDate() + 1)),
+          payment_name: '付款人',
+          payment_phone: '0911222333',
+          payment_email: 'gift@example.com',
+          contact_name: '聯絡人',
+          contact_phone: '0911222333',
+          contact_email: 'gift@example.com',
+          product_plans_id: '00000000-0000-0000-0000-000000000000',
+          quantity: 5,
+        });
+      console.log('建立訂單失敗 - 伴手禮建立失敗導致交易回滾', JSON.stringify(res.body, null, 2));
+      expect(res.status).toBe(404); // 伴手禮不存在
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('找不到對應的產品計畫');
     });
 
     it('建立訂單失敗 - room_plans_id 不存在 404', async () => {
@@ -642,28 +949,6 @@ describe('訂單 API', () => {
       expect(res.status).toBe(401);
     });
 
-    it('建立訂單失敗 - room_plans_id 不存在 404', async () => {
-      const uuid = randomUUID();
-      const res = await request(app).put(`/api/v1/users/order/${uuid}`).set('Authorization', `Bearer ${token}`).send({
-        status: 'cancelled',
-      });
-      console.log('建立訂單失敗 - room_plans_id 不存在 404', JSON.stringify(res.body, null, 2));
-      expect(res.status).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('找不到對應的訂房訂單');
-    });
-
-    it('建立訂單失敗 - hotel_id 不存在 404', async () => {
-      const uuid = randomUUID();
-      const res = await request(app).put(`/api/v1/users/order/${uuid}`).set('Authorization', `Bearer ${token}`).send({
-        status: 'cancelled',
-      });
-      console.log('建立訂單失敗 - hotel_id 不存在 404', JSON.stringify(res.body, null, 2));
-      expect(res.status).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('找不到對應的訂房訂單');
-    });
-
     it('應該回傳 404 - 找不到訂單', async () => {
       const res = await request(app)
         .put(`/api/v1/users/order/00000000-0000-0000-0000-000000000000`)
@@ -671,8 +956,11 @@ describe('訂單 API', () => {
         .send({
           status: 'pending',
         });
+      console.log('應該回傳 404 - 找不到訂單', JSON.stringify(res.body, null, 2));
 
       expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('找不到對應的訂房訂單');
     });
   });
 });
