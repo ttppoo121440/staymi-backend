@@ -49,8 +49,8 @@ export class AuthStoreController {
   });
 
   uploadLogo = asyncHandler(async (req: Request, res: Response) => {
-    const id: string = (req.user as JwtUserPayload).id;
-    const result = await this.authStoreRepo.uploadLogo({ id, ...req.body });
+    const { user_id } = res.locals;
+    const result = await this.authStoreRepo.uploadLogo(user_id, req.body);
 
     res.status(HttpStatus.OK).json(successResponse(result, '上傳成功'));
   });
