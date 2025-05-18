@@ -1,0 +1,2 @@
+ALTER TABLE "order_room_product" DROP CONSTRAINT "order_room_product_payment_email_unique";--> statement-breakpoint
+ALTER TABLE "order_room_product" DROP CONSTRAINT "order_room_product_contact_email_unique";

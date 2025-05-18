@@ -183,6 +183,27 @@
       "when": 1746961449364,
       "tag": "0025_chubby_thunderbolts",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1747223088101,
+      "tag": "0026_friendly_stone_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1747225587299,
+      "tag": "0027_messy_nextwave",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1747458090040,
+      "tag": "0028_certain_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }
