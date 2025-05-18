@@ -64,3 +64,5 @@ export const roomPlanListDto = z
     })),
     pagination: data.pagination,
   }));
+
+export type RoomPlanType = z.infer<typeof roomPlanSchema>;
