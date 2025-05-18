@@ -1,0 +1,1 @@
+ALTER TABLE "order_room_product_item" ADD COLUMN "status" "status" DEFAULT 'pending' NOT NULL;

@@ -1,0 +1,1 @@
+ALTER TABLE "order_room_product_item" ALTER COLUMN "unit_price" SET DATA TYPE integer;

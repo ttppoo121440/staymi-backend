@@ -104,7 +104,7 @@ describe('飯店圖片 API', () => {
     }
   });
 
-  describe('GET /api/v1/store/hotel/:hotelId/images', () => {
+  describe('GET /api/v1/store/hotel/images', () => {
     beforeAll(async () => {
       await db
         .insert(hotel_images)
@@ -118,9 +118,7 @@ describe('飯店圖片 API', () => {
     });
 
     it('應該成功取得圖片資料 200', async () => {
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await request(app).get(`/api/v1/store/hotel/images`).set('Authorization', `Bearer ${token}`);
       console.log('應該成功取得圖片資料', JSON.stringify(res.body, null, 2));
 
       expect(res.status).toBe(200);
@@ -130,7 +128,7 @@ describe('飯店圖片 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).get(`/api/v1/store/hotel/${hotelId}/images`);
+      const res = await request(app).get(`/api/v1/store/hotel/images`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -145,8 +143,13 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .get(`/api/v1/store/hotel/images`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -164,30 +167,15 @@ describe('飯店圖片 API', () => {
         { expiresIn: '1h' },
       );
 
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${consumerToken}`);
+      const res = await request(app).get(`/api/v1/store/hotel/images`).set('Authorization', `Bearer ${consumerToken}`);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('無權限訪問此資源');
     });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${fakeHotelId}/images`)
-        .set('Authorization', `Bearer ${token}`);
-
-      console.log('查詢不存在飯店', res.body);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
   });
 
-  describe('GET /api/v1/store/hotel/:hotelId/images/:id', () => {
+  describe('GET /api/v1/store/hotel/images/:id', () => {
     beforeAll(async () => {
       const result = await db
         .insert(hotel_images)
@@ -204,7 +192,7 @@ describe('飯店圖片 API', () => {
     });
     it('應該成功取得飯店資料 200', async () => {
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .get(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${token}`);
 
       console.log('應該成功取得飯店資料', JSON.stringify(res.body, null, 2));
@@ -215,7 +203,7 @@ describe('飯店圖片 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).get(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`);
+      const res = await request(app).get(`/api/v1/store/hotel/images/${hotelImageId}`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -234,7 +222,7 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .get(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${consumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -250,8 +238,13 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .get(`/api/v1/store/hotel/images/${hotelImageId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -302,7 +295,7 @@ describe('飯店圖片 API', () => {
 
       // 發送請求
       const res = await request(app)
-        .get(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .get(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${fakeToken}`);
 
       // 驗證返回結果
@@ -314,31 +307,15 @@ describe('飯店圖片 API', () => {
       await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
       await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${fakeHotelId}/images/${hotelImageId}`)
-        .set('Authorization', `Bearer ${token}`);
-
-      console.log('查詢不存在飯店', res.body);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
   });
 
-  describe('POST /api/v1/store/hotel/:hotelId/images', () => {
+  describe('POST /api/v1/store/hotel/images', () => {
     it('應該成功新增圖片資料 200', async () => {
-      const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          image_url: 'https://example.com/added.jpg',
-          is_cover: false,
-          position: 2,
-        });
+      const res = await request(app).post(`/api/v1/store/hotel/images`).set('Authorization', `Bearer ${token}`).send({
+        image_url: 'https://example.com/added.jpg',
+        is_cover: false,
+        position: 2,
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
@@ -346,13 +323,10 @@ describe('飯店圖片 API', () => {
     });
 
     it('欄位驗證失敗應該回傳 400', async () => {
-      const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          is_cover: true,
-          position: 1,
-        });
+      const res = await request(app).post(`/api/v1/store/hotel/images`).set('Authorization', `Bearer ${token}`).send({
+        is_cover: true,
+        position: 1,
+      });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
@@ -360,14 +334,11 @@ describe('飯店圖片 API', () => {
     });
 
     it('資料格式不正確應該回傳 400', async () => {
-      const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          image_url: 'https://example.com/added.jpg',
-          is_cover: true,
-          position: 'invalid-position', // 錯誤的資料類型
-        });
+      const res = await request(app).post(`/api/v1/store/hotel/images`).set('Authorization', `Bearer ${token}`).send({
+        image_url: 'https://example.com/added.jpg',
+        is_cover: true,
+        position: 'invalid-position', // 錯誤的資料類型
+      });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
@@ -375,7 +346,7 @@ describe('飯店圖片 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).post(`/api/v1/store/hotel/${hotelId}/images`);
+      const res = await request(app).post(`/api/v1/store/hotel/images`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -390,9 +361,13 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
-
+        .post(`/api/v1/store/hotel/images`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('無權限訪問此資源');
@@ -410,8 +385,13 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/images`)
-        .set('Authorization', `Bearer ${consumerToken}`);
+        .post(`/api/v1/store/hotel/images`)
+        .set('Authorization', `Bearer ${consumerToken}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -462,35 +442,24 @@ describe('飯店圖片 API', () => {
 
       // 發送請求
       const res = await request(app)
-        .post(`/api/v1/store/hotel/${hotelId}/images`)
+        .post(`/api/v1/store/hotel/images`)
         .set('Authorization', `Bearer ${fakeToken}`)
-        .send({ ...mockHotelData, name: '假品牌飯店名稱' });
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
+
+      console.log('非本人品牌操作應回傳 403', JSON.stringify(res.body, null, 2));
 
       // 驗證返回結果
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('無權限操作此資料');
-
-      // 測試結束後刪除假資料
-      await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
-      await db.delete(user).where(eq(user.id, fakeUserId)).execute();
-    });
-
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .get(`/api/v1/store/hotel/${fakeHotelId}/images`)
-        .set('Authorization', `Bearer ${token}`);
-
-      console.log('查詢不存在飯店', res.body);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
     });
   });
 
-  describe('PUT /api/v1/store/hotel/:hotelId/images/:id', () => {
+  describe('PUT /api/v1/store/hotel/images/:id', () => {
     beforeAll(async () => {
       // 插入測試圖片資料
       const result = await db
@@ -515,7 +484,7 @@ describe('飯店圖片 API', () => {
       };
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .put(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${token}`)
         .send(updatedData);
 
@@ -536,7 +505,7 @@ describe('飯店圖片 API', () => {
       };
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .put(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidData);
 
@@ -546,7 +515,7 @@ describe('飯店圖片 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).put(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`).send({
+      const res = await request(app).put(`/api/v1/store/hotel/images/${hotelImageId}`).send({
         image_url: 'https://example.com/updated-image.jpg',
         is_cover: false,
         position: 2,
@@ -569,7 +538,7 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .put(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${consumerToken}`)
         .send({
           image_url: 'https://example.com/updated-image.jpg',
@@ -590,8 +559,13 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .put(`/api/v1/store/hotel/images/${hotelImageId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -646,7 +620,7 @@ describe('飯店圖片 API', () => {
       };
       // 發送請求
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .put(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${fakeToken}`)
         .send(updatedData);
 
@@ -660,28 +634,10 @@ describe('飯店圖片 API', () => {
       await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
 
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .put(`/api/v1/store/hotel/${fakeHotelId}/images/${hotelImageId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          image_url: 'https://example.com/updated-image.jpg',
-          is_cover: false,
-          position: 2,
-        });
-
-      console.log('查詢不存在飯店', res.body);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
-
     it('圖片不存在應回傳 404', async () => {
       const fakeImageId = randomUUID();
       const res = await request(app)
-        .put(`/api/v1/store/hotel/${hotelId}/images/${fakeImageId}`)
+        .put(`/api/v1/store/hotel/images/${fakeImageId}`)
         .set('Authorization', `Bearer ${token}`)
         .send({
           image_url: 'https://example.com/updated-image.jpg',
@@ -697,7 +653,7 @@ describe('飯店圖片 API', () => {
     });
   });
 
-  describe('DELETE /api/v1/store/hotel/:hotelId/images/:id', () => {
+  describe('DELETE /api/v1/store/hotel/images/:id', () => {
     beforeAll(async () => {
       // 插入測試圖片資料
       const result = await db
@@ -716,7 +672,7 @@ describe('飯店圖片 API', () => {
 
     it('應該成功刪除圖片資料 200', async () => {
       const res = await request(app)
-        .delete(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .delete(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${token}`);
 
       console.log('應該成功刪除圖片資料', JSON.stringify(res.body, null, 2));
@@ -731,7 +687,7 @@ describe('飯店圖片 API', () => {
     });
 
     it('未登入應回傳 401', async () => {
-      const res = await request(app).delete(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`);
+      const res = await request(app).delete(`/api/v1/store/hotel/images/${hotelImageId}`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -750,7 +706,7 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .delete(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .delete(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${consumerToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -766,8 +722,13 @@ describe('飯店圖片 API', () => {
       );
 
       const res = await request(app)
-        .delete(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
-        .set('Authorization', `Bearer ${fakeConsumerToken}`);
+        .delete(`/api/v1/store/hotel/images/${hotelImageId}`)
+        .set('Authorization', `Bearer ${fakeConsumerToken}`)
+        .send({
+          image_url: 'https://example.com/added.jpg',
+          is_cover: false,
+          position: 2,
+        });
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
@@ -817,7 +778,7 @@ describe('飯店圖片 API', () => {
       );
       // 發送請求
       const res = await request(app)
-        .delete(`/api/v1/store/hotel/${hotelId}/images/${hotelImageId}`)
+        .delete(`/api/v1/store/hotel/images/${hotelImageId}`)
         .set('Authorization', `Bearer ${fakeToken}`);
 
       // 驗證返回結果
@@ -830,23 +791,10 @@ describe('飯店圖片 API', () => {
       await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
 
-    it('飯店不存在應回傳 404', async () => {
-      const fakeHotelId = randomUUID();
-      const res = await request(app)
-        .delete(`/api/v1/store/hotel/${fakeHotelId}/images/${hotelImageId}`)
-        .set('Authorization', `Bearer ${token}`);
-
-      console.log('查詢不存在飯店', res.body);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('飯店不存在');
-    });
-
     it('圖片不存在應回傳 404', async () => {
       const fakeImageId = randomUUID();
       const res = await request(app)
-        .delete(`/api/v1/store/hotel/${hotelId}/images/${fakeImageId}`)
+        .delete(`/api/v1/store/hotel/images/${fakeImageId}`)
         .set('Authorization', `Bearer ${token}`);
 
       console.log('查詢不存在圖片', res.body);

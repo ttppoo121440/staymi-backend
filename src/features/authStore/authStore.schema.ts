@@ -44,7 +44,6 @@ export const authStoreToDto = z
   }));
 
 export const authStoreUploadLogoSchema = z.object({
-  id: z.string().uuid(),
   logo_url: z.string({ message: '請上傳圖片' }),
 });
 

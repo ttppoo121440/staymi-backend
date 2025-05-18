@@ -24,10 +24,10 @@ export const order_room_product = pgTable('order_room_product', {
   status: statusEnum('status').notNull().default('pending'),
   payment_name: varchar('payment_name', { length: 50 }).notNull(),
   payment_phone: varchar('payment_phone', { length: 20 }).notNull(),
-  payment_email: varchar('payment_email', { length: 320 }).unique().notNull(),
+  payment_email: varchar('payment_email', { length: 320 }).notNull(),
   contact_name: varchar('contact_name', { length: 50 }).notNull(),
   contact_phone: varchar('contact_phone', { length: 20 }).notNull(),
-  contact_email: varchar('contact_email', { length: 320 }).unique().notNull(),
+  contact_email: varchar('contact_email', { length: 320 }).notNull(),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
 });
