@@ -145,24 +145,15 @@ export class AuthStoreRepo {
 
     return result;
   }
-  async uploadLogo(data: authStoreUploadLogoType): Promise<{ store: authStoreUploadLogoType }> {
-    const result = await db
-      .update(brand)
-      .set({ logo_url: data.logo_url })
-      .where(eq(brand.user_id, data.id))
-      .returning({ id: brand.id, logo_url: brand.logo_url });
+  async uploadLogo(id: string, data: authStoreUploadLogoType): Promise<{ store: authStoreUploadLogoType }> {
+    const result = await db.update(brand).set({ logo_url: data.logo_url }).where(eq(brand.user_id, id)).returning();
 
     if (result.length === 0) {
       throw new RepoError('找不到對應的商店資訊', HttpStatus.NOT_FOUND);
     }
 
-    const [updatedBrand] = result;
-
-    if (!updatedBrand.logo_url) {
-      throw new RepoError('Logo URL 不可為空', HttpStatus.BAD_REQUEST);
-    }
     return {
-      store: result[0],
-    } as { store: authStoreUploadLogoType };
+      store: { logo_url: result[0].logo_url ?? '' },
+    };
   }
 }
