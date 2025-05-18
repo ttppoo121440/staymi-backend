@@ -1,4 +1,5 @@
 import { describe, it, beforeAll, afterAll } from '@jest/globals';
+import dotenv from 'dotenv';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 
@@ -8,6 +9,7 @@ import { user } from '../src/database/schemas/user.schema';
 import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { server } from '../src/server';
 
+dotenv.config({ path: '.env.test' });
 jest.setTimeout(30000);
 describe('測試 Auth API', () => {
   const testUser = {

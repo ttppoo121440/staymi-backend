@@ -1,7 +1,10 @@
+import dotenv from 'dotenv';
 import request from 'supertest';
 
 import app from '../src/app';
 import { cloudinary } from '../src/libs/cloudinary';
+
+dotenv.config({ path: '.env.test' });
 
 jest.mock('@/libs/cloudinary'); // Mock Cloudinary
 

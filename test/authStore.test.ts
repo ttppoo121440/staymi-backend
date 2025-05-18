@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 
+import dotenv from 'dotenv';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 
@@ -14,6 +15,7 @@ import { server } from '../src/server';
 import { formatDisplayDate } from '../src/utils/formatDate';
 import { generateToken } from '../src/utils/jwt';
 
+dotenv.config({ path: '.env.test' });
 jest.setTimeout(30000);
 
 describe('測試 AuthStore API', () => {
