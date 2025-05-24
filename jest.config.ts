@@ -7,4 +7,5 @@ module.exports = {
   },
   testMatch: ['<rootDir>/test/**/*.[jt]s?(x)'],
   // silent: true,
+  setupFiles: ['<rootDir>/jest.setup.ts'],
 };
