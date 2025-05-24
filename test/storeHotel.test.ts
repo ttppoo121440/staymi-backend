@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 
 import { describe, it, beforeAll, afterAll, expect } from '@jest/globals';
-import dotenv from 'dotenv';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
@@ -16,7 +15,6 @@ import { user_profile } from '../src/database/schemas/user_profile.schema';
 import { hotelType } from '../src/features/storeHotel/storeHotel.schema';
 import { server } from '../src/server';
 
-dotenv.config({ path: '.env.test' });
 jest.setTimeout(30000);
 
 const mockHotelData = {

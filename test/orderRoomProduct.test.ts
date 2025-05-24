@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 
 import { describe, beforeAll, afterAll } from '@jest/globals';
-import dotenv from 'dotenv';
 import { eq, inArray } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
@@ -11,6 +10,8 @@ import { hotel_rooms } from '@/database/schemas/hotel_rooms.schema';
 import { hotels } from '@/database/schemas/hotels.schema';
 import { order_room_product } from '@/database/schemas/order_room_product.schema';
 import { order_room_product_item } from '@/database/schemas/order_room_product_item.schema';
+import { payment_order_room_product } from '@/database/schemas/payment_order_room_product.schema';
+import { payment_transaction } from '@/database/schemas/payment_transaction.schema';
 import { product_plans } from '@/database/schemas/product_plans.schema';
 import { products } from '@/database/schemas/products.schema';
 import { room_plans } from '@/database/schemas/room_plans.schema';
@@ -20,14 +21,13 @@ import { user } from '@/database/schemas/user.schema';
 import { user_brand } from '@/database/schemas/user_brand.schema';
 import { user_profile } from '@/database/schemas/user_profile.schema';
 import { OrderRoomProductType } from '@/features/orderRoomProduct/orderRoomProduct.schema';
+import { PayPalService } from '@/features/paypal/paypal.service';
 import { server } from '@/server';
 
 import app from '../src/app';
 import { closeDatabase, db } from '../src/config/database';
 
-dotenv.config({ path: '.env.test' });
 jest.setTimeout(30000);
-
 const testUser = {
   email: `testUser+${Date.now()}@example.com`,
   password: 'Password123!',
@@ -54,6 +54,7 @@ let hotelId: string;
 let storeToken: string;
 let brandId: string;
 let roomPlanId: string;
+let localId: string;
 
 const formatDate = (date: Date): string => {
   return date.toISOString().split('T')[0];
@@ -482,6 +483,10 @@ describe('訂單 API', () => {
   });
 
   describe('POST /api/v1/users/order', () => {
+    afterAll(async () => {
+      await db.delete(payment_order_room_product).where(eq(payment_order_room_product.order_id, localId)).execute();
+      await db.delete(payment_transaction).where(eq(payment_transaction.user_id, userId)).execute();
+    });
     it('建立訂單成功 - pro 訂閱 (使用 subscription_price) 201', async () => {
       await db
         .insert(subscriptions)
@@ -493,8 +498,16 @@ describe('訂單 API', () => {
           end_at: new Date(new Date().setDate(new Date().getDate() + 30)),
         })
         .execute();
+
+      // Mock PayPalService 的方法
+      jest.spyOn(PayPalService.prototype, 'createOrder').mockResolvedValue({
+        orderId: '7R327728FS421844A',
+        approveLink: 'https://www.sandbox.paypal.com/checkoutnow?token=7R327728FS421844A',
+      });
+
+      // Step 1: 建立訂單
       const res = await request(app)
-        .post('/api/v1/users/order')
+        .post('/api/v1/paypal/create-order')
         .set('Authorization', `Bearer ${token}`)
         .send({
           hotel_id: hotelId,
@@ -508,12 +521,57 @@ describe('訂單 API', () => {
           contact_phone: '0922333444',
           contact_email: 'contact@example.com',
         });
+      localId = res.body.data.id;
 
-      console.log('應該成功建立訂單', JSON.stringify(res.body, null, 2));
-
-      expect(res.status).toBe(201);
+      console.log('建立訂單成功 - pro 訂閱 (使用 subscription_price)', JSON.stringify(res.body, null, 2));
+      expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.order).toHaveProperty('id');
+      expect(res.body.message).toBe('建立訂單成功');
+      expect(res.body.data).toHaveProperty('orderId');
+      expect(res.body.data).toHaveProperty('approveLink');
+      expect(res.body.data.orderId).toBe('7R327728FS421844A');
+
+      jest.spyOn(PayPalService.prototype, 'captureOrder').mockResolvedValue({
+        status: 'COMPLETED',
+        payer: {
+          email_address: 'payer@example.com',
+          name: { given_name: '付款人', surname: 'B' },
+        },
+        purchase_units: [
+          {
+            payments: {
+              captures: [
+                {
+                  amount: { value: '1000', currency_code: 'TWD' },
+                  seller_receivable_breakdown: {
+                    paypal_fee: { value: '50', currency_code: 'TWD' },
+                    net_amount: { value: '950', currency_code: 'TWD' },
+                  },
+                  status: 'COMPLETED',
+                  id: 'CAPTURE_ID',
+                  custom_id: localId,
+                },
+              ],
+            },
+          },
+        ],
+      } as any);
+
+      // Step 2: 模擬付款成功（capture）
+      const captureRes = await request(app)
+        .post(`/api/v1/paypal/capture-order/7R327728FS421844A`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          order_type: 'room',
+          method: 'paypal',
+        });
+
+      console.log('模擬 PayPal 付款成功後', JSON.stringify(captureRes.body, null, 2));
+
+      expect(captureRes.status).toBe(200);
+      expect(captureRes.body.success).toBe(true);
+      expect(captureRes.body.message).toBe('付款成功');
+      expect(captureRes.body.data.payment).toBeDefined();
     });
 
     it('建立訂單成功 - plus 訂閱 (使用 subscription_price) 201', async () => {
@@ -731,21 +789,24 @@ describe('訂單 API', () => {
     });
 
     it('建立訂單失敗 - check_in_date 大於 check_out_date 400', async () => {
-      const res = await request(app)
-        .post('/api/v1/users/order')
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          hotel_id: hotelId,
-          room_plans_id: roomPlanId,
-          check_in_date: new Date('2025-05-20'),
-          check_out_date: new Date('2025-05-19'), // 退房日早於入住日
-          payment_name: '付款人',
-          payment_phone: '0911222333',
-          payment_email: 'test@example.com',
-          contact_name: '聯絡人',
-          contact_phone: '0911222333',
-          contact_email: 'test@example.com',
-        });
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const check_in_date = new Date(tomorrow);
+      const check_out_date = new Date(today);
+      const res = await request(app).post('/api/v1/users/order').set('Authorization', `Bearer ${token}`).send({
+        hotel_id: hotelId,
+        room_plans_id: roomPlanId,
+        check_in_date,
+        check_out_date, // 退房日早於入住日
+        payment_name: '付款人',
+        payment_phone: '0911222333',
+        payment_email: 'test@example.com',
+        contact_name: '聯絡人',
+        contact_phone: '0911222333',
+        contact_email: 'test@example.com',
+      });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);

@@ -12,7 +12,7 @@ const mockedUpload = cloudinary.uploader.upload as jest.Mock;
 
 describe('📤 Upload API 測試', () => {
   const token =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIzOGJhNWRmLTNjYzUtNDNkOS1iY2FkLTg3YTU3OTU0ZDdmYyIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJyb2xlIjoic3RvcmUiLCJpYXQiOjE3NDUxNjQzOTMsImV4cCI6MTc0Nzc1NjM5M30.An6UIEKZXvEDPjmD9XUndYF-VO1PpYfeEUh_IZlEi-4'; // 可改為用 login 登入取得 token
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIzMTM3NjliLTY1M2ItNDc1Ny1hYjc5LTkxOTM0MDYwZjQ3MSIsInJvbGUiOiJzdG9yZSIsImJyYW5kX2lkIjoiNGQ0YzFhYTYtNzFjNi00MmY4LWI3YzktYWYwNmZjMjZiNzhiIiwiaWF0IjoxNzQ2MzMwODAyLCJleHAiOjE3NDg5MjI4MDJ9.h0LP2oAu7QyxhRNmzOKlzw1WSifDydPoh7m4HWPbGM4'; // 可改為用 login 登入取得 token
 
   beforeEach(() => {
     mockedUpload.mockReset();
