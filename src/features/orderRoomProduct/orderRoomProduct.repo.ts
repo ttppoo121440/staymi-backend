@@ -87,7 +87,7 @@ export class OrderRoomProductRepo extends BaseRepository {
       pagination,
     };
   }
-  async getById(id: string, user_id: string): Promise<{ order: orderDetailType } | null> {
+  async getById(id: string, user_id: string): Promise<orderDetailType | null> {
     const queryConditions = [eq(order_room_product.id, id), eq(order_room_product.user_id, user_id)];
     const result = await db
       .select({
@@ -121,51 +121,56 @@ export class OrderRoomProductRepo extends BaseRepository {
       product_quantity: row.product_item?.quantity ?? null,
     }));
 
-    return {
-      order: order[0] ?? null,
-    };
+    return order[0] ?? null;
   }
 
   async create(
     dbInstance: DatabaseOrTransaction,
     total_price: number,
     data: OrderRoomProductCreateType,
-  ): Promise<{
-    order: OrderRoomProductType;
-  }> {
+  ): Promise<OrderRoomProductType> {
     const result = await dbInstance
       .insert(order_room_product)
       .values({ ...data, total_price })
       .returning();
-    return {
-      order: result[0],
-    };
+    return result[0];
   }
   async updateTotalPrice(
     dbInstance: DatabaseOrTransaction,
     orderId: string,
     newTotalPrice: number,
-  ): Promise<{ order: OrderRoomProductType[] }> {
+  ): Promise<OrderRoomProductType[]> {
     const result = await dbInstance
       .update(order_room_product)
       .set({ total_price: newTotalPrice })
       .where(eq(order_room_product.id, orderId))
       .returning();
-    return { order: result };
+    return result;
   }
-  async updateStatus(
+  async updateOrder(
     id: string,
     user_id: string,
     data: OrderRoomProductUpdateType,
-  ): Promise<{ order: OrderRoomProductUpdateType | null }> {
+  ): Promise<OrderRoomProductType | null> {
     const queryConditions = [eq(order_room_product.id, id), eq(order_room_product.user_id, user_id)];
     const result = await db
       .update(order_room_product)
-      .set({ status: data.status, updated_at: new Date() })
+      .set({ status: data.status, paypal_transaction_id: data.paypal_transaction_id, updated_at: new Date() })
       .where(and(...queryConditions))
       .returning();
-    return {
-      order: result[0] ?? null,
-    };
+    return result[0] ?? null;
+  }
+  async updatePaypalOrderId(
+    orderId: string,
+    userId: string,
+    paypalOrderId: string,
+  ): Promise<OrderRoomProductType | null> {
+    const queryConditions = [eq(order_room_product.id, orderId), eq(order_room_product.user_id, userId)];
+    const result = await db
+      .update(order_room_product)
+      .set({ paypal_order_id: paypalOrderId })
+      .where(and(...queryConditions))
+      .returning();
+    return result[0] ?? null;
   }
 }
