@@ -115,9 +115,13 @@ export const orderRoomProductCreateSchema = orderRoomProductSchema
     quantity: z.number().int().min(1, { message: '數量必須大於 0' }).optional(),
   });
 
-export const orderRoomProductUpdateSchema = orderRoomProductSchema.pick({
-  status: true,
-});
+export const orderRoomProductUpdateSchema = orderRoomProductSchema
+  .pick({
+    status: true,
+  })
+  .extend({
+    paypal_transaction_id: z.string().optional(),
+  });
 
 export const orderBodySchema = orderRoomProductSchema.pick({
   hotel_id: true,
@@ -130,6 +134,10 @@ export const orderParamsIdSchema = z.object({
 export const orderQuerySchema = QuerySchema.extend({
   status: StatusEnum.optional(),
 });
+
+export type OrderRoomProductWithPaypal = OrderRoomProductType & {
+  paypal_transaction_id?: string;
+};
 
 export type OrderRoomProductType = z.infer<typeof orderRoomProductSchema>;
 export type OrderRoomProductCreateType = z.infer<typeof orderRoomProductCreateSchema>;
