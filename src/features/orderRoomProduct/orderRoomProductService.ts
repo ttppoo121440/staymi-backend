@@ -38,6 +38,9 @@ export class OrderRoomProductService {
         throw appError('入住日期和退房日期不能為空', HttpStatus.BAD_REQUEST);
       }
 
+      data.check_in_date = new Date(check_in_date);
+      data.check_out_date = new Date(check_out_date);
+
       if (check_in_date < new Date(new Date().setHours(0, 0, 0, 0))) {
         throw appError('check_in_date 不可為過去日期', HttpStatus.BAD_REQUEST);
       }
@@ -57,8 +60,8 @@ export class OrderRoomProductService {
 
       // 建立訂單（還不知道是否有伴手禮，所以先算住宿價）
       const result = await this.orderRoomProductRepo.create(tx, total_price, data);
-      const order_id = result.order.id;
-      let finalOrder = result.order;
+      const order_id = result.id;
+      let finalOrder = result;
 
       // 若有伴手禮商品，建立對應的訂單項目
       if (product_plans_id) {
@@ -90,7 +93,7 @@ export class OrderRoomProductService {
 
         // 更新訂單總價（伴手禮價格算進來）
         updatedOrderTotalPrice = await this.orderRoomProductRepo.updateTotalPrice(tx, order_id, total_price);
-        finalOrder = updatedOrderTotalPrice.order[0];
+        finalOrder = updatedOrderTotalPrice[0];
       }
 
       return orderRoomProductDto.parse({
