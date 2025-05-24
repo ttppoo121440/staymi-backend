@@ -44,7 +44,7 @@ orderRoomProductRoutes.put(
     params: uuidParams('id'),
     body: orderRoomProductUpdateSchema,
   }),
-  orderRoomProductController.updateStatus,
+  orderRoomProductController.updateOrder,
 );
 
 export default orderRoomProductRoutes;
