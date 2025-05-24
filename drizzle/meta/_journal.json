@@ -204,6 +204,20 @@
       "when": 1747458090040,
       "tag": "0028_certain_thunderbolt_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1747542369717,
+      "tag": "0029_friendly_jazinda",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1747656386881,
+      "tag": "0030_calm_jack_power",
+      "breakpoints": true
     }
   ]
 }
