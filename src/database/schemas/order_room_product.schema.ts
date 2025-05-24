@@ -17,6 +17,8 @@ export const order_room_product = pgTable('order_room_product', {
   room_plans_id: uuid('room_plans_id')
     .notNull()
     .references(() => room_plans.id),
+  paypal_order_id: varchar('paypal_order_id', { length: 100 }),
+  paypal_transaction_id: varchar('paypal_transaction_id', { length: 100 }),
   transaction_id: varchar('transaction_id', { length: 100 }),
   check_in_date: timestamp('check_in_date').defaultNow(),
   check_out_date: timestamp('check_out_date').defaultNow(),
