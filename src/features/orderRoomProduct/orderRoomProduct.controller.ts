@@ -63,32 +63,34 @@ export class OrderRoomProductController {
     const data = { ...req.body, user_id };
     await this.storeHotelRepo.getById({ hotelId: data.hotel_id });
     const result = await this.orderRoomProductRepo.getById(id, data.user_id);
-    if (!result?.order) {
+    if (!result) {
       return next(appError('找不到對應的訂房訂單', HttpStatus.NOT_FOUND));
     }
     const roomPlanResult = await this.roomPlanRepo.getPriceById(data.room_plans_id);
     if (roomPlanResult.length === 0) {
       return next(appError('找不到對應的住宿計畫', HttpStatus.NOT_FOUND));
     }
-    const dtoData = orderRoomProductDto.parse(result);
+    const dtoData = orderRoomProductDto.parse({ order: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '取得訂房訂單成功'));
   });
   create = asyncHandler(async (req: Request, res: Response) => {
     const { user_id } = res.locals;
     const data = { ...req.body, user_id };
+
     const result = await this.orderRoomProductService.createOrder(data);
     res.status(HttpStatus.CREATED).json(successResponse(result, '訂房訂單建立成功'));
   });
-  updateStatus = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  updateOrder = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { user_id } = res.locals;
     const id = req.params.id;
     const data = { ...req.body, user_id, id };
+
     await this.storeHotelRepo.getById({ hotelId: data.hotel_id });
-    const result = await this.orderRoomProductRepo.updateStatus(id, user_id, data);
-    if (!result.order) {
+    const result = await this.orderRoomProductRepo.updateOrder(id, user_id, data);
+    if (!result) {
       return next(appError('找不到對應的訂房訂單', HttpStatus.NOT_FOUND));
     }
-    const dtoData = orderRoomProductDto.parse(result);
+    const dtoData = orderRoomProductDto.parse({ order: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '訂房訂單狀態更新成功'));
   });
 }
