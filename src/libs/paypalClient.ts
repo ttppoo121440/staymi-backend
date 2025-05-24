@@ -14,7 +14,6 @@ export const createPayPalAccessToken = async (): Promise<string> => {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
   });
-
   return res.data.access_token;
 };
 
