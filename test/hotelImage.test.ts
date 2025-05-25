@@ -176,6 +176,8 @@ describe('飯店圖片 API', () => {
   });
 
   describe('GET /api/v1/store/hotel/images/:id', () => {
+    const fakeBrandId = randomUUID();
+    const fakeUserId = randomUUID();
     beforeAll(async () => {
       const result = await db
         .insert(hotel_images)
@@ -189,6 +191,11 @@ describe('飯店圖片 API', () => {
         .execute();
 
       hotelImageId = result[0].id;
+    });
+    afterAll(async () => {
+      // 測試結束後刪除假資料
+      await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
+      await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
     it('應該成功取得飯店資料 200', async () => {
       const res = await request(app)
@@ -252,8 +259,6 @@ describe('飯店圖片 API', () => {
     });
 
     it('非本人品牌操作應回傳 403', async () => {
-      const fakeBrandId = randomUUID();
-      const fakeUserId = randomUUID();
       const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
 
       // 檢查是否已經存在該 email
@@ -302,14 +307,17 @@ describe('飯店圖片 API', () => {
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('無權限操作此資料');
-
-      // 測試結束後刪除假資料
-      await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
-      await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
   });
 
   describe('POST /api/v1/store/hotel/images', () => {
+    const fakeBrandId = randomUUID();
+    const fakeUserId = randomUUID();
+    afterAll(async () => {
+      // 測試結束後刪除假資料
+      await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
+      await db.delete(user).where(eq(user.id, fakeUserId)).execute();
+    });
     it('應該成功新增圖片資料 200', async () => {
       const res = await request(app).post(`/api/v1/store/hotel/images`).set('Authorization', `Bearer ${token}`).send({
         image_url: 'https://example.com/added.jpg',
@@ -399,8 +407,6 @@ describe('飯店圖片 API', () => {
     });
 
     it('非本人品牌操作應回傳 403', async () => {
-      const fakeBrandId = randomUUID();
-      const fakeUserId = randomUUID();
       const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
 
       // 檢查是否已經存在該 email
@@ -460,6 +466,8 @@ describe('飯店圖片 API', () => {
   });
 
   describe('PUT /api/v1/store/hotel/images/:id', () => {
+    const fakeBrandId = randomUUID();
+    const fakeUserId = randomUUID();
     beforeAll(async () => {
       // 插入測試圖片資料
       const result = await db
@@ -474,6 +482,12 @@ describe('飯店圖片 API', () => {
         .execute();
 
       hotelImageId = result[0].id;
+    });
+
+    afterAll(async () => {
+      // 測試結束後刪除假資料
+      await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
+      await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
 
     it('應該成功更新圖片資料 200', async () => {
@@ -573,8 +587,6 @@ describe('飯店圖片 API', () => {
     });
 
     it('非本人品牌操作應回傳 403', async () => {
-      const fakeBrandId = randomUUID();
-      const fakeUserId = randomUUID();
       const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
 
       // 檢查是否已經存在該 email
@@ -654,6 +666,8 @@ describe('飯店圖片 API', () => {
   });
 
   describe('DELETE /api/v1/store/hotel/images/:id', () => {
+    const fakeBrandId = randomUUID();
+    const fakeUserId = randomUUID();
     beforeAll(async () => {
       // 插入測試圖片資料
       const result = await db
@@ -668,6 +682,12 @@ describe('飯店圖片 API', () => {
         .execute();
 
       hotelImageId = result[0].id;
+    });
+
+    afterAll(async () => {
+      // 測試結束後刪除假資料
+      await db.delete(brand).where(eq(brand.id, fakeBrandId)).execute();
+      await db.delete(user).where(eq(user.id, fakeUserId)).execute();
     });
 
     it('應該成功刪除圖片資料 200', async () => {
@@ -736,8 +756,6 @@ describe('飯店圖片 API', () => {
     });
 
     it('非本人品牌操作應回傳 403', async () => {
-      const fakeBrandId = randomUUID();
-      const fakeUserId = randomUUID();
       const fakeEmail = `fake+${Date.now()}@store.com`; // 使用時間戳來確保唯一性
 
       // 檢查是否已經存在該 email
