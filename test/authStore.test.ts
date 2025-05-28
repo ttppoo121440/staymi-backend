@@ -180,7 +180,7 @@ describe('測試 AuthStore API', () => {
 
     it('密碼錯誤應該登入失敗 401', async () => {
       const res = await request(app)
-        .post('/api/v1/users/login')
+        .post('/api/v1/store/login')
         .send({ email: signupData.email, password: 'WrongPassword' });
       console.log('密碼錯誤的回傳:', res.body);
 
@@ -189,9 +189,30 @@ describe('測試 AuthStore API', () => {
       expect(res.body.message).toBe('密碼錯誤');
     });
 
+    it('非商家角色登入應該失敗 403', async () => {
+      await request(app).post('/api/v1/users/signup').send({
+        email: 'testuser@example.com',
+        password: 'Password123!',
+        name: '測試使用者',
+        phone: '0912345678',
+        birthday: '2000-01-01',
+        gender: 'm',
+      });
+
+      const res = await request(app)
+        .post('/api/v1/store/login')
+        .send({ email: 'testuser@example.com', password: 'Password123!' });
+
+      console.log('非商家角色登入的回傳:', res.body);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('非商家帳號無法登入');
+    });
+
     it('帳號不存在應該登入失敗 404', async () => {
       const res = await request(app)
-        .post('/api/v1/users/login')
+        .post('/api/v1/store/login')
         .send({ email: 'nonexistent@example.com', password: 'any11111' });
       console.log('帳號不存在的回傳:', res.body);
 
