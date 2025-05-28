@@ -46,6 +46,7 @@ export class AdminUserRepo extends BaseRepository {
             avatar: user_profile.avatar,
             role: user.role,
             is_blacklisted: user.is_blacklisted,
+            provider: user.provider,
             created_at: user.created_at,
             updated_at: user.updated_at,
           })
@@ -71,7 +72,10 @@ export class AdminUserRepo extends BaseRepository {
     );
 
     return {
-      users: data,
+      users: data.map((user) => ({
+        ...user,
+        provider: user.provider === null ? undefined : user.provider,
+      })),
       pagination,
     };
   }
