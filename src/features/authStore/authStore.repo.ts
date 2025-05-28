@@ -86,6 +86,9 @@ export class AuthStoreRepo {
     if (!process.env.JWT_SECRET) {
       throw new RepoError('JWT_SECRET 環境變數未設置', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    if (brand_idResult.length === 0) {
+      throw new RepoError('非商家帳號無法登入', HttpStatus.FORBIDDEN);
+    }
     const userToken = generateToken({
       id: foundUser.id,
       role: foundUser.role,
