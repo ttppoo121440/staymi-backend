@@ -21,11 +21,16 @@ passport.use(
         done(null, user);
       } catch (error) {
         if (error instanceof RepoError) {
-          // 傳業務邏輯錯誤（如：黑名單）到 req.authInfo
-          return done(null, false, { message: error.message, statusCode: error.statusCode });
+          return done(null, false, {
+            message: error.message,
+            statusCode: error.statusCode,
+          });
         }
-        // 一般系統錯誤
-        return done(error as Error, false);
+
+        return done(null, false, {
+          message: 'Google 登入失敗',
+          statusCode: 500,
+        });
       }
     },
   ),

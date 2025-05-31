@@ -189,7 +189,6 @@ export class AuthController {
     const info = req.authInfo as { message?: string; statusCode?: number } | undefined;
 
     if (info?.message) {
-      // 轉給前端處理
       res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent(info.message)}`);
     }
 
