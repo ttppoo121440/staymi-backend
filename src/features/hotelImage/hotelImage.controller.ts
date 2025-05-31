@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
+import { NextFunction } from 'express-serve-static-core';
 
 import { HttpStatus } from '@/types/http-status.enum';
+import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
 import { StoreHotelRepo } from '../storeHotel/storeHotel.repo';
@@ -58,5 +60,15 @@ export class HotelImageController {
     await this.hotelImageRepo.delete({ id: hotelImageId, hotel_id: hotelId });
 
     res.status(HttpStatus.OK).json(successResponse(null, '刪除成功'));
+  });
+  getHotelImages = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const hotelId = req.params.id;
+    await this.storeHotelRepo.getById({ hotelId });
+    const result = await this.hotelImageRepo.getHotelImages(hotelId);
+    if (!result) {
+      return next(appError('飯店分館圖片不存在', HttpStatus.NOT_FOUND));
+    }
+
+    res.status(HttpStatus.OK).json(successResponse({ images: result }, '取得飯店分館圖片成功'));
   });
 }
