@@ -85,4 +85,13 @@ export class RoomPlanController {
     }
     res.status(HttpStatus.OK).json(successResponse(null, '計畫刪除成功'));
   });
+  getRoomPlanDetailById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { id: roomPlanId } = req.params;
+
+    const result = await this.roomPlanRepo.getRoomPlanDetailById(roomPlanId);
+    if (!result) {
+      return next(appError('計畫不存在', HttpStatus.NOT_FOUND));
+    }
+    res.status(HttpStatus.OK).json(successResponse({ roomPlan: result }, '取得計畫詳情成功'));
+  });
 }
