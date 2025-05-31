@@ -89,6 +89,7 @@ export class AuthService {
   async handleGoogleLogin(profile: ProfileType): Promise<UserInfoType & { token: string }> {
     try {
       const user = await this.findOrCreateGoogleUser(profile);
+
       const token = generateToken({ id: user.id, role: user.role });
       return { ...user, token };
     } catch (error) {
@@ -103,7 +104,9 @@ export class AuthService {
     const avatar = profile.photos?.[0]?.value;
 
     const existingUser = await this.authRepo.findUserByProviderId(providerId);
-
+    if (existingUser?.is_blacklisted) {
+      throw new Error('帳號已被停權，請聯繫客服');
+    }
     if (existingUser) return existingUser;
 
     return await this.authRepo.createByProvider({
