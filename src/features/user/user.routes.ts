@@ -39,6 +39,7 @@ userRoutes.get(
   passport.authenticate('google', {
     failureRedirect: '/login',
     session: false, // 不使用 session
+    failureMessage: true,
   }),
   authController.googleCallback,
 );

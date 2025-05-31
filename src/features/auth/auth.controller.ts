@@ -186,11 +186,19 @@ export class AuthController {
     );
   });
   googleCallback = asyncHandler((req: Request, res: Response): Promise<void> => {
+    const info = req.authInfo as { message?: string; statusCode?: number } | undefined;
+
+    if (info?.message) {
+      // 轉給前端處理
+      res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent(info.message)}`);
+    }
+
     const user = req.user as {
       name: string;
       avatar: string;
       token: string;
     };
+
     res.redirect(
       `${frontendUrl}/callback?pathname=/&token=${user.token}&name=${user.name}&avatar=${encodeURIComponent(
         user.avatar,
