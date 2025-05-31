@@ -7,7 +7,13 @@ import { HttpStatus } from '@/types/http-status.enum';
 import { PaginationType } from '@/types/pagination';
 import { RepoError } from '@/utils/appError';
 
-import { HotelImageCreateType, HotelImageDeleteType, HotelImageType, HotelImageUpdateType } from './hotelImage.schema';
+import {
+  HotelImageCreateType,
+  HotelImageDeleteType,
+  HotelImageListType,
+  HotelImageType,
+  HotelImageUpdateType,
+} from './hotelImage.schema';
 
 export class HotelImageRepo extends BaseRepository {
   getAll = async (
@@ -81,5 +87,18 @@ export class HotelImageRepo extends BaseRepository {
     if (result.rowCount === 0) {
       throw new RepoError('查無此資料，刪除失敗', HttpStatus.NOT_FOUND);
     }
+  };
+  getHotelImages = async (hotelId: string): Promise<HotelImageListType[] | null> => {
+    const result = await db
+      .select({
+        id: hotel_images.id,
+        image_url: hotel_images.image_url,
+        is_cover: hotel_images.is_cover,
+        position: hotel_images.position,
+      })
+      .from(hotel_images)
+      .where(eq(hotel_images.hotel_id, hotelId));
+
+    return result.length > 0 ? result : null;
   };
 }
