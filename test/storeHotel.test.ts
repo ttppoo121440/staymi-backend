@@ -26,6 +26,7 @@ const mockHotelData = {
   hotel_policies: '禁止吸菸',
   latitude: '24.147736',
   longitude: '120.673648',
+  image_url: 'https://example.com/image.jpg',
   hotel_facilities: ['WiFi', '電視'],
   is_active: true,
 };
@@ -39,6 +40,7 @@ const mockHotelData3 = {
   hotel_policies: '禁止吸菸',
   latitude: '24.147736',
   longitude: '120.673648',
+  image_url: 'https://example.com/image.jpg',
   hotel_facilities: ['WiFi', '電視'],
   is_active: true,
 };
@@ -66,6 +68,7 @@ const mockHotelData1 = {
   hotel_policies: '禁止吸菸',
   latitude: '24.147736',
   longitude: '120.673648',
+  image_url: 'https://example.com/image.jpg',
   hotel_facilities: ['WiFi', '電視'],
   is_active: true,
 };
@@ -79,6 +82,7 @@ const mockHotelData2 = {
   hotel_policies: '寵物友善',
   latitude: '25.033964',
   longitude: '121.562321',
+  image_url: 'https://example.com/image.jpg',
   hotel_facilities: ['游泳池', '健身房'],
   is_active: true,
 };
@@ -618,6 +622,7 @@ describe('飯店更新 API', () => {
       hotel_policies: '禁止寵物',
       latitude: '22.627278',
       longitude: '120.301435',
+      image_url: 'https://updated.com/image.jpg',
       hotel_facilities: ['游泳池', '健身房'],
       is_active: false,
     };

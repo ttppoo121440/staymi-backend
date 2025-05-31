@@ -156,6 +156,7 @@ describe('訂單 API', () => {
         hotel_policies: '禁止吸菸',
         latitude: '24.147736',
         longitude: '120.673648',
+        image_url: 'https://example.com/hotel-image.jpg',
         hotel_facilities: ['WiFi', '電視'],
         is_active: true,
       });

@@ -27,6 +27,7 @@ const mockHotelData = {
   hotel_policies: '禁止吸菸',
   latitude: '24.147736',
   longitude: '120.673648',
+  image_url: 'https://example.com/image.jpg',
   hotel_facilities: ['WiFi', '電視'],
   is_active: true,
 };
