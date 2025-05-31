@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import App from './app';
 import { env, serverUrl } from './config/env';
 
-dotenv.config();
+dotenv.config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
 let server: Server | null = null;
 
