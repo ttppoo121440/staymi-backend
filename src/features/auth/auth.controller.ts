@@ -185,19 +185,15 @@ export class AuthController {
       )}&token=${userToken}&name=${name}&avatar=${encodeURIComponent(userInfo.avatar)}`,
     );
   });
-  googleCallback = asyncHandler((req: Request, res: Response): Promise<void> => {
+  googleCallback = asyncHandler((req: Request, res: Response): void => {
+    // 檢查是否有驗證失敗的訊息
     const info = req.authInfo as { message?: string; statusCode?: number } | undefined;
 
-    // 如果有錯誤，重定向到錯誤頁面並結束執行
-    if (info?.message) {
-      res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent(info.message)}`);
-      return Promise.resolve();
-    }
-
-    // 檢查用戶是否存在
-    if (!req.user) {
-      res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent('登入失敗')}`);
-      return Promise.resolve();
+    if (info?.message || !req.user) {
+      const errorMessage = info?.message ?? '登入失敗';
+      console.log('Google 登入失敗:', errorMessage);
+      res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent(errorMessage)}`);
+      return;
     }
 
     const user = req.user as {
@@ -206,11 +202,11 @@ export class AuthController {
       token: string;
     };
 
+    console.log('Google 登入成功，重定向用戶');
     res.redirect(
       `${frontendUrl}/callback?pathname=/&token=${user.token}&name=${user.name}&avatar=${encodeURIComponent(
         user.avatar,
       )}`,
     );
-    return Promise.resolve();
   });
 }
