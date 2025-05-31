@@ -65,4 +65,42 @@ export const roomPlanListDto = z
     pagination: data.pagination,
   }));
 
+export const getRoomPlanDetailByIdSchema = z.object({
+  hotel_id: z.string().uuid(),
+  hotel_name: z.string(),
+  hotel_region: z.string(),
+  hotel_address: z.string(),
+  hotel_phone: z.string(),
+  hotel_facilities: z.array(z.string()),
+  hotel_policies: z.string(),
+  hotel_cover_image: z.string(),
+  transportation: z.string(),
+  latitude: z
+    .string()
+    .regex(/^(-?\d+(\.\d+)?)$/, '經度必須是有效的數字字串')
+    .refine((val) => parseFloat(val) >= -90 && parseFloat(val) <= 90, '緯度必須在 -90 到 90 之間'),
+  longitude: z
+    .string()
+    .regex(/^(-?\d+(\.\d+)?)$/, '緯度必須是有效的數字字串')
+    .refine((val) => parseFloat(val) >= -180 && parseFloat(val) <= 180, '經度必須在 -180 到 180 之間'),
+
+  room_plan_id: z.string().uuid(),
+  subscription_price: z.number(),
+  price: z.number(),
+  start_time: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '請使用 YYYY-MM-DD 格式'),
+  end_time: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '請使用 YYYY-MM-DD 格式'),
+  plan_images: z.array(z.string()).nullable().optional(),
+
+  hotel_room_id: z.string().uuid(),
+  hotel_room_description: z.string(),
+  hotel_room_images: z.array(z.string()).nullable().optional(),
+  base_price: z.number(),
+
+  room_type_id: z.string().uuid(),
+  room_type_name: z.string(),
+  room_type_description: z.string(),
+  room_services: z.array(z.string()),
+});
+
 export type RoomPlanType = z.infer<typeof roomPlanSchema>;
+export type getRoomPlanDetailByIdType = z.infer<typeof getRoomPlanDetailByIdSchema>;
