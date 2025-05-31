@@ -1,10 +1,17 @@
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 import { db } from '@/config/database';
+import { hotels } from '@/database/schemas/hotels.schema';
 import { order_room_product_item } from '@/database/schemas/order_room_product_item.schema';
+import { product_plans } from '@/database/schemas/product_plans.schema';
+import { products } from '@/database/schemas/products.schema';
 import { DatabaseOrTransaction } from '@/types/databaseType';
 
-import { OrderRoomProductItemCreateType, OrderRoomProductItemType } from './orderRoomProductItem.schema';
+import {
+  OrderRoomProductItemCreateType,
+  OrderRoomProductItemType,
+  productPlansType,
+} from './orderRoomProductItem.schema';
 
 export class OrderRoomProductItemRepo {
   async getById(id: string): Promise<{ souvenir: OrderRoomProductItemType } | null> {
@@ -30,5 +37,45 @@ export class OrderRoomProductItemRepo {
     return {
       souvenir: result[0],
     };
+  }
+  async getByHotelProduct(hotelId: string): Promise<productPlansType[]> {
+    const result = await db
+      .select({
+        id: product_plans.id,
+        price: product_plans.price,
+        start_time: product_plans.start_date,
+        end_time: product_plans.end_date,
+        product_id: products.id,
+        product_name: products.name,
+        product_features: products.features,
+        product_description: products.description,
+        product_imageUrl: products.imageUrl,
+        product_price: products.price,
+      })
+      .from(hotels)
+      .innerJoin(products, eq(products.hotel_id, hotels.id))
+      .innerJoin(product_plans, and(eq(product_plans.product_id, products.id), eq(product_plans.is_active, true)))
+      .where(eq(hotels.id, hotelId));
+    return result;
+  }
+  async getByHotelProductItem(hotelId: string, productId: string): Promise<productPlansType | null> {
+    const result = await db
+      .select({
+        id: product_plans.id,
+        price: product_plans.price,
+        start_time: product_plans.start_date,
+        end_time: product_plans.end_date,
+        product_id: products.id,
+        product_name: products.name,
+        product_features: products.features,
+        product_description: products.description,
+        product_imageUrl: products.imageUrl,
+        product_price: products.price,
+      })
+      .from(hotels)
+      .innerJoin(products, eq(products.hotel_id, hotels.id))
+      .innerJoin(product_plans, and(eq(product_plans.product_id, products.id), eq(product_plans.is_active, true)))
+      .where(and(eq(hotels.id, hotelId), eq(product_plans.id, productId)));
+    return result[0] || null;
   }
 }
