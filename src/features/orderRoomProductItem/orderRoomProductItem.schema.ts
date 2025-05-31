@@ -31,5 +31,19 @@ export const orderRoomProductItemDto = z.object({
   }),
 });
 
+export const productPlansSchema = z.object({
+  id: z.string().uuid(),
+  price: z.number(),
+  start_time: z.string(),
+  end_time: z.string(),
+  product_id: z.string().uuid(),
+  product_name: z.string(),
+  product_features: z.string(),
+  product_description: z.string(),
+  product_imageUrl: z.string(),
+  product_price: z.number(),
+});
+
 export type OrderRoomProductItemType = z.infer<typeof orderRoomProductItemSchema>;
 export type OrderRoomProductItemCreateType = z.infer<typeof orderRoomProductItemCreateSchema>;
+export type productPlansType = z.infer<typeof productPlansSchema>;
