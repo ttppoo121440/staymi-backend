@@ -25,5 +25,11 @@ adminUserRoutes.put(
   checkRolesMiddleware(['admin']),
   adminUserController.updateRole,
 );
+adminUserRoutes.patch(
+  '/:id/toggleUserBlacklist',
+  authMiddleware,
+  checkRolesMiddleware(['admin']),
+  adminUserController.toggleUserBlacklist,
+);
 
 export default adminUserRoutes;
