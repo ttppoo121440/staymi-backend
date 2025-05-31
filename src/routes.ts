@@ -11,6 +11,7 @@ import productsRoutes from './features/product/products.routes';
 import productPlanRoutes from './features/productPlan/productPlan.routes';
 import roomPlanRoutes from './features/roomPlan/roomPlan.routes';
 import roomTypeRoutes from './features/roomType/roomType.routes';
+import hotelRoutes from './features/storeHotel/hotel.routes';
 import storeHotelRoutes from './features/storeHotel/storeHotel.routes';
 import subscriptionRoutes from './features/subscription/subscription.routes';
 import userRoutes from './features/user/user.routes';
@@ -28,6 +29,7 @@ export const setupRoutes = (app: Application): void => {
   app.use('/api/v1/store/hotel/room-plan', roomPlanRoutes);
   app.use('/api/v1/store/hotel/product-plan', productPlanRoutes);
   app.use('/api/v1/store/hotel', storeHotelRoutes);
+  app.use('/api/v1/user/hotel', hotelRoutes);
   app.use('/api/v1/store', authStoreRoutes);
   app.use('/api/v1/upload', imageUploadRoutes);
   app.use('/api/v1/paypal', paypalRouter);
