@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
+    "dev:test": "cross-env NODE_ENV=test npm run dev",
     "lint": "eslint src/**/*.ts --fix",
     "lint:fix": "eslint --ext .ts src --fix",
     "build": "tsc && tsc-alias",
