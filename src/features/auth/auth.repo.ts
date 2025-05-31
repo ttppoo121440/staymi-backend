@@ -31,6 +31,10 @@ export class AuthRepo {
       throw new RepoError('密碼錯誤', HttpStatus.UNAUTHORIZED);
     }
 
+    if (foundUser.is_blacklisted) {
+      throw new RepoError('帳號已被停權，請聯繫客服', HttpStatus.FORBIDDEN);
+    }
+
     if (!process.env.JWT_SECRET) {
       throw new RepoError('JWT_SECRET 環境變數未設置', HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -140,7 +144,13 @@ export class AuthRepo {
   }
   async findUserByProviderId(provider_id: string): Promise<UserInfoType | undefined> {
     const result = await db
-      .select({ id: user.id, role: user.role, name: user_profile.name, avatar: user_profile.avatar })
+      .select({
+        id: user.id,
+        role: user.role,
+        name: user_profile.name,
+        avatar: user_profile.avatar,
+        is_blacklisted: user.is_blacklisted,
+      })
       .from(user)
       .innerJoin(user_profile, eq(user.id, user_profile.user_id))
       .where(eq(user.provider_id, provider_id));
@@ -187,6 +197,7 @@ export class AuthRepo {
       role: 'consumer',
       name: data.name,
       avatar: data.avatar ?? '',
+      is_blacklisted: false,
     };
   }
 }
