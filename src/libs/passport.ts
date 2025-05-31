@@ -20,17 +20,14 @@ passport.use(
         const user = await authService.handleGoogleLogin(profile);
         done(null, user);
       } catch (error) {
+        console.error('Google OAuth 錯誤:', error); // 添加日誌
+
         if (error instanceof RepoError) {
-          return done(null, false, {
-            message: error.message,
-            statusCode: error.statusCode,
-          });
+          // 使用 Passport 標準的錯誤處理方式
+          return done(null, false, { message: error.message });
         }
 
-        return done(null, false, {
-          message: 'Google 登入失敗',
-          statusCode: 500,
-        });
+        return done(null, false, { message: 'Google 登入失敗' });
       }
     },
   ),

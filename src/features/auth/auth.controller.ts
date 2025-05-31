@@ -188,8 +188,16 @@ export class AuthController {
   googleCallback = asyncHandler((req: Request, res: Response): Promise<void> => {
     const info = req.authInfo as { message?: string; statusCode?: number } | undefined;
 
+    // 如果有錯誤，重定向到錯誤頁面並結束執行
     if (info?.message) {
       res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent(info.message)}`);
+      return Promise.resolve();
+    }
+
+    // 檢查用戶是否存在
+    if (!req.user) {
+      res.redirect(`${frontendUrl}/callback?error=${encodeURIComponent('登入失敗')}`);
+      return Promise.resolve();
     }
 
     const user = req.user as {

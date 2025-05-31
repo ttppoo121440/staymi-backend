@@ -90,11 +90,14 @@ export class AuthService {
 
   async handleGoogleLogin(profile: ProfileType): Promise<UserInfoType & { token: string }> {
     try {
+      console.log('處理 Google 登入，profile:', JSON.stringify(profile, null, 2));
       const user = await this.findOrCreateGoogleUser(profile);
+      console.log('找到或創建用戶:', user);
 
       const token = generateToken({ id: user.id, role: user.role });
       return { ...user, token };
     } catch (error) {
+      console.error('Google 登入處理失敗:', error);
       throw new RepoError('Google 登入處理失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
