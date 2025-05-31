@@ -218,6 +218,20 @@
       "when": 1747656386881,
       "tag": "0030_calm_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1748610116152,
+      "tag": "0031_glorious_tarot",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1748691264047,
+      "tag": "0032_absent_sumo",
+      "breakpoints": true
     }
   ]
 }
