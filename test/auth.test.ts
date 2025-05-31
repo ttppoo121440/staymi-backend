@@ -11,7 +11,7 @@ import { server } from '../src/server';
 jest.setTimeout(30000);
 describe('測試 Auth API', () => {
   const testUser = {
-    email: 'testuser@example.com',
+    email: `testUser+${Date.now()}@example.com`,
     password: 'Password123!',
     name: '測試使用者',
     phone: '0912345678',

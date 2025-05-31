@@ -27,6 +27,14 @@ describe('測試 AuthStore API', () => {
     birthday: '2000-01-01',
     gender: 'm',
   };
+  const testUser = {
+    email: `testUser+${Date.now()}@example.com`,
+    password: 'Password123!',
+    name: '測試使用者',
+    phone: '0912345678',
+    birthday: '2000-01-01',
+    gender: 'm',
+  };
 
   beforeAll(async () => {
     if (process.env.NODE_ENV !== 'test') {
@@ -34,13 +42,17 @@ describe('測試 AuthStore API', () => {
     }
     // 清除測試帳號（如果存在）
     const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
+    const existingTestUsers = await db.select().from(user).where(eq(user.email, testUser.email));
     const existingUser = existingUsers[0];
+    const existingTestUser = existingTestUsers[0];
 
     if (existingUsers.length > 0) {
       await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+      await db.delete(user_profile).where(eq(user_profile.user_id, existingTestUser.id)).execute();
       await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
       await db.delete(user).where(eq(user.id, existingUser.id)).execute();
+      await db.delete(user).where(eq(user.id, existingTestUser.id)).execute();
 
       console.log(`beforeAll 清理測試用戶 ${existingUser.id}`);
     }
@@ -48,13 +60,17 @@ describe('測試 AuthStore API', () => {
 
   afterAll(async () => {
     const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
+    const existingTestUsers = await db.select().from(user).where(eq(user.email, testUser.email));
+    const existingUser = existingUsers[0];
+    const existingTestUser = existingTestUsers[0];
+
     if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
       await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+      await db.delete(user_profile).where(eq(user_profile.user_id, existingTestUser.id)).execute();
       await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
       await db.delete(user).where(eq(user.id, existingUser.id)).execute();
-      console.log(`afterAll 清理測試用戶 ${existingUser.id}`);
+      await db.delete(user).where(eq(user.id, existingTestUser.id)).execute();
     }
 
     await closeDatabase();
@@ -65,14 +81,16 @@ describe('測試 AuthStore API', () => {
   afterEach(async () => {
     // 每個測試後清理資料
     const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
-    if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
-      await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
-      await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
-      await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
-      await db.delete(user).where(eq(user.id, existingUser.id)).execute();
-      console.log(`afterEach 清理測試用戶 ${existingUser.id}`);
-    }
+    const existingTestUsers = await db.select().from(user).where(eq(user.email, testUser.email));
+    const existingUser = existingUsers[0];
+    const existingTestUser = existingTestUsers[0];
+    await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
+    await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+    await db.delete(user_profile).where(eq(user_profile.user_id, existingTestUser.id)).execute();
+    await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
+    await db.delete(user).where(eq(user.id, existingUser.id)).execute();
+    await db.delete(user).where(eq(user.id, existingTestUser.id)).execute();
+    console.log(`afterEach 清理測試用戶 ${existingUser.id}`);
   });
 
   // 測試註冊功能
@@ -190,18 +208,11 @@ describe('測試 AuthStore API', () => {
     });
 
     it('非商家角色登入應該失敗 403', async () => {
-      await request(app).post('/api/v1/users/signup').send({
-        email: 'testuser@example.com',
-        password: 'Password123!',
-        name: '測試使用者',
-        phone: '0912345678',
-        birthday: '2000-01-01',
-        gender: 'm',
-      });
+      await request(app).post('/api/v1/users/signup').send(testUser);
 
       const res = await request(app)
         .post('/api/v1/store/login')
-        .send({ email: 'testuser@example.com', password: 'Password123!' });
+        .send({ email: testUser.email, password: testUser.password });
 
       console.log('非商家角色登入的回傳:', res.body);
 
