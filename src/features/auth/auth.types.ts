@@ -27,6 +27,7 @@ export type UserInfoType = {
   role: 'consumer' | 'store' | 'admin';
   name: string;
   avatar: string;
+  is_blacklisted: boolean;
 };
 
 export type CreateUserByProviderInput = {
