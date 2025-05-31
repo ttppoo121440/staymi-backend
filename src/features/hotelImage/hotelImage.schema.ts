@@ -58,7 +58,14 @@ export const hotelImageDeleteSchema = hotelImageSchema.pick({
   hotel_id: true,
 });
 
+export const getHotelImagesSchema = hotelImageSchema.omit({
+  hotel_id: true,
+  created_at: true,
+  updated_at: true,
+});
+
 export type HotelImageType = z.infer<typeof hotelImageSchema>;
 export type HotelImageCreateType = z.infer<typeof hotelImageCreateSchema> & { hotel_id: string };
 export type HotelImageUpdateType = z.infer<typeof hotelImageUpdateSchema> & { id: string; hotel_id: string };
 export type HotelImageDeleteType = z.infer<typeof hotelImageDeleteSchema>;
+export type HotelImageListType = z.infer<typeof getHotelImagesSchema>;
