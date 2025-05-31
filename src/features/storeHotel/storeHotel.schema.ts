@@ -22,6 +22,7 @@ export const hotelSchema = z.object({
     .refine((val) => parseFloat(val) >= -180 && parseFloat(val) <= 180, '經度必須在 -180 到 180 之間'),
   hotel_facilities: z.array(z.string()).max(50),
   is_active: z.boolean(),
+  image_url: z.string(),
   created_at: zDateOrDefault(),
   updated_at: zDateOrDefault(),
 });
