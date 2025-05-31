@@ -123,4 +123,21 @@ export class AdminUserRepo extends BaseRepository {
     }
     return { user: userData[0] };
   }
+  async getUserBlacklistStatus(id: string): Promise<boolean | null> {
+    const result = await db
+      .select({ is_blacklisted: user.is_blacklisted })
+      .from(user)
+      .where(eq(user.id, id))
+      .limit(1)
+      .execute();
+    console.log('Get User Blacklist Status Result:', result);
+
+    return result[0]?.is_blacklisted ?? null;
+  }
+  async toggleUserBlacklist(id: string, is_blacklisted: boolean): Promise<boolean> {
+    const result = await db.update(user).set({ is_blacklisted }).where(eq(user.id, id)).returning().execute();
+    console.log('Toggle User Blacklist Result:', result);
+
+    return result.length > 0;
+  }
 }
