@@ -10,8 +10,8 @@ export const hotelSchema = z.object({
   name: z.string({ message: '請輸入店名' }).max(50),
   address: z.string({ message: '請輸入地址' }).max(100),
   phone: z.string({ message: '請輸入電話' }).max(20),
-  transportation: z.string().max(255),
-  hotel_policies: z.string().max(255),
+  transportation: z.string(),
+  hotel_policies: z.string(),
   latitude: z
     .string()
     .regex(/^(-?\d+(\.\d+)?)$/, '經度必須是有效的數字字串')
