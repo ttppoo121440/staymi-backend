@@ -1,6 +1,7 @@
 import express from 'express';
 import passport from 'passport';
 
+import { frontendUrl } from '@/config/env';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { zodMiddleware } from '@/middleware/zodMiddleware';
 
@@ -37,7 +38,7 @@ userRoutes.get(
 userRoutes.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/login',
+    failureRedirect: `${frontendUrl}/login/callback?error=登入失敗`,
     session: false, // 不使用 session
   }),
   authController.googleCallback,

@@ -2,6 +2,8 @@ import axios from 'axios';
 import qs from 'qs';
 
 import { env, serverUrl } from '@/config/env';
+import { HttpStatus } from '@/types/http-status.enum';
+import { RepoError } from '@/utils/appError';
 import { generateToken } from '@/utils/jwt';
 
 import { AuthRepo } from './auth.repo';
@@ -88,12 +90,15 @@ export class AuthService {
 
   async handleGoogleLogin(profile: ProfileType): Promise<UserInfoType & { token: string }> {
     try {
+      console.log('處理 Google 登入，profile:', JSON.stringify(profile, null, 2));
       const user = await this.findOrCreateGoogleUser(profile);
+      console.log('找到或創建用戶:', user);
 
       const token = generateToken({ id: user.id, role: user.role });
       return { ...user, token };
     } catch (error) {
-      throw new Error('Google 登入處理失敗');
+      console.error('Google 登入處理失敗:', error);
+      throw new RepoError('Google 登入處理失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -105,7 +110,7 @@ export class AuthService {
 
     const existingUser = await this.authRepo.findUserByProviderId(providerId);
     if (existingUser?.is_blacklisted) {
-      throw new Error('帳號已被停權，請聯繫客服');
+      throw new RepoError('帳號已被停權，請聯繫客服', HttpStatus.FORBIDDEN);
     }
     if (existingUser) return existingUser;
 
