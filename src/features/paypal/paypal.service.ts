@@ -4,6 +4,7 @@ import {
   PayPalCaptureOrderResponse,
   PayPalCreateOrderResponse,
   PayPalOrderResult,
+  PayPalSubscriptionResult,
 } from '@/features/paypal/paypal.type';
 import { createPayPalAccessToken, paypalApi } from '@/libs/paypalClient';
 import { HttpStatus } from '@/types/http-status.enum';
@@ -11,11 +12,15 @@ import { appError } from '@/utils/appError';
 
 import { OrderRoomProductRepo } from '../orderRoomProduct/orderRoomProduct.repo';
 import { orderDetailType } from '../orderRoomProduct/orderRoomProduct.schema';
+import { OrderSubscriptionRepo } from '../orderSubscription/orderSubscription.repo';
 import { PaymentService } from '../payment/payment.service';
+import { SubscriptionRepo } from '../subscription/subscription.repo';
 
 export class PayPalService {
   constructor(
     private orderRoomProductRepo = new OrderRoomProductRepo(),
+    private orderSubscriptionRepo = new OrderSubscriptionRepo(),
+    private subscriptionRepo = new SubscriptionRepo(),
     private paymentService = new PaymentService(),
   ) {}
   async createOrder(orderId: string, userId: string): Promise<PayPalOrderResult> {
@@ -196,5 +201,83 @@ export class PayPalService {
       default:
         return 'cancelled';
     }
+  }
+
+  async createSubscription(subscriptionId: string, userId: string): Promise<PayPalSubscriptionResult> {
+    // paypal token
+    const token = await createPayPalAccessToken();
+    // 訂閱明細
+    const orderSubscription = await this.orderSubscriptionRepo.getBySubscriptionIdAndUserId(subscriptionId, userId);
+    if (!orderSubscription) {
+      throw new Error('無訂閱訂單資料');
+    }
+    const subscription = await this.subscriptionRepo.getByIdAndUserId(subscriptionId, userId);
+    if (!subscription) {
+      throw new Error('無訂閱資料');
+    }
+    let price = 0;
+    if (subscription.plan == 'plus') {
+      price = 250;
+    } else if (subscription.plan == 'pro') {
+      price = 500;
+    } else {
+      throw new Error('無該訂閱方案');
+    }
+
+    const res = await paypalApi.post<PayPalCreateOrderResponse>(
+      '/v2/checkout/orders',
+      {
+        intent: 'CAPTURE',
+        purchase_units: [
+          {
+            custom_id: subscriptionId,
+            amount: {
+              currency_code: 'TWD',
+              value: price.toFixed(2),
+              breakdown: {
+                item_total: {
+                  currency_code: 'TWD',
+                  value: price.toFixed(2),
+                },
+              },
+            },
+            items: [
+              {
+                name: `subscription-${subscription.plan}`,
+                unit_amount: {
+                  currency_code: 'TWD',
+                  value: price.toFixed(2),
+                },
+                quantity: '1',
+              },
+            ],
+          },
+        ],
+        application_context: {
+          locale: 'zh-TW',
+          return_url: 'https://staymi.vercel.app/',
+          cancel_url: 'https://staymi.vercel.app/login',
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const { id, links } = res.data;
+    const approveLink = links.find((link) => link.rel === 'approve')?.href;
+
+    if (!approveLink) {
+      throw new Error('找不到 approve link');
+    }
+
+    // await this.orderRoomProductRepo.updatePaypalOrderId(orderId, userId, id);
+
+    return {
+      subscriptionId: id,
+      approveLink,
+    };
   }
 }

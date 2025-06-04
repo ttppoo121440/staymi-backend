@@ -3,6 +3,7 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/config/database';
 import { subscriptions } from '@/database/schemas/subscriptions.schema';
 import { BaseRepository } from '@/repositories/base-repository';
+import { DatabaseOrTransaction } from '@/types/databaseType';
 import { PaginationType } from '@/types/pagination';
 
 import {
@@ -10,9 +11,50 @@ import {
   subscriptionIsRecurringType,
   subscriptionHistoryType,
   subscriptionPlanType,
+  subscriptionCreateType,
+  subscriptionPayPalToDTOType,
+  subscriptionBaseType,
 } from './subscription.schema';
 
 export class SubscriptionRepo extends BaseRepository {
+  async create(dbInstance: DatabaseOrTransaction, data: subscriptionCreateType): Promise<subscriptionBaseType> {
+    const { cycle } = data;
+    const startedAt = data.started_at ? new Date(data.started_at) : new Date();
+    const end_at: Date = new Date(startedAt);
+    if (cycle === 'monthly') {
+      end_at.setDate(end_at.getDate() + 30);
+    } else if (cycle === 'quarterly') {
+      end_at.setDate(end_at.getDate() + 90);
+    } else if (cycle === 'yearly') {
+      end_at.setDate(end_at.getDate() + 365);
+    }
+    console.log(startedAt);
+
+    const cleanedData = {
+      ...data,
+      status: 'active',
+      started_at: startedAt,
+      end_at: end_at || new Date(),
+    };
+    const result = await dbInstance.insert(subscriptions).values(cleanedData).returning();
+
+    return result[0];
+  }
+
+  // 根據ID & 用戶ID 獲取訂閱資訊
+  async getByIdAndUserId(id: string, userId: string): Promise<subscriptionPayPalToDTOType | null> {
+    const result = await db
+      .select({
+        id: subscriptions.id,
+        user_id: subscriptions.user_id,
+        plan: subscriptions.plan,
+      })
+      .from(subscriptions)
+      .where(and(eq(subscriptions.id, id), eq(subscriptions.user_id, userId)));
+
+    return result[0] ?? null;
+  }
+
   async getPlanByUserId(userId: string): Promise<subscriptionType | null> {
     const result = await db
       .select({

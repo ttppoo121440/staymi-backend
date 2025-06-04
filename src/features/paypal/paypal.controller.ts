@@ -8,6 +8,7 @@ import { SubscriptionService } from '@/utils/services/subscription.service';
 import { OrderRoomProductRepo } from '../orderRoomProduct/orderRoomProduct.repo';
 import { OrderRoomProductService } from '../orderRoomProduct/orderRoomProductService';
 import { OrderRoomProductItemRepo } from '../orderRoomProductItem/orderRoomProductItem.repo';
+import { OrderSubscriptionService } from '../orderSubscription/orderSubscriptionService';
 import { ProductPlanRepo } from '../productPlan/productPlan.repo';
 import { RoomPlanRepo } from '../roomPlan/roomPlan.repo';
 import { StoreHotelRepo } from '../storeHotel/storeHotel.repo';
@@ -32,6 +33,7 @@ export class PayPalController {
       storeHotelRepo,
       subscriptionService,
     ),
+    private orderSubscriptionService = new OrderSubscriptionService(),
   ) {}
   createPayPalOrder = asyncHandler(async (req: Request, res: Response) => {
     const { user_id } = res.locals;
@@ -52,4 +54,18 @@ export class PayPalController {
 
     res.status(HttpStatus.OK).json(successResponse(dtoData, '付款成功'));
   });
+
+  // createPayPaylSubscription = asyncHandler(async (req: Request, res: Response) => {
+  //   const { user_id } = res.locals;
+  //   const data = { ...req.body, user_id };
+  //   // 1. 建立訂閱
+  //   const subscription = await this.orderSubscriptionService.createOrderSubscriptionService(data);
+  //   // 2. 建立 PayPal 訂閱
+  //   const paypalSubscription = await this.paypalService.createSubscription(subscription.subscription_id, user_id);
+
+  //   console.log('=====1=====');
+  //   console.log(res.locals);
+  //   console.log(req.body);
+  //   res.status(HttpStatus.OK).json(successResponse(subscription, '建立訂閱成功'));
+  // });
 }
