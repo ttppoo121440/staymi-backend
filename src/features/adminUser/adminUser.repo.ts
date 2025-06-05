@@ -1,4 +1,4 @@
-import { and, eq, ilike, sql } from 'drizzle-orm';
+import { and, count, eq, ilike, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { user } from '@/database/schemas/user.schema';
@@ -139,5 +139,10 @@ export class AdminUserRepo extends BaseRepository {
     console.log('Toggle User Blacklist Result:', result);
 
     return result.length > 0;
+  }
+
+  async getUserCount(): Promise<number> {
+    const result = await db.select({ count: count() }).from(user);
+    return result[0]?.count ?? 0;
   }
 }
