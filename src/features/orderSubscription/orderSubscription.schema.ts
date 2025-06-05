@@ -9,6 +9,8 @@ const orderSubscriptionBaseSchema = z.object({
   cycle: z.enum(['monthly', 'quarterly', 'yearly'], { errorMap: () => ({ message: '訂閱方案週期錯誤' }) }),
   next_billing_date: zDateOrDefault(),
   status: z.enum(['active', 'paused', 'cancelled'], { errorMap: () => ({ message: '狀態錯誤' }) }),
+  paypal_order_id: z.string().nullable().optional(),
+  paypal_transaction_id: z.string().nullable().optional(),
   created_at: zDateOrDefault(),
   updated_at: zDateOrDefault(),
 });

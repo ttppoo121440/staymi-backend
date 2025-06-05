@@ -216,9 +216,9 @@ export class PayPalService {
       throw new Error('無訂閱資料');
     }
     let price = 0;
-    if (subscription.plan == 'plus') {
+    if (subscription.plan === 'plus') {
       price = 250;
-    } else if (subscription.plan == 'pro') {
+    } else if (subscription.plan === 'pro') {
       price = 500;
     } else {
       throw new Error('無該訂閱方案');
@@ -268,15 +268,14 @@ export class PayPalService {
 
     const { id, links } = res.data;
     const approveLink = links.find((link) => link.rel === 'approve')?.href;
-
     if (!approveLink) {
       throw new Error('找不到 approve link');
     }
-
-    // await this.orderRoomProductRepo.updatePaypalOrderId(orderId, userId, id);
+    await this.orderSubscriptionRepo.updatePaypalOrderId(subscriptionId, userId, id);
 
     return {
-      subscriptionId: id,
+      subscriptionId: subscription.id,
+      orderId: id,
       approveLink,
     };
   }

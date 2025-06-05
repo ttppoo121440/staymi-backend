@@ -55,17 +55,14 @@ export class PayPalController {
     res.status(HttpStatus.OK).json(successResponse(dtoData, '付款成功'));
   });
 
-  // createPayPaylSubscription = asyncHandler(async (req: Request, res: Response) => {
-  //   const { user_id } = res.locals;
-  //   const data = { ...req.body, user_id };
-  //   // 1. 建立訂閱
-  //   const subscription = await this.orderSubscriptionService.createOrderSubscriptionService(data);
-  //   // 2. 建立 PayPal 訂閱
-  //   const paypalSubscription = await this.paypalService.createSubscription(subscription.subscription_id, user_id);
+  createPayPaylSubscription = asyncHandler(async (req: Request, res: Response) => {
+    const { user_id } = res.locals;
+    const data = { ...req.body, user_id };
+    // 建立訂閱
+    const subscription = await this.orderSubscriptionService.createOrderSubscriptionService(data);
+    // 建立訂閱訂單
+    const paypalSubscription = await this.paypalService.createSubscription(subscription.subscription_id, user_id);
 
-  //   console.log('=====1=====');
-  //   console.log(res.locals);
-  //   console.log(req.body);
-  //   res.status(HttpStatus.OK).json(successResponse(subscription, '建立訂閱成功'));
-  // });
+    res.status(HttpStatus.OK).json(successResponse(paypalSubscription, '建立訂閱成功'));
+  });
 }

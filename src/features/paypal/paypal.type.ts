@@ -87,5 +87,6 @@ export type PayPalCaptureOrderResponse = {
 // 訂閱 回傳給前端的資料型別
 export type PayPalSubscriptionResult = {
   subscriptionId: string;
+  orderId: string;
   approveLink: string;
 };

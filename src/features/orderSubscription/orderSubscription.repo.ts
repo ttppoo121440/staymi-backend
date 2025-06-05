@@ -38,5 +38,25 @@ export class OrderSubscriptionRepo {
     };
   }
 
-  // async update
+  async updatePaypalOrderId(
+    subscriptionId: string,
+    userId: string,
+    paypalOrderId: string,
+  ): Promise<orderSubscriptionDTOType | null> {
+    console.log(subscriptionId);
+    console.log(userId);
+    console.log(paypalOrderId);
+    const result = await db
+      .update(order_subscription)
+      .set({ paypal_order_id: paypalOrderId })
+      .where(and(eq(order_subscription.subscription_id, subscriptionId), eq(order_subscription.user_id, userId)))
+      .returning();
+
+    if (result.length === 0) return null;
+
+    return {
+      ...result[0],
+      next_billing_date: result[0].next_billing_date ? new Date(result[0].next_billing_date) : null,
+    };
+  }
 }

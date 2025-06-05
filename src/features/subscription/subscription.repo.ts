@@ -21,14 +21,21 @@ export class SubscriptionRepo extends BaseRepository {
     const { cycle } = data;
     const startedAt = data.started_at ? new Date(data.started_at) : new Date();
     const end_at: Date = new Date(startedAt);
-    if (cycle === 'monthly') {
-      end_at.setDate(end_at.getDate() + 30);
-    } else if (cycle === 'quarterly') {
-      end_at.setDate(end_at.getDate() + 90);
-    } else if (cycle === 'yearly') {
-      end_at.setDate(end_at.getDate() + 365);
+    switch (cycle) {
+      case 'monthly':
+        end_at.setDate(end_at.getDate() + 30);
+        break;
+      case 'quarterly':
+        end_at.setDate(end_at.getDate() + 90);
+        break;
+      case 'yearly':
+        end_at.setDate(end_at.getDate() + 365);
+        break;
+      default:
+        throw new Error('週期格式錯誤');
     }
-    console.log(startedAt);
+    // 存進DB時時區問題
+    end_at.setHours(23 - end_at.getTimezoneOffset() / 60, 59, 59, 999);
 
     const cleanedData = {
       ...data,
