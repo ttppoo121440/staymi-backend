@@ -32,10 +32,12 @@ export class OrderSubscriptionRepo {
       .from(order_subscription)
       .where(and(eq(order_subscription.subscription_id, subscriptionId), eq(order_subscription.user_id, userId)));
 
-    return {
-      ...result[0],
-      next_billing_date: result[0].next_billing_date ? new Date(result[0].next_billing_date) : null,
-    };
+    return result[0]
+      ? {
+          ...result[0],
+          next_billing_date: result[0].next_billing_date ? new Date(result[0].next_billing_date) : null,
+        }
+      : null;
   }
 
   async updatePaypalOrderId(
@@ -43,9 +45,6 @@ export class OrderSubscriptionRepo {
     userId: string,
     paypalOrderId: string,
   ): Promise<orderSubscriptionDTOType | null> {
-    console.log(subscriptionId);
-    console.log(userId);
-    console.log(paypalOrderId);
     const result = await db
       .update(order_subscription)
       .set({ paypal_order_id: paypalOrderId })
