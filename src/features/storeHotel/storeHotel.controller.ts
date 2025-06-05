@@ -8,7 +8,13 @@ import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
 import { StoreHotelRepo } from './storeHotel.repo';
-import { hotelCreateSchema, hotelToDto, hotelListToDto, hotelUpdateSchema } from './storeHotel.schema';
+import {
+  hotelCreateSchema,
+  hotelToDto,
+  hotelListToDto,
+  hotelUpdateSchema,
+  hotelWithBrandQuerySchema,
+} from './storeHotel.schema';
 
 export class StoreHotelController {
   constructor(private storeHotelRepo: StoreHotelRepo = new StoreHotelRepo()) {}
@@ -58,5 +64,15 @@ export class StoreHotelController {
     const result = await this.storeHotelRepo.update(validatedData);
     const dtoDate = hotelToDto.parse(result);
     res.status(HttpStatus.OK).json(successResponse(dtoDate, '更新飯店成功'));
+  });
+  getAllList = asyncHandler(async (req: Request, res: Response) => {
+    const parsedQuery = hotelWithBrandQuerySchema.parse(req.query);
+    const { name = '', currentPage, perPage } = parsedQuery;
+    const result = await this.storeHotelRepo.getAllList(name, currentPage, perPage);
+    res.status(HttpStatus.OK).json(successResponse(result, '取得飯店列表成功'));
+  });
+  getHotelCount = asyncHandler(async (req: Request, res: Response) => {
+    const result = await this.storeHotelRepo.getHotelCount();
+    res.status(HttpStatus.OK).json(successResponse({ count: result }, '取得飯店數量成功'));
   });
 }
