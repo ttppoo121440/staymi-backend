@@ -66,7 +66,32 @@ export const hotelUpdateSchema = hotelCreateSchema
     id: z.string().uuid(),
   });
 
+export const hotelWithBrandSchema = z.object({
+  id: z.string().uuid(),
+  brand_id: z.string().uuid(),
+  region: z.string(),
+  name: z.string(),
+  address: z.string(),
+  phone: z.string(),
+  transportation: z.string(),
+  latitude: z.string(),
+  longitude: z.string(),
+  hotel_facilities: z.array(z.string()),
+  image_url: z.string(),
+  is_active: z.boolean(),
+  created_at: zDateOrDefault(),
+  updated_at: zDateOrDefault(),
+  brand_title: z.string(),
+});
+
+export const hotelWithBrandQuerySchema = z.object({
+  name: z.string().optional(),
+  currentPage: z.coerce.number().min(1).default(1),
+  perPage: z.coerce.number().min(1).default(10),
+});
+
 export type hotelType = z.infer<typeof hotelSchema>;
 export type hotelListToDtoType = z.infer<typeof hotelListToDto>;
 export type hotelCreateType = z.infer<typeof hotelCreateSchema>;
 export type hotelUpdateType = z.infer<typeof hotelUpdateSchema>;
+export type hotelWithBrandType = z.infer<typeof hotelWithBrandSchema>;

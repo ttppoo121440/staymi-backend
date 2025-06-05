@@ -49,4 +49,8 @@ export class AdminUserController {
     const result = await this.adminUserRepo.toggleUserBlacklist(id, !toggle);
     res.status(HttpStatus.OK).json(successResponse(result, '更新用戶黑白名單狀態成功'));
   });
+  getUserCount = asyncHandler(async (req: Request, res: Response) => {
+    const count = await this.adminUserRepo.getUserCount();
+    res.status(HttpStatus.OK).json(successResponse({ count }, '獲取用戶數量成功'));
+  });
 }

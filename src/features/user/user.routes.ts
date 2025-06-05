@@ -38,7 +38,7 @@ userRoutes.get(
 userRoutes.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: `${frontendUrl}/login/callback?error=登入失敗`,
+    failureRedirect: `${frontendUrl}/login?error=登入失敗`,
     session: false, // 不使用 session
   }),
   authController.googleCallback,
