@@ -11,6 +11,7 @@ const adminUserRoutes = express.Router();
 const adminUserController = new AdminUserController();
 
 adminUserRoutes.get('/', authMiddleware, checkRolesMiddleware(['admin']), adminUserController.getAll);
+adminUserRoutes.get('/count', authMiddleware, checkRolesMiddleware(['admin']), adminUserController.getUserCount);
 adminUserRoutes.get(
   '/:id',
   authMiddleware,
