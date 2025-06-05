@@ -2,6 +2,7 @@ import type { Application } from 'express';
 
 import adminUserRoutes from './features/adminUser/adminUser.routes';
 import authStoreRoutes from './features/authStore/authStore.routes';
+import brandRoutes from './features/brand/brand.routes';
 import hotelImageRoutes from './features/hotelImage/hotelImage.routes';
 import hotelRoomRoutes from './features/hotelRoom/hotelRoom.routes';
 import imageUploadRoutes from './features/imageUpload/imageUpload.routes';
@@ -11,6 +12,7 @@ import productsRoutes from './features/product/products.routes';
 import productPlanRoutes from './features/productPlan/productPlan.routes';
 import roomPlanRoutes from './features/roomPlan/roomPlan.routes';
 import roomTypeRoutes from './features/roomType/roomType.routes';
+import adminHotelRoutes from './features/storeHotel/adminHotel.routes';
 import hotelRoutes from './features/storeHotel/hotel.routes';
 import storeHotelRoutes from './features/storeHotel/storeHotel.routes';
 import subscriptionRoutes from './features/subscription/subscription.routes';
@@ -19,6 +21,8 @@ import { NotFound } from './utils/appResponse';
 
 export const setupRoutes = (app: Application): void => {
   app.use('/api/v1/admin/users', adminUserRoutes);
+  app.use('/api/v1/admin/brand', brandRoutes);
+  app.use('/api/v1/admin/hotel', adminHotelRoutes);
   app.use('/api/v1/users/order', orderRoomProductRoutes);
   app.use('/api/v1/users', userRoutes);
   app.use('/api/v1/users/subscriptions', subscriptionRoutes);
@@ -29,7 +33,7 @@ export const setupRoutes = (app: Application): void => {
   app.use('/api/v1/store/hotel/room-plan', roomPlanRoutes);
   app.use('/api/v1/store/hotel/product-plan', productPlanRoutes);
   app.use('/api/v1/store/hotel', storeHotelRoutes);
-  app.use('/api/v1/user/hotel', hotelRoutes);
+  app.use('/api/v1/users/hotel', hotelRoutes);
   app.use('/api/v1/store', authStoreRoutes);
   app.use('/api/v1/upload', imageUploadRoutes);
   app.use('/api/v1/paypal', paypalRouter);
