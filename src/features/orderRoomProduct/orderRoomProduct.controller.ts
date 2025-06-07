@@ -93,4 +93,9 @@ export class OrderRoomProductController {
     const dtoData = orderRoomProductDto.parse({ order: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '訂房訂單狀態更新成功'));
   });
+  getTotalOrderCountForAdmin = asyncHandler(async (req: Request, res: Response) => {
+    const result = await this.orderRoomProductRepo.getTotalOrderCountForAdmin();
+
+    res.status(HttpStatus.OK).json(successResponse({ count: result }, '取得訂房訂單總數成功'));
+  });
 }
