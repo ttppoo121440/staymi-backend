@@ -6,7 +6,9 @@ import brandRoutes from './features/brand/brand.routes';
 import hotelImageRoutes from './features/hotelImage/hotelImage.routes';
 import hotelRoomRoutes from './features/hotelRoom/hotelRoom.routes';
 import imageUploadRoutes from './features/imageUpload/imageUpload.routes';
+import adminOrderRoutes from './features/orderRoomProduct/adminOrder.routes';
 import orderRoomProductRoutes from './features/orderRoomProduct/orderRoomProduct.routes';
+import adminPaymentRoutes from './features/payment/adminPayment.routes';
 import paypalRouter from './features/paypal/paypal.routes';
 import productsRoutes from './features/product/products.routes';
 import productPlanRoutes from './features/productPlan/productPlan.routes';
@@ -20,6 +22,8 @@ import userRoutes from './features/user/user.routes';
 import { NotFound } from './utils/appResponse';
 
 export const setupRoutes = (app: Application): void => {
+  app.use('/api/v1/admin/payment', adminPaymentRoutes);
+  app.use('/api/v1/admin/order', adminOrderRoutes);
   app.use('/api/v1/admin/users', adminUserRoutes);
   app.use('/api/v1/admin/brand', brandRoutes);
   app.use('/api/v1/admin/hotel', adminHotelRoutes);
