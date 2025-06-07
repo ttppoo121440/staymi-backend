@@ -31,6 +31,28 @@ export const subscriptionHistoryQuerySchema = QuerySchema;
 export const subscriptionPlanBodySchema = subscriptionBaseSchema.pick({ plan: true });
 export const subscriptionPlanSchema = subscriptionBaseSchema.pick({ plan: true }).extend({ isUpdate: z.boolean() });
 
+export const subscriptionCreateSchema = subscriptionBaseSchema
+  .omit({
+    id: true,
+    status: true,
+    end_at: true,
+    cancelled_at: true,
+    paytime: true,
+    created_at: true,
+    updated_at: true,
+  })
+  .extend({
+    cycle: z.enum(['monthly', 'quarterly', 'yearly'], { errorMap: () => ({ message: '訂閱週期格式錯誤' }) }),
+  })
+  .refine((data) => data.plan !== 'free', {
+    message: '付費訂閱不可選擇free方案',
+    path: ['plan'],
+  })
+  .transform((data) => ({
+    ...data,
+    started_at: formatDisplayDate(data.started_at, 'YYYY-MM-DD'),
+  }));
+
 // 資料轉換為 DTO 格式
 export const subscriptionToDTO = z
   .object({
@@ -63,7 +85,17 @@ export const subscriptionHistoryToDTO = z
     pagination: data.pagination,
   }));
 
+export const subscriptionPayPalToDTO = subscriptionBaseSchema.pick({
+  id: true,
+  user_id: true,
+  plan: true,
+});
+
 export type subscriptionType = z.infer<typeof subscriptionSchema>;
 export type subscriptionIsRecurringType = z.infer<typeof subscriptionIsRecurringSchema>;
 export type subscriptionHistoryType = z.infer<typeof subscriptionBaseSchema>;
+export type subscriptionBaseType = z.infer<typeof subscriptionBaseSchema>;
 export type subscriptionPlanType = z.infer<typeof subscriptionPlanSchema>;
+export type subscriptionCreateType = z.infer<typeof subscriptionCreateSchema>;
+export type subscriptionToDTOType = z.infer<typeof subscriptionToDTO>;
+export type subscriptionPayPalToDTOType = z.infer<typeof subscriptionPayPalToDTO>;
