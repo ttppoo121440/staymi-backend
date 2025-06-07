@@ -239,6 +239,13 @@
       "when": 1748700167082,
       "tag": "0033_warm_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1749052092547,
+      "tag": "0034_bent_mandarin",
+      "breakpoints": true
     }
   ]
 }
