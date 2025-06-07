@@ -5,6 +5,7 @@ import { hotel_rooms } from '@/database/schemas/hotel_rooms.schema';
 import { hotels } from '@/database/schemas/hotels.schema';
 import { order_room_product } from '@/database/schemas/order_room_product.schema';
 import { order_room_product_item } from '@/database/schemas/order_room_product_item.schema';
+import { order_subscription } from '@/database/schemas/order_subscription.schema';
 import { product_plans } from '@/database/schemas/product_plans.schema';
 import { products } from '@/database/schemas/products.schema';
 import { room_plans } from '@/database/schemas/room_plans.schema';
@@ -172,5 +173,16 @@ export class OrderRoomProductRepo extends BaseRepository {
       .where(and(...queryConditions))
       .returning();
     return result[0] ?? null;
+  }
+
+  async getTotalOrderCountForAdmin(): Promise<number> {
+    const roomCountResult = await db.select({ count: sql<number>`COUNT(*)` }).from(order_room_product);
+
+    const subscriptionCountResult = await db.select({ count: sql<number>`COUNT(*)` }).from(order_subscription);
+
+    const roomCount = Number(roomCountResult[0]?.count ?? 0);
+    const subscriptionCount = Number(subscriptionCountResult[0]?.count ?? 0);
+
+    return roomCount + subscriptionCount;
   }
 }
