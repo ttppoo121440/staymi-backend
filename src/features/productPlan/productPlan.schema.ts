@@ -61,17 +61,9 @@ export const productPlanListDto = z
     pagination: data.pagination,
   }));
 
-export type SelectProductPlanWithJoins = {
-  id: string;
-  hotel_id: string;
-  product_id: string;
-  price: number;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  created_at: Date | null;
-  updated_at: Date | null;
-  name: string;
-  product_name: string;
-  product_imageUrl: string;
-};
+export const SelectProductPlanWithJoinsSchema = productPlanSchema.extend({
+  product_name: z.string().nullable(),
+  product_imageUrl: z.string().nullable(),
+});
+
+export type SelectProductPlanWithJoins = z.infer<typeof SelectProductPlanWithJoinsSchema>;
