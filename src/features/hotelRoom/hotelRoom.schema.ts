@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { SelectHotelRoom } from '@/database/schemas/hotel_rooms.schema';
 import { paginationSchema } from '@/types/pagination';
 import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
@@ -58,3 +59,7 @@ export const hotelRoomListDto = z
     })),
     pagination: data.pagination,
   }));
+
+export type SelectHotelRoomWithTypeName = SelectHotelRoom & {
+  room_type_name: string | null;
+};
