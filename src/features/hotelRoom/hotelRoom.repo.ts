@@ -6,12 +6,13 @@ import {
   hotel_rooms,
   InsertHotelRoom,
   SelectHotelRoom,
-  SelectHotelRoomWithTypeName,
   UpdateHotelRoom,
 } from '@/database/schemas/hotel_rooms.schema';
 import { room_types } from '@/database/schemas/room_types.schema';
 import { BaseRepository } from '@/repositories/base-repository';
 import { PaginationType } from '@/types/pagination';
+
+import { SelectHotelRoomWithTypeName } from './hotelRoom.schema';
 
 function buildHotelRoomConditions(conditions: Partial<{ id: string; hotelId: string }>): SQL[] {
   const queryConditions: SQL[] = [];
