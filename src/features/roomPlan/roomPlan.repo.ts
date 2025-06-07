@@ -51,6 +51,9 @@ export class RoomPlanRepo extends BaseRepository {
             hotel_room_name: room_types.name,
             hotel_room_basePrice: hotel_rooms.basePrice,
             hotel_room_imageUrl: hotel_rooms.images,
+            is_active: room_plans.is_active,
+            created_at: room_plans.created_at,
+            updated_at: room_plans.updated_at,
           })
           .from(room_plans)
           .innerJoin(room_types, eq(room_plans.hotel_room_id, room_types.id))
