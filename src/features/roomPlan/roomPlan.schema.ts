@@ -12,7 +12,7 @@ const roomPlanSchema = z.object({
   hotel_room_id: z.string({ message: '請填寫房間 id' }).uuid({ message: '請填正確 id 格式' }),
   price: z.number({ message: '請填寫售價' }).min(1, '金額不得小於 1'),
   subscription_price: z.number({ message: '請填寫訂閱價優惠價' }).min(1, '金額不得小於 1'),
-  images: z.array(z.string()).optional(),
+  images: z.array(z.string()).nullable().optional(),
   start_date: z.string({ message: '請填寫計畫開始日期' }).regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' }),
   end_date: z.string({ message: '請填寫計畫結束日期' }).regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' }),
   is_active: z.boolean(),
@@ -101,6 +101,15 @@ export const getRoomPlanDetailByIdSchema = z.object({
   room_type_description: z.string(),
   room_services: z.array(z.string()),
 });
+
+export const SelectRoomPlanWithJoinsSchema = roomPlanSchema.extend({
+  room_type_name: z.string(),
+  hotel_room_name: z.string(),
+  hotel_room_basePrice: z.number(),
+  hotel_room_imageUrl: z.array(z.string()).nullable().optional(),
+});
+
+export type SelectRoomPlanWithJoins = z.infer<typeof SelectRoomPlanWithJoinsSchema>;
 
 export type RoomPlanType = z.infer<typeof roomPlanSchema>;
 export type getRoomPlanDetailByIdType = z.infer<typeof getRoomPlanDetailByIdSchema>;

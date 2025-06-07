@@ -18,5 +18,15 @@ export const paymentSchema = z.object({
 
 export const paymentCreateSchema = paymentSchema.omit({ id: true });
 
+export const RecentPaymentSchema = z.object({
+  id: paymentSchema.shape.id,
+  order_type: paymentSchema.shape.order_type,
+  amount: paymentSchema.shape.amount,
+  name: z.string().max(100),
+  email: z.string().email(),
+  avatar: z.string().url().optional(),
+});
+
 export type PaymentType = z.infer<typeof paymentSchema>;
 export type PaymentCreateType = z.infer<typeof paymentCreateSchema>;
+export type RecentPaymentType = z.infer<typeof RecentPaymentSchema>;

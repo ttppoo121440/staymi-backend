@@ -15,7 +15,7 @@ import { room_types } from '@/database/schemas/room_types.schema';
 import { BaseRepository } from '@/repositories/base-repository';
 import { PaginationType } from '@/types/pagination';
 
-import { getRoomPlanDetailByIdType } from './roomPlan.schema';
+import { getRoomPlanDetailByIdType, SelectRoomPlanWithJoins } from './roomPlan.schema';
 
 function buildRoomPlanConditions(conditions: Partial<{ id: string; hotelId: string }>): SQL[] {
   const queryConditions: SQL[] = [];
@@ -33,10 +33,34 @@ export class RoomPlanRepo extends BaseRepository {
     hotelId: string,
     currentPage = 1,
     perPage = 10,
-  ): Promise<{ roomPlans: SelectRoomPlan[]; pagination: PaginationType }> {
-    const { data, pagination } = await this.paginateQuery<SelectRoomPlan>(
+  ): Promise<{ roomPlans: SelectRoomPlanWithJoins[]; pagination: PaginationType }> {
+    const { data, pagination } = await this.paginateQuery<SelectRoomPlanWithJoins>(
       (limit, offset) =>
-        db.select().from(room_plans).where(eq(room_plans.hotel_id, hotelId)).limit(limit).offset(offset),
+        db
+          .select({
+            id: room_plans.id,
+            hotel_id: room_plans.hotel_id,
+            hotel_room_id: room_plans.hotel_room_id,
+            room_type_id: room_plans.hotel_room_id,
+            subscription_price: room_plans.subscription_price,
+            price: room_plans.price,
+            start_date: room_plans.start_date,
+            end_date: room_plans.end_date,
+            images: room_plans.images,
+            room_type_name: room_types.name,
+            hotel_room_name: room_types.name,
+            hotel_room_basePrice: hotel_rooms.basePrice,
+            hotel_room_imageUrl: hotel_rooms.images,
+            is_active: room_plans.is_active,
+            created_at: room_plans.created_at,
+            updated_at: room_plans.updated_at,
+          })
+          .from(room_plans)
+          .innerJoin(room_types, eq(room_plans.hotel_room_id, room_types.id))
+          .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
+          .where(eq(room_plans.hotel_id, hotelId))
+          .limit(limit)
+          .offset(offset),
       async () => {
         const totalItemsResult = await db
           .select({ count: sql<number>`COUNT(*)` })

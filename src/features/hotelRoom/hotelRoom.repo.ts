@@ -8,8 +8,11 @@ import {
   SelectHotelRoom,
   UpdateHotelRoom,
 } from '@/database/schemas/hotel_rooms.schema';
+import { room_types } from '@/database/schemas/room_types.schema';
 import { BaseRepository } from '@/repositories/base-repository';
 import { PaginationType } from '@/types/pagination';
+
+import { SelectHotelRoomWithTypeName } from './hotelRoom.schema';
 
 function buildHotelRoomConditions(conditions: Partial<{ id: string; hotelId: string }>): SQL[] {
   const queryConditions: SQL[] = [];
@@ -27,10 +30,27 @@ export class HotelRoomRepo extends BaseRepository {
     hotelId: string,
     currentPage = 1,
     perPage = 10,
-  ): Promise<{ hotelRooms: SelectHotelRoom[]; pagination: PaginationType }> {
-    const { data, pagination } = await this.paginateQuery<SelectHotelRoom>(
+  ): Promise<{ hotelRooms: SelectHotelRoomWithTypeName[]; pagination: PaginationType }> {
+    const { data, pagination } = await this.paginateQuery<SelectHotelRoomWithTypeName>(
       (limit, offset) =>
-        db.select().from(hotel_rooms).where(eq(hotel_rooms.hotel_id, hotelId)).limit(limit).offset(offset),
+        db
+          .select({
+            id: hotel_rooms.id,
+            hotel_id: hotel_rooms.hotel_id,
+            room_type_id: hotel_rooms.room_type_id,
+            basePrice: hotel_rooms.basePrice,
+            description: hotel_rooms.description,
+            images: hotel_rooms.images,
+            is_active: hotel_rooms.is_active,
+            created_at: hotel_rooms.created_at,
+            updated_at: hotel_rooms.updated_at,
+            room_type_name: room_types.name,
+          })
+          .from(hotel_rooms)
+          .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
+          .where(eq(hotel_rooms.hotel_id, hotelId))
+          .limit(limit)
+          .offset(offset),
       async () => {
         const totalItemsResult = await db
           .select({ count: sql<number>`COUNT(*)` })
