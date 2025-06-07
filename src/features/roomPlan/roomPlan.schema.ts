@@ -51,9 +51,16 @@ export const roomPlanDto = z
     },
   }));
 
+export const SelectRoomPlanWithJoinsSchema = roomPlanSchema.extend({
+  room_type_name: z.string(),
+  hotel_room_name: z.string(),
+  hotel_room_basePrice: z.number(),
+  hotel_room_imageUrl: z.array(z.string()).nullable().optional(),
+});
+
 export const roomPlanListDto = z
   .object({
-    roomPlans: z.array(roomPlanSchema),
+    roomPlans: z.array(SelectRoomPlanWithJoinsSchema),
     pagination: paginationSchema,
   })
   .transform((data) => ({
@@ -100,13 +107,6 @@ export const getRoomPlanDetailByIdSchema = z.object({
   room_type_name: z.string(),
   room_type_description: z.string(),
   room_services: z.array(z.string()),
-});
-
-export const SelectRoomPlanWithJoinsSchema = roomPlanSchema.extend({
-  room_type_name: z.string(),
-  hotel_room_name: z.string(),
-  hotel_room_basePrice: z.number(),
-  hotel_room_imageUrl: z.array(z.string()).nullable().optional(),
 });
 
 export type SelectRoomPlanWithJoins = z.infer<typeof SelectRoomPlanWithJoinsSchema>;

@@ -47,9 +47,14 @@ export const productPlanDto = z
     },
   }));
 
+export const SelectProductPlanWithJoinsSchema = productPlanSchema.extend({
+  product_name: z.string().nullable(),
+  product_imageUrl: z.string().nullable(),
+});
+
 export const productPlanListDto = z
   .object({
-    productPlans: z.array(productPlanSchema),
+    productPlans: z.array(SelectProductPlanWithJoinsSchema),
     pagination: paginationSchema,
   })
   .transform((data) => ({
@@ -60,10 +65,5 @@ export const productPlanListDto = z
     })),
     pagination: data.pagination,
   }));
-
-export const SelectProductPlanWithJoinsSchema = productPlanSchema.extend({
-  product_name: z.string().nullable(),
-  product_imageUrl: z.string().nullable(),
-});
 
 export type SelectProductPlanWithJoins = z.infer<typeof SelectProductPlanWithJoinsSchema>;

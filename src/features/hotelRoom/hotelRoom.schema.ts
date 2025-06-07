@@ -46,9 +46,13 @@ export const hotelRoomDto = z
     },
   }));
 
+export const SelectHotelRoomWithJoinsSchema = hotelRoomSchema.extend({
+  room_type_name: z.string().nullable(),
+});
+
 export const hotelRoomListDto = z
   .object({
-    hotelRooms: z.array(hotelRoomSchema),
+    hotelRooms: z.array(SelectHotelRoomWithJoinsSchema),
     pagination: paginationSchema,
   })
   .transform((data) => ({
