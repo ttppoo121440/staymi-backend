@@ -65,6 +65,8 @@ export class RoomPlanRepo extends BaseRepository {
         const totalItemsResult = await db
           .select({ count: sql<number>`COUNT(*)` })
           .from(room_plans)
+          .innerJoin(room_types, eq(room_plans.hotel_room_id, room_types.id))
+          .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
           .where(eq(room_plans.hotel_id, hotelId));
         return Number(totalItemsResult[0]?.count ?? 0);
       },
