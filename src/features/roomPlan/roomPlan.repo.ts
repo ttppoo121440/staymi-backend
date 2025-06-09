@@ -41,7 +41,7 @@ export class RoomPlanRepo extends BaseRepository {
             id: room_plans.id,
             hotel_id: room_plans.hotel_id,
             hotel_room_id: room_plans.hotel_room_id,
-            room_type_id: room_plans.hotel_room_id,
+            room_type_id: hotel_rooms.room_type_id,
             subscription_price: room_plans.subscription_price,
             price: room_plans.price,
             start_date: room_plans.start_date,
@@ -56,8 +56,8 @@ export class RoomPlanRepo extends BaseRepository {
             updated_at: room_plans.updated_at,
           })
           .from(room_plans)
-          .innerJoin(room_types, eq(room_plans.hotel_room_id, room_types.id))
           .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
+          .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
           .where(eq(room_plans.hotel_id, hotelId))
           .limit(limit)
           .offset(offset),
