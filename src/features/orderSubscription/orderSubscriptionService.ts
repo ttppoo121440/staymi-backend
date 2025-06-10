@@ -12,15 +12,17 @@ export class OrderSubscriptionService {
     private orderSubscriptionRepo = new OrderSubscriptionRepo(),
   ) {}
 
+  // 創建訂閱訂單
   async createOrderSubscriptionService(data: subscriptionCreateType): Promise<orderSubscriptionCreateType> {
     return await db.transaction(async (tx) => {
+      // 創建訂閱資料
       const subscription = await this.subscriptionRepo.create(tx, data);
-
+      // 創建訂閱訂單資料
       const orderData: orderSubscriptionCreateType = {
         user_id: subscription.user_id,
         subscription_id: subscription.id,
         cycle: data.cycle,
-        status: subscription.status as 'active' | 'paused' | 'cancelled',
+        status: 'paused',
         next_billing_date: subscription.end_at,
       };
       const result = await this.orderSubscriptionRepo.create(tx, orderData);

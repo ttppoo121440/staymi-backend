@@ -4,7 +4,11 @@ import { db } from '@/config/database';
 import { order_subscription } from '@/database/schemas/order_subscription.schema';
 import { DatabaseOrTransaction } from '@/types/databaseType';
 
-import { orderSubscriptionCreateType, orderSubscriptionDTOType } from './orderSubscription.schema';
+import {
+  orderSubscriptionCreateType,
+  orderSubscriptionDTOType,
+  orderSubscriptionUpdateType,
+} from './orderSubscription.schema';
 
 export class OrderSubscriptionRepo {
   // 新增訂閱訂單
@@ -57,5 +61,28 @@ export class OrderSubscriptionRepo {
       ...result[0],
       next_billing_date: result[0].next_billing_date ? new Date(result[0].next_billing_date) : null,
     };
+  }
+
+  async updateOrderSubscription(
+    subscriptionId: string,
+    userId: string,
+    data: orderSubscriptionUpdateType,
+  ): Promise<orderSubscriptionDTOType | null> {
+    const result = await db
+      .update(order_subscription)
+      .set({
+        status: data.status,
+        paypal_transaction_id: data.paypal_transaction_id,
+        updated_at: new Date(),
+      })
+      .where(and(eq(order_subscription.subscription_id, subscriptionId), eq(order_subscription.user_id, userId)))
+      .returning();
+
+    return result[0]
+      ? {
+          ...result[0],
+          next_billing_date: result[0].next_billing_date ? new Date(result[0].next_billing_date) : null,
+        }
+      : null;
   }
 }

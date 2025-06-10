@@ -4,6 +4,7 @@ import { formatDisplayDate } from '@/utils/formatDate';
 
 import { orderDetailSchema } from '../orderRoomProduct/orderRoomProduct.schema';
 import { orderRoomProductItemSchema } from '../orderRoomProductItem/orderRoomProductItem.schema';
+import { orderSubscriptionSchema } from '../orderSubscription/orderSubscription.schema';
 
 export const paypalSchema = z.object({
   order_type: z.enum(['room', 'subscription'], {
@@ -37,4 +38,17 @@ export const paypalDto = z
           ...data.order_item,
         }
       : undefined,
+  }));
+
+export const paypalSubscriptionDto = z
+  .object({
+    payment: orderSubscriptionSchema,
+  })
+  .transform((data) => ({
+    payment: {
+      ...data.payment,
+      next_billing_date: formatDisplayDate(data.payment.next_billing_date, 'YYYY-MM-DD'),
+      created_at: formatDisplayDate(data.payment.created_at, 'YYYY-MM-DD HH:mm:ss'),
+      updated_at: formatDisplayDate(data.payment.updated_at, 'YYYY-MM-DD HH:mm:ss'),
+    },
   }));
