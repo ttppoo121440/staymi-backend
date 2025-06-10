@@ -139,6 +139,21 @@ export type OrderRoomProductWithPaypal = OrderRoomProductType & {
   paypal_transaction_id?: string;
 };
 
+export const orderStoreQuerySchema = z
+  .object({
+    status: StatusEnum.optional(),
+    roomType: z.string().optional(),
+    checkInDate: z
+      .string()
+      .refine((val) => !isNaN(Date.parse(val)), {
+        message: 'checkInDate 格式錯誤',
+      })
+      .optional(),
+    keyword: z.string().optional(), // 模糊搜尋用，針對姓名、電話、email
+  })
+  .merge(QuerySchema);
+export type OrderStoreQueryType = z.infer<typeof orderStoreQuerySchema>;
+
 export type OrderRoomProductType = z.infer<typeof orderRoomProductSchema>;
 export type OrderRoomProductCreateType = z.infer<typeof orderRoomProductCreateSchema>;
 export type StatusType = z.infer<typeof StatusEnum>;
