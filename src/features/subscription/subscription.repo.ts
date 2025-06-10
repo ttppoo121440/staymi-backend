@@ -39,9 +39,9 @@ export class SubscriptionRepo extends BaseRepository {
 
     const cleanedData = {
       ...data,
-      status: 'active',
+      status: 'paused',
       started_at: startedAt,
-      end_at: end_at || new Date(),
+      end_at: end_at,
     };
     const result = await dbInstance.insert(subscriptions).values(cleanedData).returning();
 
@@ -157,5 +157,19 @@ export class SubscriptionRepo extends BaseRepository {
       return null;
     }
     return { plan: result[0].plan, isUpdate: true };
+  }
+
+  async updateSubscriptionStatus(
+    subscriptionId: string,
+    userId: string,
+    status: 'active' | 'paused' | 'cancelled',
+  ): Promise<subscriptionBaseType | null> {
+    const result = await db
+      .update(subscriptions)
+      .set({ status: status, updated_at: new Date() })
+      .where(and(eq(subscriptions.id, subscriptionId), eq(subscriptions.user_id, userId)))
+      .returning();
+
+    return result[0] ?? null;
   }
 }

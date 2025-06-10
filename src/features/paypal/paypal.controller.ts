@@ -6,14 +6,16 @@ import { successResponse } from '@/utils/appResponse';
 import { SubscriptionService } from '@/utils/services/subscription.service';
 
 import { OrderRoomProductRepo } from '../orderRoomProduct/orderRoomProduct.repo';
+import { orderDetailType } from '../orderRoomProduct/orderRoomProduct.schema';
 import { OrderRoomProductService } from '../orderRoomProduct/orderRoomProductService';
 import { OrderRoomProductItemRepo } from '../orderRoomProductItem/orderRoomProductItem.repo';
+import { orderSubscriptionType } from '../orderSubscription/orderSubscription.schema';
 import { OrderSubscriptionService } from '../orderSubscription/orderSubscriptionService';
 import { ProductPlanRepo } from '../productPlan/productPlan.repo';
 import { RoomPlanRepo } from '../roomPlan/roomPlan.repo';
 import { StoreHotelRepo } from '../storeHotel/storeHotel.repo';
 
-import { paypalDto } from './paypal.schema';
+import { paypalDto, paypalSubscriptionDto } from './paypal.schema';
 import { PayPalService } from './paypal.service';
 
 export class PayPalController {
@@ -49,7 +51,17 @@ export class PayPalController {
     const { user_id } = res.locals;
     const { order_type, method } = req.body;
     const orderId = req.params.id;
-    const result = await this.paypalService.captureAndMarkOrderAsPaid(user_id, orderId, { order_type, method });
+
+    let result: orderDetailType | orderSubscriptionType | null = null;
+    if (order_type == 'room') {
+      result = await this.paypalService.captureAndMarkOrderAsPaid(user_id, orderId, { order_type, method });
+    }
+    if (order_type == 'subscription') {
+      result = await this.paypalService.captureAndMarkSubscriptionAsPaid(user_id, orderId, { order_type, method });
+      const dtoData = paypalSubscriptionDto.parse({ payment: result });
+      res.status(HttpStatus.OK).json(successResponse(dtoData, '付款成功'));
+      return;
+    }
     const dtoData = paypalDto.parse({ payment: result });
 
     res.status(HttpStatus.OK).json(successResponse(dtoData, '付款成功'));

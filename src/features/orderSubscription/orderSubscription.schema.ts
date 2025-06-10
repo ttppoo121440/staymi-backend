@@ -23,5 +23,20 @@ export const orderSubscriptionCreateSchema = orderSubscriptionBaseSchema.pick({
   status: true,
 });
 
+export const orderSubscriptionSchema = orderSubscriptionBaseSchema.extend({
+  created_at: zDateOrDefault().nullable().optional(),
+  updated_at: zDateOrDefault().nullable().optional(),
+});
+
+export const orderSubscriptionUpdateSchema = orderSubscriptionBaseSchema
+  .pick({
+    status: true,
+  })
+  .extend({
+    paypal_transaction_id: z.string().optional(),
+  });
+
 export type orderSubscriptionDTOType = z.infer<typeof orderSubscriptionBaseSchema>;
 export type orderSubscriptionCreateType = z.infer<typeof orderSubscriptionCreateSchema>;
+export type orderSubscriptionType = z.infer<typeof orderSubscriptionSchema>;
+export type orderSubscriptionUpdateType = z.infer<typeof orderSubscriptionUpdateSchema>;
