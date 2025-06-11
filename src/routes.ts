@@ -5,6 +5,7 @@ import authStoreRoutes from './features/authStore/authStore.routes';
 import brandRoutes from './features/brand/brand.routes';
 import hotelImageRoutes from './features/hotelImage/hotelImage.routes';
 import hotelRoomRoutes from './features/hotelRoom/hotelRoom.routes';
+import hotelSearchRoutes from './features/hotelSearch/hotelSearch.routes';
 import imageUploadRoutes from './features/imageUpload/imageUpload.routes';
 import adminOrderRoutes from './features/orderRoomProduct/adminOrder.routes';
 import orderRoomProductRoutes from './features/orderRoomProduct/orderRoomProduct.routes';
@@ -42,6 +43,7 @@ export const setupRoutes = (app: Application): void => {
   app.use('/api/v1/store/hotel/order', storeOrderRoutes);
   app.use('/api/v1/store/hotel', storeHotelRoutes);
   app.use('/api/v1/users/hotel', hotelRoutes);
+  app.use('/api/v1/search/', hotelSearchRoutes);
   app.use('/api/v1/store', authStoreRoutes);
   app.use('/api/v1/upload', imageUploadRoutes);
   app.use('/api/v1/paypal', paypalRouter);
