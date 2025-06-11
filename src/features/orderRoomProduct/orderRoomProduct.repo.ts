@@ -1,10 +1,11 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, ilike, or, SQL, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { hotel_rooms } from '@/database/schemas/hotel_rooms.schema';
 import { hotels } from '@/database/schemas/hotels.schema';
 import { order_room_product } from '@/database/schemas/order_room_product.schema';
 import { order_room_product_item } from '@/database/schemas/order_room_product_item.schema';
+import { order_subscription } from '@/database/schemas/order_subscription.schema';
 import { product_plans } from '@/database/schemas/product_plans.schema';
 import { products } from '@/database/schemas/products.schema';
 import { room_plans } from '@/database/schemas/room_plans.schema';
@@ -23,6 +24,7 @@ import {
   OrderRoomProductType,
   OrderRoomProductUpdateType,
   orderRoomProductWithItemsType,
+  OrderStoreQueryType,
   StatusType,
 } from './orderRoomProduct.schema';
 
@@ -38,6 +40,85 @@ export class OrderRoomProductRepo extends BaseRepository {
       status ? eq(order_room_product.status, status) : sql`TRUE`,
     ];
 
+    const { data, pagination } = await this.paginateQuery<{
+      order: orderRoomProductWithItemsType;
+      hotel: hotelType['name'] | null;
+      room_types: roomTypes['name'] | null;
+      product: ProductsSchema['name'] | null;
+    }>(
+      (limit, offset) =>
+        db
+          .select({
+            order: order_room_product,
+            hotel: hotels.name,
+            room_types: room_types.name,
+            product: products.name,
+          })
+          .from(order_room_product)
+          .leftJoin(hotels, eq(order_room_product.hotel_id, hotels.id)) // 飯店
+          .leftJoin(room_plans, eq(order_room_product.room_plans_id, room_plans.id)) // 房型方案
+          .leftJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id)) // 房間
+          .leftJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id)) // 房型
+          .leftJoin(order_room_product_item, eq(order_room_product_item.order_id, order_room_product.id)) // 商品項目
+          .leftJoin(product_plans, eq(order_room_product_item.product_plans_id, product_plans.id)) // 商品方案
+          .leftJoin(products, eq(product_plans.product_id, products.id)) // 商品名稱
+          .where(and(...conditions))
+          .limit(limit)
+          .offset(offset),
+      async () => {
+        const totalItemsResult = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(order_room_product)
+          .where(and(...conditions));
+        return Number(totalItemsResult[0]?.count ?? 0);
+      },
+      currentPage,
+      perPage,
+    );
+
+    // 整理回傳資料
+    const orders: OrderRoomProductType[] = data.map((row) => ({
+      ...row.order,
+      hotel_name: row.hotel ?? undefined,
+      room_name: row.room_types ?? undefined,
+      product_name: row.product ?? undefined,
+    }));
+
+    return {
+      orders,
+      pagination,
+    };
+  }
+  async getAllByHotelId(
+    hotel_id: string,
+    filters: OrderStoreQueryType,
+  ): Promise<{ orders: OrderRoomProductType[]; pagination: PaginationType }> {
+    console.log(hotel_id, filters);
+    const { keyword, status, currentPage = 1, perPage = 10 } = filters;
+    const conditions: (SQL | undefined)[] = [eq(order_room_product.hotel_id, hotel_id)];
+
+    if (status) {
+      conditions.push(eq(order_room_product.status, status));
+    }
+
+    // keyword 條件
+    if (keyword) {
+      const likeValue = `%${keyword}%`;
+
+      const keywordConditions = or(
+        ilike(order_room_product.payment_name, likeValue),
+        ilike(order_room_product.payment_phone, likeValue),
+        ilike(order_room_product.payment_email, likeValue),
+        ilike(order_room_product.contact_name, likeValue),
+        ilike(order_room_product.contact_phone, likeValue),
+        ilike(order_room_product.contact_email, likeValue),
+        ilike(order_room_product.check_in_date, likeValue),
+        ilike(order_room_product.check_out_date, likeValue),
+        ilike(room_types.name, likeValue),
+      );
+
+      conditions.push(keywordConditions);
+    }
     const { data, pagination } = await this.paginateQuery<{
       order: orderRoomProductWithItemsType;
       hotel: hotelType['name'] | null;
@@ -172,5 +253,16 @@ export class OrderRoomProductRepo extends BaseRepository {
       .where(and(...queryConditions))
       .returning();
     return result[0] ?? null;
+  }
+
+  async getTotalOrderCountForAdmin(): Promise<number> {
+    const roomCountResult = await db.select({ count: sql<number>`COUNT(*)` }).from(order_room_product);
+
+    const subscriptionCountResult = await db.select({ count: sql<number>`COUNT(*)` }).from(order_subscription);
+
+    const roomCount = Number(roomCountResult[0]?.count ?? 0);
+    const subscriptionCount = Number(subscriptionCountResult[0]?.count ?? 0);
+
+    return roomCount + subscriptionCount;
   }
 }

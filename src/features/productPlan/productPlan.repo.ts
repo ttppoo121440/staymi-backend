@@ -8,8 +8,11 @@ import {
   SelectProductPlan,
   UpdateProductPlan,
 } from '@/database/schemas/product_plans.schema';
+import { products } from '@/database/schemas/products.schema';
 import { BaseRepository } from '@/repositories/base-repository';
 import { PaginationType } from '@/types/pagination';
+
+import { SelectProductPlanWithJoins } from './productPlan.schema';
 
 function buildProductPlanConditions(conditions: Partial<{ id: string; hotelId: string }>): SQL[] {
   const queryConditions: SQL[] = [];
@@ -27,10 +30,29 @@ export class ProductPlanRepo extends BaseRepository {
     hotelId: string,
     currentPage = 1,
     perPage = 10,
-  ): Promise<{ productPlans: SelectProductPlan[]; pagination: PaginationType }> {
-    const { data, pagination } = await this.paginateQuery<SelectProductPlan>(
+  ): Promise<{ productPlans: SelectProductPlanWithJoins[]; pagination: PaginationType }> {
+    const { data, pagination } = await this.paginateQuery<SelectProductPlanWithJoins>(
       (limit, offset) =>
-        db.select().from(product_plans).where(eq(product_plans.hotel_id, hotelId)).limit(limit).offset(offset),
+        db
+          .select({
+            id: product_plans.id,
+            hotel_id: product_plans.hotel_id,
+            product_id: product_plans.product_id,
+            price: product_plans.price,
+            start_date: product_plans.start_date,
+            end_date: product_plans.end_date,
+            is_active: product_plans.is_active,
+            created_at: product_plans.created_at,
+            updated_at: product_plans.updated_at,
+            name: products.name,
+            product_name: products.name,
+            product_imageUrl: products.imageUrl,
+          })
+          .from(product_plans)
+          .innerJoin(products, eq(product_plans.product_id, products.id))
+          .where(eq(product_plans.hotel_id, hotelId))
+          .limit(limit)
+          .offset(offset),
       async () => {
         const totalItemsResult = await db
           .select({ count: sql<number>`COUNT(*)` })

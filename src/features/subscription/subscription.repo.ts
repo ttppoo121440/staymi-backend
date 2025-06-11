@@ -3,6 +3,7 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/config/database';
 import { subscriptions } from '@/database/schemas/subscriptions.schema';
 import { BaseRepository } from '@/repositories/base-repository';
+import { DatabaseOrTransaction } from '@/types/databaseType';
 import { PaginationType } from '@/types/pagination';
 
 import {
@@ -10,9 +11,57 @@ import {
   subscriptionIsRecurringType,
   subscriptionHistoryType,
   subscriptionPlanType,
+  subscriptionCreateType,
+  subscriptionPayPalToDTOType,
+  subscriptionBaseType,
 } from './subscription.schema';
 
 export class SubscriptionRepo extends BaseRepository {
+  async create(dbInstance: DatabaseOrTransaction, data: subscriptionCreateType): Promise<subscriptionBaseType> {
+    const { cycle } = data;
+    const startedAt = data.started_at ? new Date(data.started_at) : new Date();
+    const end_at: Date = new Date(startedAt);
+    switch (cycle) {
+      case 'monthly':
+        end_at.setDate(end_at.getDate() + 30);
+        break;
+      case 'quarterly':
+        end_at.setDate(end_at.getDate() + 90);
+        break;
+      case 'yearly':
+        end_at.setDate(end_at.getDate() + 365);
+        break;
+      default:
+        throw new Error('週期格式錯誤');
+    }
+    // 存進DB時時區問題
+    end_at.setHours(23 - end_at.getTimezoneOffset() / 60, 59, 59, 999);
+
+    const cleanedData = {
+      ...data,
+      status: 'paused',
+      started_at: startedAt,
+      end_at: end_at,
+    };
+    const result = await dbInstance.insert(subscriptions).values(cleanedData).returning();
+
+    return result[0];
+  }
+
+  // 根據ID & 用戶ID 獲取訂閱資訊
+  async getByIdAndUserId(id: string, userId: string): Promise<subscriptionPayPalToDTOType | null> {
+    const result = await db
+      .select({
+        id: subscriptions.id,
+        user_id: subscriptions.user_id,
+        plan: subscriptions.plan,
+      })
+      .from(subscriptions)
+      .where(and(eq(subscriptions.id, id), eq(subscriptions.user_id, userId)));
+
+    return result[0] ?? null;
+  }
+
   async getPlanByUserId(userId: string): Promise<subscriptionType | null> {
     const result = await db
       .select({
@@ -108,5 +157,19 @@ export class SubscriptionRepo extends BaseRepository {
       return null;
     }
     return { plan: result[0].plan, isUpdate: true };
+  }
+
+  async updateSubscriptionStatus(
+    subscriptionId: string,
+    userId: string,
+    status: 'active' | 'paused' | 'cancelled',
+  ): Promise<subscriptionBaseType | null> {
+    const result = await db
+      .update(subscriptions)
+      .set({ status: status, updated_at: new Date() })
+      .where(and(eq(subscriptions.id, subscriptionId), eq(subscriptions.user_id, userId)))
+      .returning();
+
+    return result[0] ?? null;
   }
 }

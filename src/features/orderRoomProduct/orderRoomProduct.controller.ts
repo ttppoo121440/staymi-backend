@@ -14,7 +14,12 @@ import { RoomPlanRepo } from '../roomPlan/roomPlan.repo';
 import { StoreHotelRepo } from '../storeHotel/storeHotel.repo';
 
 import { OrderRoomProductRepo } from './orderRoomProduct.repo';
-import { orderRoomProductDto, orderRoomProductListDto, StatusType } from './orderRoomProduct.schema';
+import {
+  orderRoomProductDto,
+  orderRoomProductListDto,
+  orderStoreQuerySchema,
+  StatusType,
+} from './orderRoomProduct.schema';
 import { OrderRoomProductService } from './orderRoomProductService';
 
 export class OrderRoomProductController {
@@ -39,6 +44,29 @@ export class OrderRoomProductController {
     const status = req.query.status as StatusType;
     const { currentPage, perPage } = QuerySchema.parse(req.query);
     const result = await this.orderRoomProductRepo.getAll(userId, status, currentPage, perPage);
+
+    const ordersWithItems = await Promise.all(
+      result.orders.map(async (order) => {
+        const itemResult = await this.orderRoomProductItemRepo.getByOrderId([order.id]);
+        return {
+          ...order,
+          order_item: itemResult.souvenir[0] ?? null,
+        };
+      }),
+    );
+
+    const dtoData = orderRoomProductListDto.parse({
+      orders: ordersWithItems,
+      pagination: result.pagination,
+    });
+
+    res.status(HttpStatus.OK).json(successResponse(dtoData, '取得訂房訂單列表成功'));
+  });
+  getAllByHotelId = asyncHandler(async (req: Request, res: Response) => {
+    const userId: string = (req.user as JwtUserPayload).id;
+
+    const filters = orderStoreQuerySchema.parse(req.query);
+    const result = await this.orderRoomProductRepo.getAllByHotelId(userId, filters);
 
     const ordersWithItems = await Promise.all(
       result.orders.map(async (order) => {
@@ -92,5 +120,10 @@ export class OrderRoomProductController {
     }
     const dtoData = orderRoomProductDto.parse({ order: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '訂房訂單狀態更新成功'));
+  });
+  getTotalOrderCountForAdmin = asyncHandler(async (req: Request, res: Response) => {
+    const result = await this.orderRoomProductRepo.getTotalOrderCountForAdmin();
+
+    res.status(HttpStatus.OK).json(successResponse({ count: result }, '取得訂房訂單總數成功'));
   });
 }

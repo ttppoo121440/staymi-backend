@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { hotels } from '@/database/schemas/hotels.schema';
@@ -77,5 +77,37 @@ export class OrderRoomProductItemRepo {
       .innerJoin(product_plans, and(eq(product_plans.product_id, products.id), eq(product_plans.is_active, true)))
       .where(and(eq(hotels.id, hotelId), eq(product_plans.id, productId)));
     return result[0] || null;
+  }
+  async countTotalConfirmedSouvenirSales(): Promise<number> {
+    const result = await db
+      .select({
+        totalQuantitySold: sql`SUM(${order_room_product_item.quantity})`.mapWith(Number),
+      })
+      .from(order_room_product_item)
+      .where(eq(order_room_product_item.status, 'confirmed'));
+
+    return result[0]?.totalQuantitySold || 0;
+  }
+  async getTopSellingSouvenirProducts(): Promise<{ name: string; totalQuantitySold: number }[]> {
+    const result = await db
+      .select({
+        productPlansId: order_room_product_item.product_plans_id,
+        name: products.name,
+        totalQuantitySold: sql`SUM(${order_room_product_item.quantity})`,
+      })
+      .from(order_room_product_item)
+      .innerJoin(product_plans, eq(order_room_product_item.product_plans_id, product_plans.id))
+      .innerJoin(products, eq(product_plans.product_id, products.id))
+      .where(eq(order_room_product_item.status, 'confirmed'))
+      .groupBy(order_room_product_item.product_plans_id, products.name)
+      .orderBy(desc(sql`SUM(${order_room_product_item.quantity})`))
+      .limit(5);
+
+    console.log('getTopSellingSouvenirProducts result:', result);
+
+    return result.map((item) => ({
+      name: item.name,
+      totalQuantitySold: Number(item.totalQuantitySold) || 0,
+    }));
   }
 }

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { SelectHotelRoom } from '@/database/schemas/hotel_rooms.schema';
 import { paginationSchema } from '@/types/pagination';
 import { formatDisplayDate, zDateOrDefault } from '@/utils/formatDate';
 
@@ -45,9 +46,13 @@ export const hotelRoomDto = z
     },
   }));
 
+export const SelectHotelRoomWithJoinsSchema = hotelRoomSchema.extend({
+  room_type_name: z.string().nullable(),
+});
+
 export const hotelRoomListDto = z
   .object({
-    hotelRooms: z.array(hotelRoomSchema),
+    hotelRooms: z.array(SelectHotelRoomWithJoinsSchema),
     pagination: paginationSchema,
   })
   .transform((data) => ({
@@ -58,3 +63,7 @@ export const hotelRoomListDto = z
     })),
     pagination: data.pagination,
   }));
+
+export type SelectHotelRoomWithTypeName = SelectHotelRoom & {
+  room_type_name: string | null;
+};

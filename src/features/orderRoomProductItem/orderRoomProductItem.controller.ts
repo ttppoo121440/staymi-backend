@@ -39,4 +39,11 @@ export class OrderRoomProductItemController {
     const productPlansFilter = productPlansSchema.parse(result);
     res.status(HttpStatus.OK).json(successResponse({ productPlans: productPlansFilter }, '取得計畫伴手禮成功'));
   });
+  getSouvenirSalesDashboard = asyncHandler(async (req: Request, res: Response) => {
+    const [total, top5] = await Promise.all([
+      this.orderRoomProductItemRepo.countTotalConfirmedSouvenirSales(),
+      this.orderRoomProductItemRepo.getTopSellingSouvenirProducts(),
+    ]);
+    res.status(HttpStatus.OK).json(successResponse({ total, top5 }, '取得計畫伴手禮銷售資料成功'));
+  });
 }
