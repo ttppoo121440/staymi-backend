@@ -10,6 +10,7 @@ import { DatabaseOrTransaction } from '@/types/databaseType';
 import {
   OrderRoomProductItemCreateType,
   OrderRoomProductItemType,
+  OrderRoomProductItemWithProduct,
   productPlansType,
 } from './orderRoomProductItem.schema';
 
@@ -20,10 +21,25 @@ export class OrderRoomProductItemRepo {
       souvenir: result[0] ?? null,
     };
   }
-  async getByOrderId(orderId: string[]): Promise<{ souvenir: OrderRoomProductItemType[] }> {
+  async getByOrderId(orderId: string[]): Promise<{ souvenir: OrderRoomProductItemWithProduct[] }> {
     const result = await db
-      .select()
+      .select({
+        id: order_room_product_item.id,
+        order_id: order_room_product_item.order_id,
+        product_plans_id: order_room_product_item.product_plans_id,
+        quantity: order_room_product_item.quantity,
+        unit_price: order_room_product_item.unit_price,
+        products_name: products.name,
+        products_imageUrl: products.imageUrl,
+        products_description: products.description,
+        products_features: products.features,
+        product_plans_price: product_plans.price,
+        product_plans_start_time: product_plans.start_date,
+        product_plans_end_time: product_plans.end_date,
+      })
       .from(order_room_product_item)
+      .innerJoin(product_plans, eq(order_room_product_item.product_plans_id, product_plans.id))
+      .innerJoin(products, eq(product_plans.product_id, products.id))
       .where(inArray(order_room_product_item.order_id, orderId));
     return {
       souvenir: result,
@@ -102,8 +118,6 @@ export class OrderRoomProductItemRepo {
       .groupBy(order_room_product_item.product_plans_id, products.name)
       .orderBy(desc(sql`SUM(${order_room_product_item.quantity})`))
       .limit(5);
-
-    console.log('getTopSellingSouvenirProducts result:', result);
 
     return result.map((item) => ({
       name: item.name,

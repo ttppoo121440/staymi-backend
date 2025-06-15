@@ -1,6 +1,7 @@
 import { and, eq, SQL, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
+import { brand } from '@/database/schemas/brand.schema';
 import { hotel_rooms } from '@/database/schemas/hotel_rooms.schema';
 import { hotels } from '@/database/schemas/hotels.schema';
 import {
@@ -149,11 +150,14 @@ export class RoomPlanRepo extends BaseRepository {
         room_type_name: room_types.name,
         room_type_description: room_types.description,
         room_services: room_types.room_service,
+
+        brand_description: brand.description,
       })
       .from(room_plans)
       .innerJoin(hotels, eq(room_plans.hotel_id, hotels.id))
       .innerJoin(hotel_rooms, eq(room_plans.hotel_id, hotel_rooms.hotel_id))
       .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
+      .innerJoin(brand, eq(hotels.brand_id, brand.id))
       .where(and(eq(room_plans.id, roomPlanId), eq(room_plans.is_active, true)));
     return result[0] ?? null;
   }

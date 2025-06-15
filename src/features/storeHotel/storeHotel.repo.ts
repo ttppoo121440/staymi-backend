@@ -54,6 +54,7 @@ export class StoreHotelRepo extends BaseRepository {
             latitude: hotels.latitude,
             longitude: hotels.longitude,
             hotel_facilities: hotels.hotel_facilities,
+            hotel_policies: hotels.hotel_policies,
             image_url: hotels.image_url,
             is_active: hotels.is_active,
             created_at: hotels.created_at,

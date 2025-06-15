@@ -46,7 +46,7 @@ describe('測試 AuthStore API', () => {
     const existingUser = existingUsers[0];
     const existingTestUser = existingTestUsers[0];
 
-    if (existingUsers.length > 0) {
+    if (existingUsers.length > 0 || existingTestUsers.length > 0) {
       await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingTestUser.id)).execute();
@@ -64,7 +64,7 @@ describe('測試 AuthStore API', () => {
     const existingUser = existingUsers[0];
     const existingTestUser = existingTestUsers[0];
 
-    if (existingUsers.length > 0) {
+    if (existingUsers.length > 0 || existingTestUsers.length > 0) {
       await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
       await db.delete(user_profile).where(eq(user_profile.user_id, existingTestUser.id)).execute();
@@ -77,20 +77,6 @@ describe('測試 AuthStore API', () => {
     if (server) {
       server.close();
     }
-  });
-  afterEach(async () => {
-    // 每個測試後清理資料
-    const existingUsers = await db.select().from(user).where(eq(user.email, signupData.email));
-    const existingTestUsers = await db.select().from(user).where(eq(user.email, testUser.email));
-    const existingUser = existingUsers[0];
-    const existingTestUser = existingTestUsers[0];
-    await db.delete(user_brand).where(eq(user_brand.user_id, existingUser.id)).execute();
-    await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
-    await db.delete(user_profile).where(eq(user_profile.user_id, existingTestUser.id)).execute();
-    await db.delete(brand).where(eq(brand.user_id, existingUser.id)).execute();
-    await db.delete(user).where(eq(user.id, existingUser.id)).execute();
-    await db.delete(user).where(eq(user.id, existingTestUser.id)).execute();
-    console.log(`afterEach 清理測試用戶 ${existingUser.id}`);
   });
 
   // 測試註冊功能
