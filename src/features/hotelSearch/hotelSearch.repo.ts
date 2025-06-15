@@ -1,8 +1,8 @@
-import { and, count, eq, ilike, ne, sql } from 'drizzle-orm';
+import { ilike, sql } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { hotels } from '@/database/schemas/hotels.schema';
-import { product_plans, SelectProductPlan } from '@/database/schemas/product_plans.schema';
+import { product_plans } from '@/database/schemas/product_plans.schema';
 import { room_plans, SelectRoomPlan } from '@/database/schemas/room_plans.schema';
 import { BaseRepository } from '@/repositories/base-repository';
 import { HttpStatus } from '@/types/http-status.enum';

@@ -17,6 +17,8 @@ export class UserRepo {
         name: user_profile.name,
         phone: user_profile.phone,
         avatar: user_profile.avatar,
+        gender: user_profile.gender,
+        birthday: user_profile.birthday,
         user_id: user_profile.user_id,
         created: user.created_at,
         updated: user_profile.updated_at,

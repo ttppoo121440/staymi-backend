@@ -9,6 +9,7 @@ import { successResponse } from '@/utils/appResponse';
 import { SubscriptionService } from '@/utils/services/subscription.service';
 
 import { OrderRoomProductItemRepo } from '../orderRoomProductItem/orderRoomProductItem.repo';
+import { orderRoomProductWithItemsListDto } from '../orderRoomProductItem/orderRoomProductItem.schema';
 import { ProductPlanRepo } from '../productPlan/productPlan.repo';
 import { RoomPlanRepo } from '../roomPlan/roomPlan.repo';
 import { StoreHotelRepo } from '../storeHotel/storeHotel.repo';
@@ -125,5 +126,28 @@ export class OrderRoomProductController {
     const result = await this.orderRoomProductRepo.getTotalOrderCountForAdmin();
 
     res.status(HttpStatus.OK).json(successResponse({ count: result }, '取得訂房訂單總數成功'));
+  });
+  getAllForAdmin = asyncHandler(async (req: Request, res: Response) => {
+    const status = req.query.status as StatusType;
+    const keywords = req.query.keywords as string | undefined;
+    const { currentPage, perPage } = QuerySchema.parse(req.query);
+    const result = await this.orderRoomProductRepo.getAllForAdmin(keywords, status, currentPage, perPage);
+
+    const allOrderIds = result.orders.map((order) => order.id);
+    const allItems = await this.orderRoomProductItemRepo.getByOrderId(allOrderIds);
+
+    const itemsMap = new Map(allItems.souvenir.map((item) => [item.order_id, item]));
+
+    const ordersWithItems = result.orders.map((order) => ({
+      ...order,
+      order_item: itemsMap.get(order.id) ?? null,
+    }));
+
+    const dtoData = orderRoomProductWithItemsListDto.parse({
+      orders: ordersWithItems,
+      pagination: result.pagination,
+    });
+
+    res.status(HttpStatus.OK).json(successResponse(dtoData, '取得訂房訂單列表成功'));
   });
 }

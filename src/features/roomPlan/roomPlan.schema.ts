@@ -107,6 +107,7 @@ export const getRoomPlanDetailByIdSchema = z.object({
   room_type_name: z.string(),
   room_type_description: z.string(),
   room_services: z.array(z.string()),
+  brand_description: z.string(),
 });
 
 export type SelectRoomPlanWithJoins = z.infer<typeof SelectRoomPlanWithJoinsSchema>;

@@ -7,6 +7,8 @@ const user_profileBaseSchema = z.object({
   user_id: z.string().uuid(),
   name: z.string({ message: '請輸入名字' }).min(2, { message: '名字至少2個字' }).max(50, { message: '名字最多50個字' }),
   phone: z.string({ message: '請輸入電話號碼' }),
+  gender: z.enum(['f', 'm'], { errorMap: () => ({ message: '性別格式錯誤' }) }),
+  birthday: zDateOrDefault(),
 });
 
 export const user_profileSchema = user_profileBaseSchema.extend({
@@ -26,6 +28,7 @@ export const user_profileToDTO = z
   .transform((data) => ({
     user: {
       ...data.user,
+      birthday: formatDisplayDate(data.user.birthday),
     },
   }));
 

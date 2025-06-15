@@ -1,5 +1,11 @@
 import dotenv from 'dotenv';
+import { eq } from 'drizzle-orm';
 import request from 'supertest';
+
+import { closeDatabase, db } from '@/config/database';
+import { user } from '@/database/schemas/user.schema';
+import { user_profile } from '@/database/schemas/user_profile.schema';
+import { server } from '@/server';
 
 import app from '../src/app';
 import { cloudinary } from '../src/libs/cloudinary';
@@ -11,11 +17,49 @@ jest.mock('@/libs/cloudinary'); // Mock Cloudinary
 const mockedUpload = cloudinary.uploader.upload as jest.Mock;
 
 describe('📤 Upload API 測試', () => {
-  const token =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIzMTM3NjliLTY1M2ItNDc1Ny1hYjc5LTkxOTM0MDYwZjQ3MSIsInJvbGUiOiJzdG9yZSIsImJyYW5kX2lkIjoiNGQ0YzFhYTYtNzFjNi00MmY4LWI3YzktYWYwNmZjMjZiNzhiIiwiaWF0IjoxNzQ2MzMwODAyLCJleHAiOjE3NDg5MjI4MDJ9.h0LP2oAu7QyxhRNmzOKlzw1WSifDydPoh7m4HWPbGM4'; // 可改為用 login 登入取得 token
+  const testUser = {
+    email: `testUser+${Date.now()}@example.com`,
+    password: 'Password123!',
+    name: '測試使用者',
+    phone: '0912345678',
+    birthday: '2000-01-01',
+    gender: 'm',
+  };
 
-  beforeEach(() => {
+  let token: string;
+
+  beforeAll(async () => {
+    // 清除資料
+    const existingUsers = await db.select().from(user).where(eq(user.email, testUser.email));
+    if (existingUsers.length > 0) {
+      const existingUser = existingUsers[0];
+      await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+      await db.delete(user).where(eq(user.id, existingUser.id)).execute();
+    }
+
+    // 註冊帳號
+    await request(app).post('/api/v1/users/signup').send(testUser);
+
+    // 登入取得 token
+    const loginRes = await request(app).post('/api/v1/users/login').send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+    token = loginRes.body.data.token;
+
     mockedUpload.mockReset();
+  });
+
+  afterAll(async () => {
+    const existingUsers = await db.select().from(user).where(eq(user.email, testUser.email));
+    if (existingUsers.length > 0) {
+      const existingUser = existingUsers[0];
+      await db.delete(user_profile).where(eq(user_profile.user_id, existingUser.id)).execute();
+      await db.delete(user).where(eq(user.id, existingUser.id)).execute();
+    }
+
+    await closeDatabase();
+    if (server) server.close();
   });
 
   it('成功上傳圖片 200', async () => {
