@@ -43,7 +43,7 @@ export const setupRoutes = (app: Application): void => {
   app.use('/api/v1/store/hotel/order', storeOrderRoutes);
   app.use('/api/v1/store/hotel', storeHotelRoutes);
   app.use('/api/v1/users/hotel', hotelRoutes);
-  app.use('/api/v1/search/', hotelSearchRoutes);
+  app.use('/api/v1/users/search/', hotelSearchRoutes);
   app.use('/api/v1/store', authStoreRoutes);
   app.use('/api/v1/upload', imageUploadRoutes);
   app.use('/api/v1/paypal', paypalRouter);
