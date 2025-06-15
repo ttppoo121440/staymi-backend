@@ -14,5 +14,11 @@ adminOrderRoutes.get(
   checkRolesMiddleware(['admin']),
   orderRoomProductController.getTotalOrderCountForAdmin,
 );
+adminOrderRoutes.get(
+  '/all',
+  authMiddleware,
+  checkRolesMiddleware(['admin']),
+  orderRoomProductController.getAllForAdmin,
+);
 
 export default adminOrderRoutes;
