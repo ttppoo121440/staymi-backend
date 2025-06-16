@@ -3,11 +3,11 @@ import asyncHandler from 'express-async-handler';
 import { NextFunction } from 'express-serve-static-core';
 
 import { HttpStatus } from '@/types/http-status.enum';
-import { QuerySchema } from '@/types/pagination';
 import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
 import { HotelSearchRepo } from './hotelSearch.repo';
+import { roomPlanSearchQuerySchema } from './hotelSearch.schema';
 
 export class HotelSearchController {
   constructor(private hotelSearchRepo: HotelSearchRepo = new HotelSearchRepo()) {}
@@ -25,9 +25,17 @@ export class HotelSearchController {
   });
 
   getAllHotelsPlan = asyncHandler(async (req: Request, res: Response) => {
-    const parsedQuery = QuerySchema.parse(req.query);
-    const { currentPage, perPage } = parsedQuery;
-    const result = await this.hotelSearchRepo.getAllHotelsPlan(currentPage, perPage);
+    const parsedQuery = roomPlanSearchQuerySchema.parse(req.query);
+    const { currentPage, perPage, hotel_name, hotel_region, start_time, end_time, room_type_name } = parsedQuery;
+    const result = await this.hotelSearchRepo.getAllHotelsPlan({
+      currentPage,
+      perPage,
+      hotel_name,
+      hotel_region,
+      start_time,
+      end_time,
+      room_type_name,
+    });
     res.status(HttpStatus.OK).json(successResponse(result, '飯店檢索成功'));
   });
 }

@@ -1,4 +1,4 @@
-import { eq, ilike, sql } from 'drizzle-orm';
+import { eq, ilike, sql, and, gte, lte } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { brand } from '@/database/schemas/brand.schema';
@@ -14,6 +14,16 @@ import { RepoError } from '@/utils/appError';
 import { hotelType } from '../storeHotel/storeHotel.schema';
 
 import { RoomPlanSearchResult } from './hotelSearch.schema';
+export type HotelSearchParams = {
+  currentPage?: number;
+  perPage?: number;
+  hotel_name?: string;
+  hotel_region?: string;
+  start_time?: string;
+  end_time?: string;
+  room_type_name?: string;
+};
+
 export class HotelSearchRepo extends BaseRepository {
   async getHotelInputSuggestion(hotelName: string): Promise<{ hotels: hotelType[] }> {
     const result = await db
@@ -29,10 +39,19 @@ export class HotelSearchRepo extends BaseRepository {
     };
   }
   async getAllHotelsPlan(
-    currentPage = 1,
-    perPage = 10,
+    params: HotelSearchParams,
   ): Promise<{ roomPlansData: RoomPlanSearchResult[] | null; pagination: PaginationType }> {
+    const { currentPage = 1, perPage = 10, hotel_name, hotel_region, start_time, end_time, room_type_name } = params;
     const offset = (currentPage - 1) * perPage;
+
+    const conditions = [];
+    if (hotel_name) conditions.push(ilike(hotels.name, `%${hotel_name}%`));
+    if (hotel_region) conditions.push(ilike(hotels.region, hotel_region));
+    if (start_time) conditions.push(gte(room_plans.start_date, start_time));
+    if (end_time) conditions.push(lte(room_plans.end_date, end_time));
+    if (room_type_name) conditions.push(eq(room_types.name, room_type_name));
+
+    const whereClauser = conditions.length > 0 ? and(...conditions) : undefined;
     const data: RoomPlanSearchResult[] = await db
       .select({
         hotel_id: hotels.id,
@@ -71,6 +90,7 @@ export class HotelSearchRepo extends BaseRepository {
       .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
       .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
       .innerJoin(brand, eq(hotels.brand_id, brand.id))
+      .where(whereClauser)
       .limit(perPage)
       .offset(offset)
       .execute();
