@@ -3,13 +3,6 @@ import { z } from 'zod';
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export const RoomPlanSearchResultSchema = z.object({
-  room_plan_id: z.string().uuid(),
-  subscription_price: z.number({ message: '請填寫訂閱價優惠價' }).min(1, '金額不得小於 1'),
-  price: z.number({ message: '請填寫售價' }).min(1, '金額不得小於 1'),
-  start_date: z.string({ message: '請填寫計畫開始日期' }).regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' }),
-  end_date: z.string({ message: '請填寫計畫結束日期' }).regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' }),
-  plan_images: z.array(z.string()).nullable().optional(),
-
   hotel_id: z.string({ message: '請填寫飯店 id' }).uuid({ message: '請填正確 id 格式' }),
   hotel_name: z.string(),
   hotel_region: z.string(),
@@ -28,10 +21,17 @@ export const RoomPlanSearchResultSchema = z.object({
     .regex(/^(-?\d+(\.\d+)?)$/, '緯度必須是有效的數字字串')
     .refine((val) => parseFloat(val) >= -180 && parseFloat(val) <= 180, '經度必須在 -180 到 180 之間'),
 
+  room_plan_id: z.string().uuid(),
+  subscription_price: z.number({ message: '請填寫訂閱價優惠價' }).min(1, '金額不得小於 1'),
+  price: z.number({ message: '請填寫售價' }).min(1, '金額不得小於 1'),
+  start_time: z.string({ message: '請填寫計畫開始日期' }).regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' }),
+  end_time: z.string({ message: '請填寫計畫結束日期' }).regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' }),
+  plan_images: z.array(z.string()).nullable().optional(),
+
   hotel_room_id: z.string({ message: '請填寫房間 id' }).uuid({ message: '請填正確 id 格式' }),
   hotel_room_description: z.string({ message: '請填寫房間敘述' }),
   hotel_room_images: z.array(z.string()).nullable(),
-  hotel_basePrice: z.number({ message: '請填寫原始金額' }).min(1, '金額不得小於 1'),
+  base_price: z.number({ message: '請填寫原始金額' }).min(1, '金額不得小於 1'),
 
   room_type_id: z.string().uuid(),
   room_type_name: z.string({ message: '請輸入飯店房型' }).max(50),

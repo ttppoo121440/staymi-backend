@@ -50,14 +50,14 @@ export class HotelSearchRepo extends BaseRepository {
         room_plan_id: room_plans.id,
         subscription_price: room_plans.subscription_price,
         price: room_plans.price,
-        start_date: room_plans.start_date,
-        end_date: room_plans.end_date,
-        images: room_plans.images,
+        start_time: room_plans.start_date,
+        end_time: room_plans.end_date,
+        plan_images: room_plans.images,
 
         hotel_room_id: hotel_rooms.id,
         hotel_room_description: hotel_rooms.description,
         hotel_room_images: hotel_rooms.images,
-        hotel_basePrice: hotel_rooms.basePrice,
+        base_price: hotel_rooms.basePrice,
 
         room_type_id: room_types.id,
         room_type_name: room_types.name,
