@@ -23,10 +23,10 @@ export const registerPaypalRoutes = (registry: OpenAPIRegistry): void => {
               無伴手禮: {
                 summary: '建立訂房訂單範例（無伴手禮）',
                 value: {
-                  hotel_id: '17c1be02-9e39-4628-b47e-7598eab4963a',
-                  room_plans_id: 'bdebc5a5-bfd8-4cb7-a85f-13490f34cd33',
-                  check_in_date: '2025-05-18',
-                  check_out_date: '2025-05-20',
+                  hotel_id: 'abd30d12-7bbf-46e4-8f7a-a29510a7e94b',
+                  room_plans_id: 'cea51ab9-2a78-4de0-8511-28be46e1f39c',
+                  check_in_date: '2025-06-18',
+                  check_out_date: '2025-06-20',
                   payment_name: '付款人B',
                   payment_phone: '0922333444',
                   payment_email: 'payer@example.com',
@@ -165,8 +165,8 @@ export const registerPaypalRoutes = (registry: OpenAPIRegistry): void => {
     ...bearerSecurity,
     request: {
       params: z.object({
-        token: z.string().openapi({
-          description: 'paypal訂單的唯一識別碼token',
+        id: z.string().openapi({
+          description: 'paypal訂單的唯一識別碼id',
           example: '7R327728FS421844A',
         }),
       }),
