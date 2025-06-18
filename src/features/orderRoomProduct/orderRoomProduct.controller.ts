@@ -129,9 +129,9 @@ export class OrderRoomProductController {
   });
   getAllForAdmin = asyncHandler(async (req: Request, res: Response) => {
     const status = req.query.status as StatusType;
-    const keywords = req.query.keywords as string | undefined;
+    const keyword = req.query.keyword as string | undefined;
     const { currentPage, perPage } = QuerySchema.parse(req.query);
-    const result = await this.orderRoomProductRepo.getAllForAdmin(keywords, status, currentPage, perPage);
+    const result = await this.orderRoomProductRepo.getAllForAdmin(keyword, status, currentPage, perPage);
 
     const allOrderIds = result.orders.map((order) => order.id);
     const allItems = await this.orderRoomProductItemRepo.getByOrderId(allOrderIds);
