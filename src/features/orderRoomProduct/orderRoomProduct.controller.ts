@@ -95,10 +95,6 @@ export class OrderRoomProductController {
     if (!result) {
       return next(appError('找不到對應的訂房訂單', HttpStatus.NOT_FOUND));
     }
-    const roomPlanResult = await this.roomPlanRepo.getPriceById(data.room_plans_id);
-    if (roomPlanResult.length === 0) {
-      return next(appError('找不到對應的住宿計畫', HttpStatus.NOT_FOUND));
-    }
     const dtoData = orderRoomProductDto.parse({ order: result });
     res.status(HttpStatus.OK).json(successResponse(dtoData, '取得訂房訂單成功'));
   });
