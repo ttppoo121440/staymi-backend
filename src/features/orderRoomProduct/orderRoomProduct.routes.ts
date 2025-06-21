@@ -27,6 +27,14 @@ orderRoomProductRoutes.get(
   }),
   orderRoomProductController.getById,
 );
+orderRoomProductRoutes.get(
+  '/url_test/:id',
+  authMiddleware,
+  zodMiddleware({
+    params: uuidParams('id'),
+  }),
+  orderRoomProductController.getById,
+);
 orderRoomProductRoutes.post(
   '/',
   authMiddleware,
