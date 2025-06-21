@@ -29,6 +29,7 @@ export class OrderRoomProductItemRepo {
         product_plans_id: order_room_product_item.product_plans_id,
         quantity: order_room_product_item.quantity,
         unit_price: order_room_product_item.unit_price,
+        status: order_room_product_item.status,
         products_name: products.name,
         products_imageUrl: products.imageUrl,
         products_description: products.description,
