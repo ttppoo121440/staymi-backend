@@ -5,7 +5,6 @@ import { uuidParams, zodMiddleware } from '@/middleware/zodMiddleware';
 
 import { OrderRoomProductController } from './orderRoomProduct.controller';
 import {
-  orderBodySchema,
   orderQuerySchema,
   orderRoomProductCreateSchema,
   orderRoomProductUpdateSchema,
@@ -25,7 +24,6 @@ orderRoomProductRoutes.get(
   authMiddleware,
   zodMiddleware({
     params: uuidParams('id'),
-    body: orderBodySchema,
   }),
   orderRoomProductController.getById,
 );
