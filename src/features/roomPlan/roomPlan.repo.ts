@@ -154,9 +154,9 @@ export class RoomPlanRepo extends BaseRepository {
         brand_description: brand.description,
       })
       .from(room_plans)
-      .innerJoin(hotels, eq(room_plans.hotel_id, hotels.id))
-      .innerJoin(hotel_rooms, eq(room_plans.hotel_id, hotel_rooms.hotel_id))
+      .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
       .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
+      .innerJoin(hotels, eq(room_plans.hotel_id, hotels.id))
       .innerJoin(brand, eq(hotels.brand_id, brand.id))
       .where(and(eq(room_plans.id, roomPlanId), eq(room_plans.is_active, true)));
     return result[0] ?? null;
