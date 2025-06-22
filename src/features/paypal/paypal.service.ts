@@ -63,7 +63,7 @@ export class PayPalService {
         ],
         application_context: {
           locale: 'zh-TW',
-          return_url: 'https://staymi.vercel.app/',
+          return_url: 'https://staymi.vercel.app/paypal/check-success',
           cancel_url: 'https://staymi.vercel.app/login',
         },
       },
