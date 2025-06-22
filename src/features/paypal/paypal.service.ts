@@ -218,9 +218,9 @@ export class PayPalService {
     }
     let price = 0;
     if (subscription.plan === 'plus') {
-      price = 250;
+      price = 1500;
     } else if (subscription.plan === 'pro') {
-      price = 500;
+      price = 9999;
     } else {
       throw new Error('無該訂閱方案');
     }
@@ -256,7 +256,7 @@ export class PayPalService {
         ],
         application_context: {
           locale: 'zh-TW',
-          return_url: 'https://staymi.vercel.app/',
+          return_url: 'https://staymi.vercel.app/account/profile',
           cancel_url: 'https://staymi.vercel.app/login',
         },
       },
