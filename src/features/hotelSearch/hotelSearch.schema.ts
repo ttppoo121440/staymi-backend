@@ -49,11 +49,11 @@ export const roomPlanSearchQuerySchema = z
   .object({
     hotel_name: z.string().optional(),
     hotel_region: z.string().optional(),
-    start_time: z
+    start_date: z
       .string({ message: '請填寫計畫開始日期' })
       .regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' })
       .optional(),
-    end_time: z
+    end_date: z
       .string({ message: '請填寫計畫結束日期' })
       .regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' })
       .optional(),
