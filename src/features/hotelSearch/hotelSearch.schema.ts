@@ -58,6 +58,7 @@ export const roomPlanSearchQuerySchema = z
       .regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' })
       .optional(),
     room_type_name: z.string({ message: '請輸入飯店房型' }).max(50).optional(),
+    sort: z.enum(['price_asc', 'price_desc']).optional(),
   })
   .merge(QuerySchema);
 

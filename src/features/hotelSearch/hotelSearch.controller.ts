@@ -26,7 +26,7 @@ export class HotelSearchController {
 
   getAllHotelsPlan = asyncHandler(async (req: Request, res: Response) => {
     const parsedQuery = roomPlanSearchQuerySchema.parse(req.query);
-    const { currentPage, perPage, hotel_name, hotel_region, start_time, end_time, room_type_name } = parsedQuery;
+    const { currentPage, perPage, hotel_name, hotel_region, start_time, end_time, room_type_name, sort } = parsedQuery;
     const result = await this.hotelSearchRepo.getAllHotelsPlan({
       currentPage,
       perPage,
@@ -35,6 +35,7 @@ export class HotelSearchController {
       start_time,
       end_time,
       room_type_name,
+      sort,
     });
     res.status(HttpStatus.OK).json(successResponse(result, '飯店檢索成功'));
   });

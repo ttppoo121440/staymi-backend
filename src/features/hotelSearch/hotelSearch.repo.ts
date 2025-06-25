@@ -1,4 +1,4 @@
-import { eq, ilike, sql, and, gte, lte } from 'drizzle-orm';
+import { eq, ilike, sql, and, gte, lte, asc, desc } from 'drizzle-orm';
 
 import { db } from '@/config/database';
 import { brand } from '@/database/schemas/brand.schema';
@@ -22,6 +22,7 @@ export type HotelSearchParams = {
   start_time?: string;
   end_time?: string;
   room_type_name?: string;
+  sort?: string;
 };
 
 export class HotelSearchRepo extends BaseRepository {
@@ -41,7 +42,16 @@ export class HotelSearchRepo extends BaseRepository {
   async getAllHotelsPlan(
     params: HotelSearchParams,
   ): Promise<{ roomPlansData: RoomPlanSearchResult[] | null; pagination: PaginationType }> {
-    const { currentPage = 1, perPage = 10, hotel_name, hotel_region, start_time, end_time, room_type_name } = params;
+    const {
+      currentPage = 1,
+      perPage = 10,
+      hotel_name,
+      hotel_region,
+      start_time,
+      end_time,
+      room_type_name,
+      sort,
+    } = params;
     const offset = (currentPage - 1) * perPage;
 
     const conditions = [];
@@ -52,7 +62,7 @@ export class HotelSearchRepo extends BaseRepository {
     if (room_type_name) conditions.push(eq(room_types.name, room_type_name));
 
     const whereClauser = conditions.length > 0 ? and(...conditions) : undefined;
-    const data: RoomPlanSearchResult[] = await db
+    const query = db
       .select({
         hotel_id: hotels.id,
         hotel_name: hotels.name,
@@ -90,10 +100,15 @@ export class HotelSearchRepo extends BaseRepository {
       .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
       .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
       .innerJoin(brand, eq(hotels.brand_id, brand.id))
-      .where(whereClauser)
-      .limit(perPage)
-      .offset(offset)
-      .execute();
+      .where(whereClauser);
+
+    if (sort === 'price_asc') {
+      query.orderBy(asc(room_plans.price));
+    } else if (sort === 'price_desc') {
+      query.orderBy(desc(room_plans.price));
+    }
+
+    const data: RoomPlanSearchResult[] = await query.limit(perPage).offset(offset).execute();
 
     const totalItemsResult = await db
       .select({ count: sql<number>`COUNT(*)` })
