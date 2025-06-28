@@ -27,6 +27,7 @@ export const orderRoomProductSchema = z.object({
   created_at: zDateOrDefault(),
   updated_at: zDateOrDefault(),
   product_plans_id: z.string().uuid({ message: '請填正確 id 格式' }).optional(),
+  hotel_room_imageUrl: z.string().optional(),
 });
 
 export const orderRoomProductWithItemsSchema = orderRoomProductSchema.extend({

@@ -54,6 +54,7 @@ export class OrderRoomProductRepo extends BaseRepository {
             hotel_images: hotels.image_url,
             room_types: room_types.name,
             product: products.name,
+            hotel_room_imageUrl: hotel_rooms.images,
           })
           .from(order_room_product)
           .leftJoin(hotels, eq(order_room_product.hotel_id, hotels.id)) // 飯店
