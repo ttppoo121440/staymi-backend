@@ -19,10 +19,11 @@ export type HotelSearchParams = {
   perPage?: number;
   hotel_name?: string;
   hotel_region?: string;
-  start_time?: string;
-  end_time?: string;
+  start_date?: string;
+  end_date?: string;
   room_type_name?: string;
-  sort?: string;
+  sort_by?: 'price' | 'name' | 'date' | null;
+  sort_order?: 'asc' | 'desc' | null;
 };
 
 export class HotelSearchRepo extends BaseRepository {
@@ -47,22 +48,34 @@ export class HotelSearchRepo extends BaseRepository {
       perPage = 10,
       hotel_name,
       hotel_region,
-      start_time,
-      end_time,
+      start_date,
+      end_date,
       room_type_name,
-      sort,
+      sort_by,
+      sort_order,
     } = params;
     const offset = (currentPage - 1) * perPage;
 
     const conditions = [];
     if (hotel_name) conditions.push(ilike(hotels.name, `%${hotel_name}%`));
     if (hotel_region) conditions.push(ilike(hotels.region, hotel_region));
-    if (start_time) conditions.push(gte(room_plans.start_date, start_time));
-    if (end_time) conditions.push(lte(room_plans.end_date, end_time));
+    if (start_date && end_date)
+      conditions.push(and(gte(room_plans.end_date, start_date), lte(room_plans.start_date, end_date)));
     if (room_type_name) conditions.push(eq(room_types.name, room_type_name));
 
+    const sortColumnMap = {
+      price: room_plans.price,
+      name: hotels.name,
+      date: room_plans.start_date,
+    } as const;
+
+    const sortColumn = sort_by ? sortColumnMap[sort_by] : room_plans.id;
+
+    const orderClause = sort_order === 'desc' ? desc(sortColumn) : asc(sortColumn);
+
     const whereClauser = conditions.length > 0 ? and(...conditions) : undefined;
-    const query = db
+
+    const data = await db
       .select({
         hotel_id: hotels.id,
         hotel_name: hotels.name,
@@ -100,15 +113,11 @@ export class HotelSearchRepo extends BaseRepository {
       .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
       .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
       .innerJoin(brand, eq(hotels.brand_id, brand.id))
-      .where(whereClauser);
-
-    if (sort === 'price_asc') {
-      query.orderBy(asc(room_plans.price));
-    } else if (sort === 'price_desc') {
-      query.orderBy(desc(room_plans.price));
-    }
-
-    const data: RoomPlanSearchResult[] = await query.limit(perPage).offset(offset).execute();
+      .where(whereClauser)
+      .orderBy(orderClause)
+      .limit(perPage)
+      .offset(offset)
+      .execute();
 
     const totalItemsResult = await db
       .select({ count: sql<number>`COUNT(*)` })
