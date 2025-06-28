@@ -47,6 +47,7 @@ const RoomPlanSearchResultSchema = z.object({
 
 export const roomPlanSearchQuerySchema = z
   .object({
+    hotel_id: z.string().optional(),
     hotel_name: z.string().optional(),
     hotel_region: z.string().optional(),
     start_date: z
@@ -58,6 +59,10 @@ export const roomPlanSearchQuerySchema = z
       .regex(dateRegex, { message: '請使用 YYYY-MM-DD 格式' })
       .optional(),
     room_type_name: z.string({ message: '請輸入飯店房型' }).max(50).optional(),
+    min_price: z.string().optional(),
+    max_price: z.string().optional(),
+    hotel_facilities: z.union([z.string(), z.array(z.string())]).optional(),
+    room_service: z.union([z.string(), z.array(z.string())]).optional(),
     sort_by: z.enum(['price', 'name', 'date']).optional(),
     sort_order: z.enum(['asc', 'desc']).optional(),
   })

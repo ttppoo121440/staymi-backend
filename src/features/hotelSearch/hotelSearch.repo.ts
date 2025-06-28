@@ -17,11 +17,16 @@ import { RoomPlanSearchResult } from './hotelSearch.schema';
 export type HotelSearchParams = {
   currentPage?: number;
   perPage?: number;
+  hotel_id?: string;
   hotel_name?: string;
   hotel_region?: string;
   start_date?: string;
   end_date?: string;
   room_type_name?: string;
+  min_price?: string;
+  max_price?: string;
+  hotel_facilities?: string | string[];
+  room_service?: string | string[];
   sort_by?: 'price' | 'name' | 'date' | null;
   sort_order?: 'asc' | 'desc' | null;
 };
@@ -46,22 +51,50 @@ export class HotelSearchRepo extends BaseRepository {
     const {
       currentPage = 1,
       perPage = 10,
+      hotel_id,
       hotel_name,
       hotel_region,
       start_date,
       end_date,
       room_type_name,
+      min_price,
+      max_price,
+      hotel_facilities,
+      room_service,
       sort_by,
       sort_order,
     } = params;
     const offset = (currentPage - 1) * perPage;
 
     const conditions = [];
+    if (hotel_id) conditions.push(eq(hotels.id, hotel_id));
     if (hotel_name) conditions.push(ilike(hotels.name, `%${hotel_name}%`));
     if (hotel_region) conditions.push(ilike(hotels.region, hotel_region));
     if (start_date && end_date)
       conditions.push(and(gte(room_plans.end_date, start_date), lte(room_plans.start_date, end_date)));
     if (room_type_name) conditions.push(eq(room_types.name, room_type_name));
+    if (min_price) conditions.push(gte(room_plans.price, Number(min_price)));
+    if (max_price) conditions.push(lte(room_plans.price, Number(max_price)));
+    if (hotel_facilities) {
+      const facilities = Array.isArray(hotel_facilities) ? hotel_facilities : [hotel_facilities];
+      if (facilities.length > 0) {
+        const arrayQuery = sql`ARRAY[${sql.join(
+          facilities.map((f) => sql`${f}`),
+          sql`, `,
+        )}]::varchar[]`;
+        conditions.push(sql`${hotels.hotel_facilities} && ${arrayQuery}`);
+      }
+    }
+    if (room_service) {
+      const services = Array.isArray(room_service) ? room_service : [room_service];
+      if (services.length > 0) {
+        const arrayQuery = sql`ARRAY[${sql.join(
+          services.map((s) => `${s}`),
+          sql`, `,
+        )}]::varchar[]`;
+        conditions.push(sql`${room_types.room_service} && ${arrayQuery}`);
+      }
+    }
 
     const sortColumnMap = {
       price: room_plans.price,
