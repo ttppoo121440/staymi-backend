@@ -157,7 +157,8 @@ export class HotelSearchRepo extends BaseRepository {
       .from(room_plans)
       .innerJoin(hotels, eq(hotels.id, room_plans.hotel_id))
       .innerJoin(hotel_rooms, eq(room_plans.hotel_room_id, hotel_rooms.id))
-      .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id));
+      .innerJoin(room_types, eq(hotel_rooms.room_type_id, room_types.id))
+      .where(whereClauser);
 
     const totalItems = Number(totalItemsResult[0]?.count ?? 0);
     const totalPages = Math.ceil(totalItems / perPage);
