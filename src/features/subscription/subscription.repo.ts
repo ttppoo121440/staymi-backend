@@ -48,6 +48,51 @@ export class SubscriptionRepo extends BaseRepository {
     return result[0];
   }
 
+  /**
+   * 產生預設訂閱資料
+   */
+  async createDefaultSubscription(userId: string, data: subscriptionCreateType): Promise<subscriptionBaseType> {
+    const startedAt = new Date();
+    const endAt = new Date(startedAt);
+
+    // 設定訂閱期限
+    if (data.plan === 'free') {
+      // 免費方案設定為永久有效 (一年後)
+      endAt.setFullYear(endAt.getFullYear() + 1);
+    } else {
+      // 付費方案預設30天
+      endAt.setDate(endAt.getDate() + 30);
+      switch (data.cycle) {
+        case 'monthly':
+          endAt.setDate(endAt.getDate() + 30);
+          break;
+        case 'quarterly':
+          endAt.setDate(endAt.getDate() + 90);
+          break;
+        case 'yearly':
+          endAt.setDate(endAt.getDate() + 365);
+          break;
+        default:
+          throw new Error('週期格式錯誤');
+      }
+    }
+
+    // 調整時區
+    endAt.setHours(23 - endAt.getTimezoneOffset() / 60, 59, 59, 999);
+
+    const subscriptionData = {
+      user_id: userId,
+      plan: data.plan,
+      status: data.plan === 'free' ? 'active' : 'paused', // 免費方案直接啟用，付費方案等待付款
+      started_at: startedAt,
+      end_at: endAt,
+      is_recurring: false,
+    };
+
+    const result = await db.insert(subscriptions).values(subscriptionData).returning();
+    return result[0];
+  }
+
   // 根據ID & 用戶ID 獲取訂閱資訊
   async getByIdAndUserId(id: string, userId: string): Promise<subscriptionPayPalToDTOType | null> {
     const result = await db

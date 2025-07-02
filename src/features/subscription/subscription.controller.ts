@@ -57,20 +57,82 @@ export class SubscriptionController {
     res.status(HttpStatus.OK).json(successResponse(dtoData, '訂閱紀錄取得成功'));
   });
 
+  /**
+   * 變更訂閱方案
+   */
   updatePlan = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const id: string = (req.user as JwtUserPayload).id;
     const { plan } = req.body as { plan: 'free' | 'plus' | 'pro' };
-    const result = await this.subscriptionRepo.updatePlanByUserIdAndPlan(id, plan);
-    if (!result) {
-      return next(appError('找不到訂閱資訊，請先訂閱', HttpStatus.NOT_FOUND));
-    }
+    const { cycle } = req.body as { cycle: 'monthly' | 'quarterly' | 'yearly' };
+    const getPlanResult = await this.subscriptionRepo.getPlanByUserId(id);
 
-    // 未變更方案
-    if (!result.isUpdate) {
-      res.status(HttpStatus.OK).json(successResponse(undefined, `已是此訂閱方案${plan}`));
-      return;
-    }
+    // 如果沒訂閱資訊，則建立新的訂閱
+    if (!getPlanResult) {
+      // 如果 free 方案直接建立
+      if (plan === 'free') {
+        // 直接建立免費訂閱
+        try {
+          await this.subscriptionRepo.createDefaultSubscription(id, req.body);
+          res.status(HttpStatus.OK).json(successResponse(undefined, `訂閱 ${plan} 方案成功`));
+          return;
+        } catch (error) {
+          return next(appError(`訂閱 ${plan} 方案失敗`, HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+      } else {
+        // 付費方案需要建立並付款
+        const subscriptionData = {
+          subscriptionInfo: {
+            plan,
+            cycle: cycle,
+            user_id: id,
+            started_at: new Date().toISOString(),
+          },
+          paymentApiUrl: '/paypal/create-subscription',
+        };
 
-    res.status(HttpStatus.OK).json(successResponse(undefined, '訂閱方案變更成功'));
+        res.status(HttpStatus.OK).json(successResponse(subscriptionData, `訂閱 ${plan} 方案，即將跳轉付款`));
+        return;
+      }
+    } else {
+      // 定義方案等級
+      const planLevels = { free: 1, plus: 2, pro: 3 };
+      const currentLevel = planLevels[getPlanResult.plan];
+      const targetLevel = planLevels[plan];
+
+      // 檢查是否為降級操作
+      if (targetLevel < currentLevel) {
+        return next(appError('暫不支援降級方案', HttpStatus.BAD_REQUEST));
+      }
+      const result = await this.subscriptionRepo.updatePlanByUserIdAndPlan(id, plan);
+      if (!result) {
+        return next(appError('變更訂閱失敗', HttpStatus.INTERNAL_SERVER_ERROR));
+      }
+
+      // 未變更方案
+      if (!result.isUpdate) {
+        res.status(HttpStatus.OK).json(successResponse(undefined, `已是此訂閱方案${plan}`));
+        return;
+      }
+
+      // 如果是需要付費的方案升級 (free -> plus/pro 或 plus -> pro)
+      if (plan !== 'free' && targetLevel > currentLevel) {
+        // 回傳訂閱資料
+        const subscriptionData = {
+          canUpgrade: result.isUpdate,
+          subscriptionInfo: {
+            plan,
+            cycle: cycle,
+            user_id: id,
+            started_at: new Date().toISOString(),
+          },
+          paymentApiUrl: '/paypal/create-subscription',
+        };
+
+        res.status(HttpStatus.OK).json(successResponse(subscriptionData, `準備升級到 ${plan} 方案，請完成付款流程`));
+        return;
+      }
+
+      res.status(HttpStatus.OK).json(successResponse(undefined, '訂閱方案變更成功'));
+    }
   });
 }
