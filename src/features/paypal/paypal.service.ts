@@ -256,7 +256,7 @@ export class PayPalService {
         ],
         application_context: {
           locale: 'zh-TW',
-          return_url: 'https://staymi.vercel.app/account/profile',
+          return_url: 'https://staymi.vercel.app/paypal/check-subscription',
           cancel_url: 'https://staymi.vercel.app/login',
         },
       },
