@@ -8,7 +8,12 @@ import { appError } from '@/utils/appError';
 import { successResponse } from '@/utils/appResponse';
 
 import { SubscriptionRepo } from './subscription.repo';
-import { subscriptionToDTO, subscriptionIsRecurringToDTO, subscriptionHistoryToDTO } from './subscription.schema';
+import {
+  subscriptionToDTO,
+  subscriptionIsRecurringToDTO,
+  subscriptionHistoryToDTO,
+  subscriptionCreateType,
+} from './subscription.schema';
 
 export class SubscriptionController {
   constructor(private subscriptionRepo: SubscriptionRepo = new SubscriptionRepo()) {}
@@ -16,9 +21,13 @@ export class SubscriptionController {
   getPlan = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     // middleware JWT解碼 取得使用者資訊
     const id: string = (req.user as JwtUserPayload).id;
-    const result = await this.subscriptionRepo.getPlanByUserId(id);
+    let result = await this.subscriptionRepo.getPlanByUserId(id);
     if (!result) {
-      return next(appError('查無訂閱資料', HttpStatus.NOT_FOUND));
+      // 如果沒有訂閱資料，則建立預設的免費訂閱
+      result = await this.subscriptionRepo.createDefaultSubscription(id, { plan: 'free' } as subscriptionCreateType);
+      if (!result) {
+        return next(appError('建立預設訂閱失敗', HttpStatus.INTERNAL_SERVER_ERROR));
+      }
     }
     // 轉換資料格式
     const dtoData = subscriptionToDTO.parse({ subscriptions: result });

@@ -339,7 +339,7 @@ export class PayPalService {
       throw new Error('找不到對應的訂閱訂單');
     }
 
-    // 更新訂閱狀態
+    // 更新 訂單訂閱狀態
     const updatedResult = await this.orderSubscriptionRepo.updateOrderSubscription(
       subscriptionResult.subscription_id,
       user_id,
@@ -348,14 +348,18 @@ export class PayPalService {
         paypal_transaction_id: paypalTransactionId,
       },
     );
+
+    // 更新 帳號訂閱狀態
     const updateSubscriptionResult = await this.subscriptionRepo.updateSubscriptionStatus(
       subscriptionResult.subscription_id,
       user_id,
       'active',
     );
+
     if (!updatedResult || !updateSubscriptionResult) {
       throw new Error('更新訂單失敗');
     }
+
     // 重新讀取訂閱訂單
     const orderSubscriptData = await this.orderSubscriptionRepo.getBySubscriptionIdAndUserId(subscriptionId, user_id);
     if (!orderSubscriptData) {

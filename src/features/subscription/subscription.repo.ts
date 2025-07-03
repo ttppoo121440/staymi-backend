@@ -114,7 +114,9 @@ export class SubscriptionRepo extends BaseRepository {
         end_at: subscriptions.end_at,
       })
       .from(subscriptions)
-      .where(eq(subscriptions.user_id, userId));
+      .where(and(eq(subscriptions.user_id, userId), eq(subscriptions.status, 'active')))
+      .orderBy(desc(subscriptions.created_at))
+      .limit(1);
 
     return result[0] ?? null;
   }
@@ -209,10 +211,22 @@ export class SubscriptionRepo extends BaseRepository {
     userId: string,
     status: 'active' | 'paused' | 'cancelled',
   ): Promise<subscriptionBaseType | null> {
+    await this.updateSubscriptionCancelledStatus(userId);
+    // 更新訂閱狀態
     const result = await db
       .update(subscriptions)
       .set({ status: status, updated_at: new Date() })
       .where(and(eq(subscriptions.id, subscriptionId), eq(subscriptions.user_id, userId)))
+      .returning();
+
+    return result[0] ?? null;
+  }
+
+  async updateSubscriptionCancelledStatus(userId: string): Promise<subscriptionBaseType | null> {
+    const result = await db
+      .update(subscriptions)
+      .set({ status: 'cancelled', updated_at: new Date() })
+      .where(eq(subscriptions.user_id, userId))
       .returning();
 
     return result[0] ?? null;

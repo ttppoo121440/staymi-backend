@@ -63,6 +63,13 @@ export class OrderSubscriptionRepo {
     };
   }
 
+  /**
+   * 依訂閱ID和用戶ID更新訂單
+   * @param subscriptionId 訂閱ID
+   * @param userId 用戶ID
+   * @param data 要更新的訂閱訂單資料，目前僅能更新 status 和 paypal_transaction_id
+   * @returns 如果更新失敗，則回傳 null，否則回傳更新後的訂閱訂單資料
+   */
   async updateOrderSubscription(
     subscriptionId: string,
     userId: string,
