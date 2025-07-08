@@ -45,6 +45,7 @@ export class OrderRoomProductRepo extends BaseRepository {
       hotel: hotelType['name'] | null;
       room_types: roomTypes['name'] | null;
       product: ProductsSchema['name'] | null;
+      hotel_room_imageUrl: string[] | null;
     }>(
       (limit, offset) =>
         db
@@ -84,6 +85,7 @@ export class OrderRoomProductRepo extends BaseRepository {
       hotel_name: row.hotel ?? undefined,
       room_name: row.room_types ?? undefined,
       product_name: row.product ?? undefined,
+      hotel_room_image_url: row.hotel_room_imageUrl ?? undefined,
     }));
 
     return {
